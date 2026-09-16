@@ -198,7 +198,7 @@ body{background:#F0F4F0;min-height:100vh}
 <div id="login-page" class="login-wrap">
   <div class="login-card">
     <div class="login-logo">
-      <img src="logo.png" alt="S.S.T Logo" style="width:80px;height:80px;object-fit:contain"/>
+      <img src="IMG_0012.JPG" alt="S.S.T Logo" style="width:80px;height:80px;object-fit:contain"/>
     </div>
     <div class="login-title">ศรีสุธา</div>
     <div class="login-sub">ระบบเบิกจ่ายและอนุมัติค่าใช้จ่าย</div>
@@ -215,7 +215,7 @@ body{background:#F0F4F0;min-height:100vh}
 <div id="app-page" class="app" style="display:none">
   <div class="sidebar">
     <div class="slogo">
-      <img src="logo.png" alt="S.S.T Logo" style="width:44px;height:44px;object-fit:contain;flex-shrink:0"/>
+      <img src="IMG_0012.JPG" alt="S.S.T Logo" style="width:44px;height:44px;object-fit:contain;flex-shrink:0"/>
       <div><div class="logo-name">ศรีสุธา</div><div class="logo-sub">ระบบเบิกจ่าย</div></div>
     </div>
     <div class="nav" id="sidebar-nav"></div>
@@ -1383,29 +1383,155 @@ async function loadVehicleReport() {
 // ===================================================
 async function renderUsers() {
   if (!isAdmin()) { document.getElementById('main-content').innerHTML = '<div class="empty">ไม่มีสิทธิ์เข้าถึง</div>'; return; }
+
+  const ALL_TABS = ['dashboard','request','ledger','mylist','photos','vehicles','calendar','approve','report','users'];
+  const TAB_LABELS = { dashboard:'ภาพรวม', request:'ขอเบิก', ledger:'บันทึกรายจ่าย', mylist:'รายการของฉัน', photos:'หลักฐานรูปภาพ', vehicles:'ระบบรถ', calendar:'แจ้งเตือน/ปฏิทิน', approve:'อนุมัติ (Admin)', report:'รายงาน (Admin)', users:'จัดการผู้ใช้ (Admin)' };
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="tab-row">
+      <div class="tab active" onclick="switchUserTab(this,'ut-list')">👥 ผู้ใช้ทั้งหมด</div>
+      <div class="tab" onclick="switchUserTab(this,'ut-add')">➕ สร้างผู้ใช้ใหม่</div>
+    </div>
+
+    <!-- รายชื่อ -->
+    <div id="ut-list">
+      <div id="user-list-content"><div class="loading">⏳ กำลังโหลด...</div></div>
+    </div>
+
+    <!-- สร้างใหม่ -->
+    <div id="ut-add" style="display:none">
+      <div class="card">
+        <div class="ch"><span class="ct">➕ สร้างผู้ใช้ใหม่</span></div>
+        <div class="fg">
+          <div class="fgr"><div class="flbl">ชื่อ-นามสกุล <span>*</span></div><input class="fin" id="nu-name" placeholder="เช่น สมชาย ใจดี"/></div>
+          <div class="fgr"><div class="flbl">ชื่อผู้ใช้ (username) <span>*</span></div><input class="fin" id="nu-user" placeholder="ภาษาอังกฤษ ไม่มีเว้นวรรค"/></div>
+          <div class="fgr"><div class="flbl">รหัสผ่าน <span>*</span></div><input class="fin" id="nu-pass" type="password" placeholder="อย่างน้อย 6 ตัวอักษร"/></div>
+          <div class="fgr"><div class="flbl">ยืนยันรหัสผ่าน <span>*</span></div><input class="fin" id="nu-pass2" type="password" placeholder="กรอกรหัสผ่านอีกครั้ง"/></div>
+          <div class="fgr"><div class="flbl">สาขา <span>*</span></div><select class="fin" id="nu-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
+          <div class="fgr"><div class="flbl">สิทธิ์ <span>*</span></div><select class="fin" id="nu-role"><option value="employee">พนักงาน</option><option value="admin">Admin</option></select></div>
+        </div>
+        <div style="margin-top:12px">
+          <div class="flbl" style="margin-bottom:8px">สิทธิ์การเข้าถึงหน้าต่างๆ</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="nu-tabs">
+            ${ALL_TABS.map(t => `
+              <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;font-weight:700;padding:5px 8px;background:var(--gl);border-radius:7px">
+                <input type="checkbox" id="nut-${t}" value="${t}" ${['dashboard','request','ledger','mylist','photos'].includes(t)?'checked':''}>
+                ${TAB_LABELS[t]}
+              </label>`).join('')}
+          </div>
+        </div>
+        <div id="nu-err" style="color:var(--r);font-size:12px;margin-top:8px;font-weight:700;min-height:18px"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" onclick="clearNewUser()">ล้างข้อมูล</button>
+          <button class="btn btnp" onclick="submitNewUser()">💾 สร้างผู้ใช้</button>
+        </div>
+      </div>
+    </div>`;
+
+  loadUserList();
+}
+
+function switchUserTab(el, id) {
+  document.querySelectorAll('.tab-row .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('ut-list').style.display = id === 'ut-list' ? '' : 'none';
+  document.getElementById('ut-add').style.display = id === 'ut-add' ? '' : 'none';
+}
+
+async function loadUserList() {
+  const el = document.getElementById('user-list-content');
+  if (!el) return;
   try {
     const r = await apiGet('getUsers');
+    if (!r) return;
     const rows = r.data.map(u => `
       <tr>
-        <td><div style="font-weight:800">${u.name}</div><div style="font-size:10px;color:var(--tx2)">${u.username}</div></td>
-        <td>${u.branch}</td>
+        <td><div style="font-weight:800">${u.name||'-'}</div><div style="font-size:10px;color:var(--tx2);font-weight:600">${u.username||'-'}</div></td>
+        <td style="font-weight:700">${u.branch||'-'}</td>
         <td><span class="badge ${u.role==='admin'?'bok':'brec'}">${u.role==='admin'?'Admin':'พนักงาน'}</span></td>
-        <td><span style="color:${u.tabs?.includes('vehicles')?'var(--g)':'var(--tx3)'};font-weight:700">${u.tabs?.includes('vehicles')?'✓ เห็น':'— ไม่เห็น'}</span></td>
+        <td style="font-size:11px;font-weight:600">${(u.tabs||'').split(',').length} หน้า</td>
+        <td><span style="color:${u.tabs?.includes('vehicles')?'var(--g)':'var(--tx3)'};font-weight:700">${u.tabs?.includes('vehicles')?'✓':'—'}</span></td>
         <td><span class="badge ${u.status==='active'?'bok':'bno'}">${u.status==='active'?'ใช้งาน':'ระงับ'}</span></td>
-      </tr>`).join('') || '<tr><td colspan="5" class="empty">ไม่พบผู้ใช้</td></tr>';
+        <td>
+          <button class="btn" style="font-size:10px;padding:3px 8px" onclick="resetPassword('${u.id}','${u.name}')">🔑 Reset</button>
+          <button class="btn ${u.status==='active'?'btnr':''}" style="font-size:10px;padding:3px 8px;margin-left:3px" onclick="toggleUserStatus('${u.id}','${u.status}')">
+            ${u.status==='active'?'🚫 ระงับ':'✅ เปิด'}
+          </button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="7" class="empty">ไม่พบผู้ใช้</td></tr>';
 
-    document.getElementById('main-content').innerHTML = `
+    el.innerHTML = `
       <div class="card">
-        <div class="ch"><span class="ct">👥 ผู้ใช้งานทั้งหมด</span></div>
+        <div class="ch"><span class="ct">👥 ผู้ใช้งานทั้งหมด (${r.data.length} คน)</span>
+          <button class="btn btns" style="font-size:11px" onclick="loadUserList()">🔄 รีเฟรช</button>
+        </div>
         <table class="tbl">
-          <tr><th>ชื่อ</th><th>สาขา</th><th>สิทธิ์</th><th>ระบบรถ</th><th>สถานะ</th></tr>
+          <tr><th>ชื่อ</th><th>สาขา</th><th>สิทธิ์</th><th>หน้าที่เข้าได้</th><th>ระบบรถ</th><th>สถานะ</th><th>จัดการ</th></tr>
           ${rows}
         </table>
-      </div>
-      <div class="hint">⚙️ การจัดการผู้ใช้แบบละเอียด (เพิ่ม/แก้ไข/สิทธิ์) ทำได้ใน Google Sheets โดยตรงครับ</div>`;
+      </div>`;
   } catch(e) {
-    document.getElementById('main-content').innerHTML = `<div class="empty">❌ ${e.message}</div>`;
+    if (el) el.innerHTML = `<div class="empty">❌ ${e.message}</div>`;
   }
+}
+
+async function submitNewUser() {
+  const name = document.getElementById('nu-name')?.value.trim();
+  const username = document.getElementById('nu-user')?.value.trim();
+  const pass = document.getElementById('nu-pass')?.value;
+  const pass2 = document.getElementById('nu-pass2')?.value;
+  const branch = document.getElementById('nu-branch')?.value;
+  const role = document.getElementById('nu-role')?.value;
+  const errEl = document.getElementById('nu-err');
+
+  if (!name || !username || !pass) { errEl.textContent = 'กรุณากรอกข้อมูลให้ครบ'; return; }
+  if (pass.length < 6) { errEl.textContent = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'; return; }
+  if (pass !== pass2) { errEl.textContent = 'รหัสผ่านไม่ตรงกัน'; return; }
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) { errEl.textContent = 'ชื่อผู้ใช้ต้องเป็นภาษาอังกฤษหรือตัวเลขเท่านั้น'; return; }
+
+  const tabs = Array.from(document.querySelectorAll('#nu-tabs input:checked')).map(i => i.value).join(',');
+  errEl.textContent = '';
+
+  try {
+    showToast('กำลังสร้างผู้ใช้...', 'loading');
+    await apiPost('createUser', { name, username, password: pass, branch, role, tabs });
+    showToast(`สร้างผู้ใช้ ${name} สำเร็จ`, 'success');
+    clearNewUser();
+    switchUserTab(document.querySelector('.tab-row .tab'), 'ut-list');
+    loadUserList();
+  } catch(e) {
+    errEl.textContent = e.message;
+    showToast(e.message, 'error');
+  }
+}
+
+function clearNewUser() {
+  ['nu-name','nu-user','nu-pass','nu-pass2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('nu-err').textContent = '';
+}
+
+async function resetPassword(userId, userName) {
+  const newPass = prompt(`รหัสผ่านใหม่สำหรับ ${userName}:`);
+  if (!newPass) return;
+  if (newPass.length < 6) { showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', 'error'); return; }
+  try {
+    await apiPost('resetPassword', { userId, newPassword: newPass });
+    showToast(`Reset รหัสผ่าน ${userName} สำเร็จ`, 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function toggleUserStatus(userId, currentStatus) {
+  const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+  const action = newStatus === 'active' ? 'เปิดใช้งาน' : 'ระงับ';
+  if (!confirm(`ต้องการ${action}ผู้ใช้นี้?`)) return;
+  try {
+    await apiPost('updateUserStatus', { userId, status: newStatus });
+    showToast(`${action}ผู้ใช้สำเร็จ`, 'success');
+    loadUserList();
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 // ===================================================
