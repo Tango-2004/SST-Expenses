@@ -5,46 +5,41 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>S.S.T ระบบเบิกจ่าย</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons-react/dist/index.umd.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Sarabun',sans-serif;font-weight:600}
-body{background:#F0F4F0;min-height:100vh}
-:root{
-  --g:#5BA85A;--gl:#EAF5EA;--gm:#8DC98C;--gd:#3A7A39;
-  --r:#D45050;--rl:#FDEAEA;--or:#E09A30;--orl:#FEF3E0;
-  --bl:#1A3A8A;--bll:#E8F0FE;--pu:#6A3AAA;--pul:#F0E8FE;
-  --tx:#1C3D1C;--tx2:#4A6E4A;--tx3:#7A9A7A;
-  --bd:#C8DEC8;--bg:#F0F4F0;--wh:#FFFFFF;--sb:#E4F0E4;
-}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Sarabun',sans-serif}
+:root{--g:#5BA85A;--gl:#EAF5EA;--gm:#8DC98C;--gd:#3A7A39;--r:#D45050;--rl:#FDEAEA;--or:#E09A30;--orl:#FEF3E0;--bl:#1A3A8A;--bll:#E8F0FE;--pu:#6A3AAA;--pul:#F0E8FE;--tx:#1C3D1C;--tx2:#4A6E4A;--tx3:#7A9A7A;--bd:#C8DEC8;--bg:#F0F4F0;--wh:#fff;--sb:#E4F0E4}
+body{background:var(--bg);min-height:100vh}
 
 /* LOGIN */
-.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#E4F0E4,#F0F4F0)}
-.login-card{background:#fff;border-radius:20px;padding:40px 36px;width:360px;box-shadow:0 8px 32px rgba(91,168,90,.15);border:1.5px solid var(--bd)}
-.login-logo{text-align:center;margin-bottom:24px}
-.login-title{font-size:22px;font-weight:800;color:var(--tx);text-align:center;margin-bottom:4px}
-.login-sub{font-size:13px;color:var(--tx2);text-align:center;margin-bottom:28px}
-.login-label{font-size:12px;color:var(--tx2);font-weight:700;margin-bottom:5px;display:block}
-.login-input{width:100%;padding:10px 14px;border:1.5px solid var(--bd);border-radius:10px;font-size:14px;color:var(--tx);font-family:'Sarabun',sans-serif;margin-bottom:14px}
-.login-input:focus{outline:none;border-color:var(--g)}
-.login-btn{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Sarabun',sans-serif}
-.login-btn:hover{background:var(--gd)}
-.login-err{color:var(--r);font-size:12px;text-align:center;margin-top:8px;min-height:18px}
+.lw{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#E4F0E4,#F0F4F0)}
+.lc{background:#fff;border-radius:20px;padding:36px 32px;width:360px;box-shadow:0 8px 32px rgba(91,168,90,.15);border:1.5px solid var(--bd)}
+.llogo{text-align:center;margin-bottom:16px}
+.llogo img{width:80px;height:80px;object-fit:contain}
+.ltitle{font-size:22px;font-weight:800;color:var(--tx);text-align:center;margin-bottom:4px}
+.lsub{font-size:13px;color:var(--tx2);text-align:center;margin-bottom:24px;font-weight:600}
+.llbl{font-size:12px;color:var(--tx2);font-weight:700;margin-bottom:5px;display:block}
+.lin{width:100%;padding:10px 14px;border:1.5px solid var(--bd);border-radius:10px;font-size:14px;color:var(--tx);font-family:'Sarabun',sans-serif;font-weight:600;margin-bottom:14px}
+.lin:focus{outline:none;border-color:var(--g)}
+.lbtn{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Sarabun',sans-serif}
+.lbtn:hover{background:var(--gd)}
+.lerr{color:var(--r);font-size:12px;text-align:center;margin-top:8px;min-height:18px;font-weight:700}
 
-/* APP LAYOUT */
+/* APP */
 .app{display:flex;height:100vh;overflow:hidden}
 .sidebar{width:215px;background:var(--sb);border-right:1.5px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0}
-.slogo{padding:14px 12px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.slogo{padding:14px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.slogo img{width:44px;height:44px;object-fit:contain;flex-shrink:0}
 .logo-name{font-size:14px;font-weight:800;color:var(--tx)}
-.logo-sub{font-size:10px;color:var(--tx2);margin-top:1px;font-weight:600}
+.logo-sub{font-size:10px;color:var(--tx2);font-weight:600}
 .nav{flex:1;padding:6px 5px;overflow-y:auto}
 .ns{font-size:10px;font-weight:800;color:var(--tx3);padding:10px 8px 3px;text-transform:uppercase;letter-spacing:1px}
-.ni{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;color:var(--tx2);margin-bottom:1px}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;color:var(--tx2);margin-bottom:1px;transition:background .15s}
 .ni:hover{background:rgba(91,168,90,.15)}
 .ni.active{background:var(--g);color:#fff}
 .nb{margin-left:auto;background:var(--r);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;font-weight:800}
 .su{padding:10px;border-top:1px solid var(--bd)}
 .ucard{display:flex;align-items:center;gap:8px}
-.uav{width:32px;height:32px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800}
+.uav{width:32px;height:32px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;flex-shrink:0}
 .uname{font-size:12px;font-weight:800;color:var(--tx)}
 .ubr{font-size:10px;color:var(--tx2);font-weight:600}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
@@ -56,19 +51,18 @@ body{background:#F0F4F0;min-height:100vh}
 
 /* COMPONENTS */
 .card{background:#fff;border:1.5px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:12px}
-.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .ct{font-size:13px;font-weight:800;color:var(--tx)}
-.btn{padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:1.5px solid var(--bd);background:#fff;color:var(--tx2);font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:1.5px solid var(--bd);background:#fff;color:var(--tx2);font-weight:700;display:inline-flex;align-items:center;gap:5px;transition:opacity .15s}
+.btn:hover{opacity:.85}
 .btnp{background:var(--g);color:#fff;border-color:var(--g)}
 .btns{border-color:var(--gm);color:var(--gd)}
 .btnb{background:var(--bl);color:#fff;border-color:var(--bl)}
 .btnr{background:var(--r);color:#fff;border-color:var(--r)}
+.btnor{background:var(--or);color:#fff;border-color:var(--or)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
 .badge{display:inline-flex;padding:3px 8px;border-radius:14px;font-size:11px;font-weight:700}
-.bw{background:var(--orl);color:#8A6000}
-.bok{background:#E8F5E8;color:#2A6A2A}
-.bno{background:var(--rl);color:#8A2020}
-.brec{background:var(--bll);color:var(--bl)}
-.bauto{background:var(--pul);color:var(--pu)}
+.bw{background:var(--orl);color:#8A6000}.bok{background:#E8F5E8;color:#2A6A2A}.bno{background:var(--rl);color:#8A2020}.brec{background:var(--bll);color:var(--bl)}.bauto{background:var(--pul);color:var(--pu)}
 .tbl{width:100%;border-collapse:collapse;font-size:12px}
 .tbl th{text-align:left;padding:6px 8px;color:var(--tx2);border-bottom:1.5px solid var(--bd);font-weight:800;font-size:11px;text-transform:uppercase}
 .tbl td{padding:8px;border-bottom:1px solid var(--gl);color:var(--tx);font-weight:600}
@@ -77,10 +71,11 @@ body{background:#F0F4F0;min-height:100vh}
 .fgr{display:flex;flex-direction:column;gap:4px}
 .fgr.full{grid-column:1/-1}
 .flbl{font-size:11px;color:var(--tx2);font-weight:800}
-.flbl span{color:var(--r)}
+.flbl .req{color:var(--r)}
 .fin{padding:8px 10px;border:1.5px solid var(--bd);border-radius:8px;font-size:13px;color:var(--tx);background:#fff;width:100%;font-family:'Sarabun',sans-serif;font-weight:600}
 .fin:focus{outline:none;border-color:var(--g)}
-.ubox{border:2px dashed var(--gm);border-radius:10px;padding:16px;text-align:center;background:var(--gl);cursor:pointer}
+.ubox{border:2px dashed var(--gm);border-radius:10px;padding:14px;text-align:center;background:var(--gl);cursor:pointer}
+.ubox:hover{background:#dff0df}
 .sig-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
 .sig-box{border:1.5px solid var(--bd);border-radius:8px;padding:8px 10px;background:var(--gl)}
 .sig-lbl{font-size:10px;color:var(--tx3);font-weight:700;margin-bottom:3px}
@@ -94,19 +89,23 @@ body{background:#F0F4F0;min-height:100vh}
 .slbl{font-size:11px;color:var(--tx2);margin-bottom:3px;font-weight:700}
 .sval{font-size:22px;font-weight:800;color:var(--tx)}
 .sval.o{color:var(--or)}.sval.g{color:var(--g)}.sval.r{color:var(--r)}
-.borrow-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
-.btab{padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:1.5px solid var(--bd);background:#fff;color:var(--tx2);font-weight:700}
+.borrow-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.btab{padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;border:1.5px solid var(--bd);background:#fff;color:var(--tx2);font-weight:700}
 .btab.active{background:var(--g);color:#fff;border-color:var(--g)}
-.type-switch{display:flex;gap:4px;margin-bottom:12px;background:var(--gl);padding:4px;border-radius:9px}
-.tsw{flex:1;padding:7px;border-radius:7px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:var(--tx2);border:none;background:transparent}
-.tsw.active{background:#fff;color:var(--gd);font-weight:800;border:1.5px solid var(--bd)}
+.step-indicator{display:flex;align-items:center;gap:0;margin-bottom:16px}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;border:2px solid var(--bd);background:#fff;color:var(--tx3)}
+.step-dot.active{background:var(--g);color:#fff;border-color:var(--g)}
+.step-dot.done{background:var(--gm);color:#fff;border-color:var(--gm)}
+.step-line{flex:1;height:2px;background:var(--bd)}
+.step-line.done{background:var(--gm)}
+.step-label{font-size:10px;color:var(--tx3);font-weight:700;margin-top:4px;text-align:center;width:28px}
 .items-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:6px}
 .items-tbl th{padding:6px 7px;background:var(--gl);color:var(--tx2);font-size:11px;font-weight:800;text-align:left;border-bottom:1px solid var(--bd)}
 .items-tbl td{padding:5px 4px;border-bottom:1px solid var(--gl)}
 .items-tbl td input,.items-tbl td select{border:1px solid var(--bd);border-radius:5px;padding:5px 6px;font-size:12px;width:100%;font-family:'Sarabun',sans-serif;font-weight:600}
 .add-row-btn{color:var(--g);font-size:12px;cursor:pointer;font-weight:800;padding:5px 7px;display:inline-flex;align-items:center;gap:4px}
 .veh-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
-.veh-card{background:#fff;border:1.5px solid var(--bd);border-radius:12px;padding:12px;cursor:pointer;text-align:center;position:relative}
+.veh-card{background:#fff;border:1.5px solid var(--bd);border-radius:12px;padding:12px;cursor:pointer;text-align:center;position:relative;transition:border-color .15s}
 .veh-card:hover{border-color:var(--g)}
 .veh-card.selected{border-color:var(--g);border-width:2.5px;background:var(--gl)}
 .veh-icon{font-size:30px;margin-bottom:6px;display:block}
@@ -123,107 +122,80 @@ body{background:#F0F4F0;min-height:100vh}
 .manual-tag{font-size:9px;background:var(--bll);color:var(--bl);padding:2px 6px;border-radius:7px;font-weight:700}
 .exp-cat-body{padding:0 12px 10px}
 .filter-bar{background:#fff;border:1.5px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
-.filter-group{display:flex;flex-direction:column;gap:3px}
-.filter-lbl{font-size:11px;color:var(--tx2);font-weight:800}
-.acard{background:#fff;border:1.5px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px}
-.aico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.filter-lbl{font-size:11px;color:var(--tx2);font-weight:800;margin-bottom:3px}
+.acard{background:#fff;border:1.5px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.acard-top{display:flex;gap:10px;align-items:flex-start}
+.aico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .aico.m{background:var(--gl)}.aico.f{background:var(--bll)}.aico.b{background:var(--orl)}.aico.rx{background:var(--rl)}
 .ameta{flex:1}
-.aname{font-size:12px;font-weight:800;color:var(--tx)}
-.adet{font-size:11px;color:var(--tx2);margin-top:1px;font-weight:600}
-.aact{display:flex;gap:5px;margin-top:7px;align-items:center}
-.abtn-ok{padding:5px 11px;border-radius:6px;font-size:12px;border:none;background:var(--g);color:#fff;cursor:pointer;font-weight:800}
-.abtn-no{padding:5px 11px;border-radius:6px;font-size:12px;border:1.5px solid var(--r);background:var(--rl);color:var(--r);cursor:pointer;font-weight:700}
+.aname{font-size:13px;font-weight:800;color:var(--tx)}
+.adet{font-size:11px;color:var(--tx2);margin-top:2px;font-weight:600;line-height:1.5}
+.aamt{font-size:15px;font-weight:800;color:var(--tx);text-align:right;white-space:nowrap}
+.aact{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--gl);align-items:center}
+.abtn-ok{padding:6px 14px;border-radius:8px;font-size:12px;border:none;background:var(--g);color:#fff;cursor:pointer;font-weight:800}
+.abtn-no{padding:6px 14px;border-radius:8px;font-size:12px;border:1.5px solid var(--r);background:var(--rl);color:var(--r);cursor:pointer;font-weight:700}
 .tab-row{display:flex;gap:4px;margin-bottom:12px}
 .tab{padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:1.5px solid var(--bd);background:#fff;color:var(--tx2);font-weight:700}
 .tab.active{background:var(--g);color:#fff;border-color:var(--g)}
-.rp{background:#fff;border:1.5px solid var(--bd);border-radius:10px;padding:14px;margin-top:8px}
+.rp{background:#fff;border:1.5px solid var(--bd);border-radius:10px;padding:14px}
 .rp-head{text-align:center;border-bottom:1.5px solid var(--bd);padding-bottom:10px;margin-bottom:10px}
-.loading{text-align:center;padding:30px;color:var(--tx2);font-size:13px;font-weight:600}
-.empty{text-align:center;padding:24px;color:var(--tx3);font-size:12px;font-weight:600}
-.alert-card{background:#fff;border:1.5px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px}
-.alert-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.alert-ico.urgent{background:var(--rl)}.alert-ico.warn{background:var(--orl)}
-.alert-meta{flex:1}
-.alert-title{font-size:12px;font-weight:800;color:var(--tx)}
-.alert-sub{font-size:10px;color:var(--tx2);margin-top:2px;font-weight:600}
-.alert-tag{display:inline-block;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:700;margin-top:3px}
-.tag-r{background:var(--rl);color:#8A2020}.tag-o{background:var(--orl);color:#8A6000}
-.veh-detail-card{background:#fff;border:1.5px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:10px}
-.veh-detail-head{background:var(--gl);padding:12px 14px;display:flex;align-items:center;gap:12px}
-.exp-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 14px}
-.exp-item{border:1.5px solid var(--bd);border-radius:8px;padding:8px 10px;text-align:center}
-.exp-item.danger{border-color:var(--r);background:var(--rl)}
-.exp-item.warn{border-color:var(--or);background:var(--orl)}
-.exp-item.ok{border-color:var(--gm);background:var(--gl)}
-.exp-label{font-size:10px;color:var(--tx2);font-weight:700;margin-bottom:3px}
-.exp-date{font-size:12px;font-weight:800;color:var(--tx)}
-.exp-days{font-size:10px;margin-top:2px;font-weight:700}
-.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.cal-title{font-size:13px;font-weight:800;color:var(--tx)}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:10px}
-.cal-day-lbl{text-align:center;font-size:10px;color:var(--tx2);font-weight:700;padding:4px 0}
-.cal-day{text-align:center;padding:5px 2px;border-radius:6px;font-size:11px;color:var(--tx2);cursor:pointer;font-weight:600;min-height:30px}
-.cal-day:hover{background:var(--gl)}
-.cal-day.today{background:var(--g);color:#fff;font-weight:800}
-.dot{width:5px;height:5px;border-radius:50%;margin:2px auto 0;display:block}
-.dot-r{background:var(--r)}.dot-o{background:var(--or)}.dot-g{background:var(--g)}
+.loading-el{text-align:center;padding:30px;color:var(--tx2);font-size:13px;font-weight:600}
+.empty-el{text-align:center;padding:24px;color:var(--tx3);font-size:12px;font-weight:600}
 
-/* TOAST */
-#toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
-.toast{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Sarabun',sans-serif;max-width:300px;animation:slideIn .2s ease;color:#fff}
-@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center}
+.modal-box{background:#fff;border-radius:16px;padding:24px;width:400px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.modal-title{font-size:15px;font-weight:800;color:var(--tx);margin-bottom:14px}
+
+/* STEP 2 NOTICE */
+.step2-notice{background:var(--bll);border:1.5px solid #A8C0F0;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.step2-notice .title{font-size:13px;font-weight:800;color:var(--bl);margin-bottom:4px}
+.step2-notice .sub{font-size:12px;color:var(--bl);font-weight:600}
 
 /* DOC PREVIEW */
-.doc-preview{background:#fff;border:2px solid #333;border-radius:4px;padding:20px;position:relative;max-width:500px;margin:0 auto}
-.doc-watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:48px;color:rgba(91,168,90,.07);font-weight:900;white-space:nowrap;pointer-events:none}
-.doc-content{position:relative;z-index:1}
-.doc-header{text-align:center;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:12px}
-.doc-title{font-size:15px;font-weight:800;color:#000;letter-spacing:1px}
-.doc-field-row{display:flex;gap:8px;margin-bottom:7px;font-size:12px;color:#111;font-weight:600}
-.doc-field-row .fdlbl{width:140px;font-weight:800;color:#333;flex-shrink:0}
-.doc-field-row .fdval{flex:1;border-bottom:1px solid #999;padding-bottom:2px;min-height:18px}
-.doc-purpose{border:1px solid #333;border-radius:4px;padding:8px;min-height:50px;margin:8px 0;font-size:12px;color:#111;line-height:1.6;font-weight:600}
-.doc-sig-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.doc-box{background:#fff;border:2px solid #333;border-radius:4px;padding:20px;position:relative;font-size:12px}
+.doc-watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:40px;color:rgba(91,168,90,.06);font-weight:900;white-space:nowrap;pointer-events:none}
+.doc-hd{text-align:center;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:12px}
+.doc-title{font-size:14px;font-weight:800;letter-spacing:1px}
+.doc-row{display:flex;gap:8px;margin-bottom:7px}
+.doc-lbl{width:140px;font-weight:800;color:#333;flex-shrink:0}
+.doc-val{flex:1;border-bottom:1px solid #999;padding-bottom:2px;min-height:18px;font-weight:600}
+.doc-purpose-box{border:1px solid #333;border-radius:4px;padding:8px;min-height:50px;margin:8px 0;line-height:1.6;font-weight:600}
+.doc-sig{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
 .doc-sig-box{text-align:center}
 .doc-sig-line{border-top:1px solid #333;margin-top:28px;padding-top:4px;font-size:10px;color:#555;font-weight:600}
 </style>
 </head>
 <body>
 
-<!-- TOAST CONTAINER -->
-<div id="toast-container"></div>
-
-<!-- LOGIN PAGE -->
-<div id="login-page" class="login-wrap">
-  <div class="login-card">
-    <div class="login-logo">
-      <img src="IMG_0012.JPG" alt="S.S.T Logo" style="width:80px;height:80px;object-fit:contain"/>
-    </div>
-    <div class="login-title">ศรีสุธา</div>
-    <div class="login-sub">ระบบเบิกจ่ายและอนุมัติค่าใช้จ่าย</div>
-    <label class="login-label">ชื่อผู้ใช้</label>
-    <input class="login-input" id="inp-user" type="text" placeholder="username"/>
-    <label class="login-label">รหัสผ่าน</label>
-    <input class="login-input" id="inp-pass" type="password" placeholder="password" onkeydown="if(event.key==='Enter')doLogin()"/>
-    <button class="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
-    <div class="login-err" id="login-err"></div>
+<!-- LOGIN -->
+<div id="login-page" class="lw">
+  <div class="lc">
+    <div class="llogo"><img src="IMG_0012.JPG" alt="S.S.T Logo" onerror="this.style.display='none'"/></div>
+    <div class="ltitle">ศรีสุธา</div>
+    <div class="lsub">ระบบเบิกจ่ายและอนุมัติค่าใช้จ่าย</div>
+    <label class="llbl">ชื่อผู้ใช้</label>
+    <input class="lin" id="inp-user" placeholder="username"/>
+    <label class="llbl">รหัสผ่าน</label>
+    <input class="lin" id="inp-pass" type="password" placeholder="password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="lbtn" id="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="lerr" id="login-err"></div>
   </div>
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div id="app-page" class="app" style="display:none">
   <div class="sidebar">
     <div class="slogo">
-      <img src="IMG_0012.JPG" alt="S.S.T Logo" style="width:44px;height:44px;object-fit:contain;flex-shrink:0"/>
+      <img src="IMG_0012.JPG" alt="S.S.T" onerror="this.style.display='none'"/>
       <div><div class="logo-name">ศรีสุธา</div><div class="logo-sub">ระบบเบิกจ่าย</div></div>
     </div>
     <div class="nav" id="sidebar-nav"></div>
     <div class="su">
       <div class="ucard">
-        <div class="uav" id="user-av">?</div>
-        <div><div class="uname" id="user-name">-</div><div class="ubr" id="user-branch">-</div></div>
-        <span onclick="doLogout()" style="margin-left:auto;cursor:pointer;color:var(--tx3);font-size:18px" title="ออกจากระบบ">⇥</span>
+        <div class="uav" id="u-av">?</div>
+        <div><div class="uname" id="u-name">-</div><div class="ubr" id="u-br">-</div></div>
+        <span onclick="doLogout()" style="margin-left:auto;cursor:pointer;font-size:18px;color:var(--tx3)" title="ออกจากระบบ">⇥</span>
       </div>
     </div>
   </div>
@@ -231,215 +203,188 @@ body{background:#F0F4F0;min-height:100vh}
   <div class="main">
     <div class="topbar">
       <div><div class="pt" id="page-title">ภาพรวม</div><div class="ps" id="page-sub"></div></div>
-      <div style="display:flex;gap:8px" id="topbar-actions"></div>
+      <div style="display:flex;gap:8px" id="topbar-btns"></div>
     </div>
     <div class="content" id="main-content">
-      <div class="loading">กำลังโหลด...</div>
+      <div class="loading-el">⏳ กำลังโหลด...</div>
     </div>
   </div>
 </div>
 
 <script src="api.js"></script>
 <script>
-// ===================================================
-// THAI DATE HELPERS
-// ===================================================
-const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-const THAI_MONTHS_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-
-function thaiDateNow() {
+// =========================================
+// HELPERS
+// =========================================
+const MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const MONTHS_S = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function thaiNow() {
   const d = new Date();
-  return `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear()+543}`;
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()+543}`;
 }
-
-function toThaiDate(str) {
+function toThai(str) {
   if (!str) return '-';
   const d = new Date(str);
   if (isNaN(d)) return str;
-  return `${d.getDate()} ${THAI_MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()+543}`;
+  return `${d.getDate()} ${MONTHS_S[d.getMonth()]} ${d.getFullYear()+543}`;
 }
+function statusBadge(s) {
+  const m = { pending:'<span class="badge bw">รอพิจารณา</span>', approved:'<span class="badge bok">อนุมัติ</span>', rejected:'<span class="badge bno">ไม่อนุมัติ</span>' };
+  return m[s] || `<span class="badge">${s}</span>`;
+}
+function el(id) { return document.getElementById(id); }
+function val(id) { return el(id)?.value || ''; }
+function setHTML(id, html) { const e = el(id); if (e) e.innerHTML = html; }
+function loading(id) { setHTML(id, '<div class="loading-el">⏳ กำลังโหลด...</div>'); }
+function empty(id, msg = 'ไม่พบข้อมูล') { setHTML(id, `<div class="empty-el">${msg}</div>`); }
 
-// ===================================================
-// NAV CONFIG
-// ===================================================
-const NAV = [
-  { section: 'หลัก' },
-  { id: 'dashboard', label: 'ภาพรวม', icon: '📊', tab: 'dashboard' },
-  { section: 'ดำเนินการ' },
-  { id: 'request', label: 'ขอเบิก', icon: '📋', tab: 'request' },
-  { id: 'ledger', label: 'บันทึกรายจ่าย', icon: '📒', tab: 'ledger' },
-  { section: 'ติดตาม' },
-  { id: 'mylist', label: 'รายการของฉัน', icon: '📝', tab: 'mylist' },
-  { id: 'photos', label: 'หลักฐานรูปภาพ', icon: '🖼️', tab: 'photos' },
-  { section: 'ระบบรถ' },
-  { id: 'vehicles', label: 'ข้อมูลรถ', icon: '🚗', tab: 'vehicles', badge: 'alert' },
-  { id: 'calendar', label: 'แจ้งเตือน/ปฏิทิน', icon: '🔔', tab: 'calendar' },
-  { section: 'Admin', adminOnly: true },
-  { id: 'approve', label: 'อนุมัติรายการ', icon: '✅', tab: 'approve', badge: 'pending', adminOnly: true },
-  { id: 'report', label: 'รายงาน', icon: '🖨️', tab: 'report', adminOnly: true },
-  { id: 'users', label: 'จัดการผู้ใช้', icon: '👥', tab: 'users', adminOnly: true },
-];
-
-let currentPanel = 'dashboard';
-let pendingCount = 0;
-let alertCount = 0;
-
-// ===================================================
+// =========================================
 // AUTH
-// ===================================================
+// =========================================
 async function doLogin() {
-  const username = document.getElementById('inp-user').value.trim();
-  const password = document.getElementById('inp-pass').value;
-  const errEl = document.getElementById('login-err');
+  const user = val('inp-user').trim();
+  const pass = val('inp-pass');
+  const errEl = el('login-err');
+  const btn = el('login-btn');
   errEl.textContent = '';
-  if (!username || !password) { errEl.textContent = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน'; return; }
+  if (!user || !pass) { errEl.textContent = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน'; return; }
+  btn.disabled = true; btn.textContent = 'กำลังเข้าสู่ระบบ...';
   try {
-    showToast('กำลังเข้าสู่ระบบ...', 'loading');
-    const user = await login(username, password);
-    initApp(user);
-  } catch (e) {
-    errEl.textContent = e.message || 'เข้าสู่ระบบไม่สำเร็จ';
-    showToast('เข้าสู่ระบบไม่สำเร็จ', 'error');
+    const u = await login(user, pass);
+    initApp(u);
+  } catch(e) {
+    errEl.textContent = e.message;
+    btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
   }
 }
 
-function doLogout() {
-  if (confirm('ต้องการออกจากระบบ?')) logout();
-}
+function doLogout() { if (confirm('ต้องการออกจากระบบ?')) logout(); }
 
-// ===================================================
-// INIT APP
-// ===================================================
+// =========================================
+// NAV
+// =========================================
+const NAV = [
+  { s:'หลัก' },
+  { id:'dashboard', label:'📊 ภาพรวม', tab:'dashboard' },
+  { s:'ดำเนินการ' },
+  { id:'request', label:'📋 ขอเบิก', tab:'request' },
+  { id:'ledger', label:'📒 บันทึกรายจ่าย', tab:'ledger' },
+  { s:'ติดตาม' },
+  { id:'mylist', label:'📝 รายการของฉัน', tab:'mylist' },
+  { id:'photos', label:'🖼️ หลักฐานรูปภาพ', tab:'photos' },
+  { s:'ระบบรถ' },
+  { id:'vehicles', label:'🚗 ข้อมูลรถ', tab:'vehicles', badge:'alert' },
+  { id:'calendar', label:'🔔 แจ้งเตือน/ปฏิทิน', tab:'calendar' },
+  { s:'Admin', admin:true },
+  { id:'approve', label:'✅ อนุมัติรายการ', tab:'approve', badge:'pending', admin:true },
+  { id:'report', label:'🖨️ รายงาน', tab:'report', admin:true },
+  { id:'users', label:'👥 จัดการผู้ใช้', tab:'users', admin:true },
+];
+
+let curPanel = 'dashboard';
+
 function initApp(user) {
-  document.getElementById('login-page').style.display = 'none';
-  document.getElementById('app-page').style.display = 'flex';
-  document.getElementById('user-name').textContent = user.name;
-  document.getElementById('user-branch').textContent = `${user.branch} · ${user.role === 'admin' ? 'Admin' : 'พนักงาน'}`;
-  document.getElementById('user-av').textContent = user.name.charAt(0);
+  el('login-page').style.display = 'none';
+  el('app-page').style.display = 'flex';
+  el('u-name').textContent = user.name;
+  el('u-br').textContent = `${user.branch} · ${user.role === 'admin' ? 'Admin' : 'พนักงาน'}`;
+  el('u-av').textContent = user.name.charAt(0);
   buildNav(user);
   showPanel('dashboard');
-  startPolling(() => refreshCurrentPanel());
-  loadPendingQueue();
-  loadAlertCount();
-  if (user.role === 'admin') loadPendingCount();
+  startPolling(() => refreshPanel());
+  loadQueue();
+  if (isAdmin()) loadPendingBadge();
+  loadAlertBadge();
 }
 
 function buildNav(user) {
-  const nav = document.getElementById('sidebar-nav');
+  const nav = el('sidebar-nav');
   nav.innerHTML = '';
   NAV.forEach(item => {
-    if (item.adminOnly && user.role !== 'admin') return;
-    if (item.section) {
-      nav.innerHTML += `<div class="ns">${item.section}</div>`;
-      return;
-    }
+    if (item.admin && user.role !== 'admin') return;
+    if (item.s) { nav.innerHTML += `<div class="ns">${item.s}</div>`; return; }
     if (!hasTab(item.tab)) return;
-    nav.innerHTML += `
-      <div class="ni" id="nav-${item.id}" onclick="showPanel('${item.id}')">
-        <span>${item.icon}</span> ${item.label}
-        ${item.badge ? `<span class="nb" id="badge-${item.badge}" style="display:none">0</span>` : ''}
-      </div>`;
+    nav.innerHTML += `<div class="ni" id="nav-${item.id}" onclick="showPanel('${item.id}')">${item.label}${item.badge ? `<span class="nb" id="badge-${item.badge}" style="display:none">0</span>` : ''}</div>`;
   });
 }
 
-async function loadPendingCount() {
+async function loadPendingBadge() {
   try {
     const r = await apiGet('getRequests', { status: 'pending' });
-    pendingCount = r.data.length;
-    const el = document.getElementById('badge-pending');
-    if (el) { el.textContent = pendingCount; el.style.display = pendingCount > 0 ? '' : 'none'; }
+    const n = r?.data?.length || 0;
+    const e = el('badge-pending');
+    if (e) { e.textContent = n; e.style.display = n > 0 ? '' : 'none'; }
   } catch(_) {}
 }
 
-async function loadAlertCount() {
+async function loadAlertBadge() {
   try {
     const r = await apiGet('getAlerts');
-    alertCount = r.data.length;
-    const el = document.getElementById('badge-alert');
-    if (el) { el.textContent = alertCount; el.style.display = alertCount > 0 ? '' : 'none'; }
+    const n = r?.data?.length || 0;
+    const e = el('badge-alert');
+    if (e) { e.textContent = n; e.style.display = n > 0 ? '' : 'none'; }
   } catch(_) {}
 }
 
-function refreshCurrentPanel() { showPanel(currentPanel); }
+function refreshPanel() { showPanel(curPanel); }
 
-// ===================================================
+// =========================================
 // PANEL ROUTER
-// ===================================================
-const PAGE_TITLES = {
-  dashboard: ['ภาพรวมระบบ', thaiDateNow()],
-  request: ['ขอเบิก', 'เลือกประเภทที่ต้องการเบิก'],
-  ledger: ['บันทึกรายจ่าย', 'รายจ่ายแยกตามหมวดหมู่'],
-  mylist: ['รายการของฉัน', 'แก้ไขได้เฉพาะรายการของเมื่อวาน'],
-  photos: ['หลักฐานรูปภาพ', 'รูปภาพบันทึกใน Google Drive'],
-  vehicles: ['ระบบรถ', 'ข้อมูลและวันหมดอายุรถทุกคัน'],
-  calendar: ['แจ้งเตือน / ปฏิทิน', 'ติดตามวันหมดอายุ พ.ร.บ./ประกัน/ภาษี'],
-  approve: ['อนุมัติรายการ', 'กดอนุมัติ → บันทึกรายจ่ายอัตโนมัติ'],
-  report: ['รายงาน', 'พิมพ์รายงาน Formal'],
-  users: ['จัดการผู้ใช้', 'กำหนดสิทธิ์การเข้าถึง'],
+// =========================================
+const PAGE_INFO = {
+  dashboard: ['📊 ภาพรวมระบบ', thaiNow()],
+  request: ['📋 ขอเบิก', 'เลือกประเภทที่ต้องการเบิก'],
+  ledger: ['📒 บันทึกรายจ่าย', 'รายจ่ายแยกตามหมวดหมู่'],
+  mylist: ['📝 รายการของฉัน', 'แก้ไขได้เฉพาะรายการที่ยังรออนุมัติ'],
+  photos: ['🖼️ หลักฐานรูปภาพ', 'รูปภาพบันทึกใน Google Drive'],
+  vehicles: ['🚗 ระบบรถ', 'ข้อมูลและวันหมดอายุรถทุกคัน'],
+  calendar: ['🔔 แจ้งเตือน/ปฏิทิน', 'ติดตามวันหมดอายุ พ.ร.บ./ประกัน/ภาษี'],
+  approve: ['✅ อนุมัติรายการ', 'กดอนุมัติ → บันทึกรายจ่ายอัตโนมัติ'],
+  report: ['🖨️ รายงาน', 'พิมพ์รายงาน Formal'],
+  users: ['👥 จัดการผู้ใช้', 'กำหนดสิทธิ์การเข้าถึง'],
 };
 
 function showPanel(id) {
-  currentPanel = id;
+  curPanel = id;
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
-  const navEl = document.getElementById(`nav-${id}`);
-  if (navEl) navEl.classList.add('active');
-  const [title, sub] = PAGE_TITLES[id] || [id, ''];
-  document.getElementById('page-title').textContent = title;
-  document.getElementById('page-sub').textContent = sub;
-  const actions = document.getElementById('topbar-actions');
-  actions.innerHTML = '';
-  if (id === 'dashboard') {
-    actions.innerHTML = `
-      <button class="btn btns" onclick="showPanel('ledger')">📒 บันทึกรายจ่าย</button>
-      <button class="btn btnp" onclick="showPanel('request')">+ ขอเบิก</button>`;
-  }
-  const content = document.getElementById('main-content');
-  content.innerHTML = `<div class="loading">⏳ กำลังโหลด...</div>`;
-  const panels = {
-    dashboard: renderDashboard, request: renderRequest,
-    ledger: renderLedger, mylist: renderMyList,
-    photos: renderPhotos, vehicles: renderVehicles,
-    calendar: renderCalendar, approve: renderApprove,
-    report: renderReport, users: renderUsers,
-  };
-  if (panels[id]) panels[id]();
+  const nav = el(`nav-${id}`);
+  if (nav) nav.classList.add('active');
+  const [title, sub] = PAGE_INFO[id] || [id, ''];
+  el('page-title').textContent = title;
+  el('page-sub').textContent = sub;
+  const acts = el('topbar-btns');
+  acts.innerHTML = id === 'dashboard' ? `
+    <button class="btn btns" onclick="showPanel('ledger')">📒 บันทึกรายจ่าย</button>
+    <button class="btn btnp" onclick="showPanel('request')">+ ขอเบิก</button>` : '';
+  const handlers = { dashboard:renderDashboard, request:renderRequest, ledger:renderLedger, mylist:renderMyList, photos:renderPhotos, vehicles:renderVehicles, calendar:renderCalendar, approve:renderApprove, report:renderReport, users:renderUsers };
+  if (handlers[id]) handlers[id]();
 }
 
-// ===================================================
+// =========================================
 // DASHBOARD
-// ===================================================
+// =========================================
 async function renderDashboard() {
+  loading('main-content');
   try {
-    const [reqRes, alertRes] = await Promise.all([
-      apiGet('getRequests', {}),
-      apiGet('getAlerts'),
-    ]);
-    const reqs = reqRes.data;
+    const [rq, al] = await Promise.all([apiGet('getRequests', {}), apiGet('getAlerts')]);
+    const reqs = rq?.data || [];
     const pending = reqs.filter(r => r.status === 'pending').length;
     const approved = reqs.filter(r => r.status === 'approved').length;
     const rejected = reqs.filter(r => r.status === 'rejected').length;
     const total = reqs.filter(r => r.status === 'approved').reduce((s, r) => s + (+r.amount || 0), 0);
-    const alerts = alertRes.data;
-
-    let alertBanner = '';
-    if (alerts.length > 0) {
-      alertBanner = `<div style="background:var(--rl);border:1.5px solid var(--r);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="showPanel('calendar')">
+    const alerts = al?.data || [];
+    const alertBanner = alerts.length ? `
+      <div onclick="showPanel('calendar')" style="background:var(--rl);border:1.5px solid var(--r);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;cursor:pointer">
         <span style="font-size:22px">🚗</span>
-        <div style="flex:1"><div style="font-size:13px;font-weight:800;color:#8A2020">แจ้งเตือน: มีเอกสารรถที่ใกล้หมดอายุ ${alerts.length} รายการ</div>
-        <div style="font-size:11px;color:#A03030;margin-top:1px">คลิกเพื่อดูปฏิทิน</div></div>
-        <span style="color:var(--r)">›</span></div>`;
-    }
-
-    const recentRows = reqs.slice(-5).reverse().map(r => `
-      <tr>
-        <td>${r.date || '-'}</td>
-        <td><span class="badge bw">${r.type}</span></td>
-        <td>${r.purpose || '-'}</td>
-        <td>${r.amount ? '฿'+Number(r.amount).toLocaleString() : '—'}</td>
-        <td>${statusBadge(r.status)}</td>
-      </tr>`).join('') || `<tr><td colspan="5" class="empty">ยังไม่มีรายการ</td></tr>`;
-
-    document.getElementById('main-content').innerHTML = `
+        <div style="flex:1"><div style="font-size:13px;font-weight:800;color:#8A2020">แจ้งเตือน: มีเอกสารรถใกล้หมดอายุ ${alerts.length} รายการ</div>
+        <div style="font-size:11px;color:#A03030;font-weight:600">คลิกเพื่อดูรายละเอียด</div></div>
+        <span style="color:var(--r);font-size:20px">›</span>
+      </div>` : '';
+    const rows = reqs.slice(-5).reverse().map(r => `
+      <tr><td>${r.date||'-'}</td><td><span class="badge bw" style="font-size:10px">${r.type||'-'}</span></td>
+      <td>${r.purpose||'-'}</td><td>${r.amount?'฿'+Number(r.amount).toLocaleString():'—'}</td>
+      <td>${statusBadge(r.status)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty-el">ยังไม่มีรายการ</td></tr>`;
+    setHTML('main-content', `
       ${alertBanner}
       <div class="stats">
         <div class="sc wait"><div class="slbl">รอดำเนินการ</div><div class="sval o">${pending}</div></div>
@@ -448,29 +393,17 @@ async function renderDashboard() {
         <div class="sc total"><div class="slbl">ยอดรวมที่อนุมัติ</div><div class="sval" style="font-size:16px">฿${total.toLocaleString()}</div></div>
       </div>
       <div class="card">
-        <div class="ch"><span class="ct">📋 รายการล่าสุด</span><span style="color:var(--g);cursor:pointer;font-size:12px;font-weight:700" onclick="showPanel('mylist')">ดูทั้งหมด →</span></div>
-        <table class="tbl">
-          <tr><th>วันที่</th><th>ประเภท</th><th>รายละเอียด</th><th>จำนวน</th><th>สถานะ</th></tr>
-          ${recentRows}
-        </table>
-      </div>`;
-  } catch(e) {
-    document.getElementById('main-content').innerHTML = `<div class="empty">❌ ${e.message}</div>`;
-  }
+        <div class="ch"><span class="ct">รายการล่าสุด</span><span style="color:var(--g);cursor:pointer;font-size:12px;font-weight:700" onclick="showPanel('mylist')">ดูทั้งหมด →</span></div>
+        <table class="tbl"><tr><th>วันที่</th><th>ประเภท</th><th>รายละเอียด</th><th>จำนวน</th><th>สถานะ</th></tr>${rows}</table>
+      </div>`);
+  } catch(e) { setHTML('main-content', `<div class="empty-el">❌ ${e.message}</div>`); }
 }
 
-function statusBadge(s) {
-  if (s === 'pending') return '<span class="badge bw">รอพิจารณา</span>';
-  if (s === 'approved') return '<span class="badge bok">อนุมัติ</span>';
-  if (s === 'rejected') return '<span class="badge bno">ไม่อนุมัติ</span>';
-  return `<span class="badge">${s}</span>`;
-}
-
-// ===================================================
-// REQUEST — ขอเบิก
-// ===================================================
+// =========================================
+// REQUEST — ขอเบิก (Step-by-step)
+// =========================================
 function renderRequest() {
-  document.getElementById('main-content').innerHTML = `
+  setHTML('main-content', `
     <div class="borrow-tabs">
       <div class="btab active" onclick="switchBorrow(this,'b-money')">💵 เบิกเงิน</div>
       <div class="btab" onclick="switchBorrow(this,'b-buy')">🛒 เบิกซื้อของ</div>
@@ -480,1075 +413,1113 @@ function renderRequest() {
     <div id="b-money">${formMoney()}</div>
     <div id="b-buy" style="display:none">${formBuy()}</div>
     <div id="b-item" style="display:none">${formItem()}</div>
-    <div id="b-fuel" style="display:none">${formFuel()}</div>`;
+    <div id="b-fuel" style="display:none"></div>`);
 }
 
-function switchBorrow(el, id) {
+function switchBorrow(e, id) {
   document.querySelectorAll('.btab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+  e.classList.add('active');
   ['b-money','b-buy','b-item','b-fuel'].forEach(i => {
-    const e = document.getElementById(i);
-    if (e) e.style.display = i === id ? '' : 'none';
+    const el = document.getElementById(i);
+    if (el) el.style.display = i === id ? '' : 'none';
   });
+  if (id === 'b-fuel') loadFuelForm();
 }
 
+// --- เบิกเงิน ---
 function formMoney() {
   const user = getUser();
-  return `<div class="card">
-    <div class="ch"><span class="ct">💵 เบิกเงิน</span></div>
-    <div class="fg">
-      <div class="fgr"><div class="flbl">วันที่ <span>*</span></div><input class="fin" id="m-date" value="${thaiDateNow()}" readonly/></div>
-      <div class="fgr"><div class="flbl">จำนวนเงิน (บาท) <span>*</span></div><input class="fin" id="m-amount" type="number" placeholder="0.00"/></div>
-      <div class="fgr"><div class="flbl">ผู้รับเงิน <span>*</span></div><input class="fin" id="m-receiver" value="${user?.name||''}"/></div>
-      <div class="fgr"><div class="flbl">สาขา</div><select class="fin" id="m-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
-      <div class="fgr full"><div class="flbl">วัตถุประสงค์ <span>*</span></div><textarea class="fin" id="m-purpose" rows="2" placeholder="ระบุวัตถุประสงค์การเบิกเงิน..."></textarea></div>
-      <div class="fgr full">
-        <div class="flbl">หลักฐาน</div>
-        <div style="display:flex;gap:10px;margin-bottom:7px">
-          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:700"><input type="radio" name="m-rcpt" value="yes" checked onchange="toggleRcpt('m')"> มีใบเสร็จ</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:700"><input type="radio" name="m-rcpt" value="no" onchange="toggleRcpt('m')"> ไม่มีใบเสร็จ</label>
-        </div>
-        <div id="m-rcpt-yes">
-          <div class="ubox" onclick="document.getElementById('m-files').click()">
-            <div style="font-size:24px;margin-bottom:4px">📎</div>
-            <div style="font-size:12px;color:var(--tx2);font-weight:700">คลิกแนบรูปภาพหลักฐาน</div>
-            <div style="font-size:10px;color:var(--tx3);margin-top:2px">JPG, PNG, PDF · บันทึกขึ้น Google Drive อัตโนมัติ</div>
+  return `
+    <div class="card">
+      <div class="ch"><span class="ct">💵 เบิกเงิน</span><span class="badge brec">กรอกข้อมูล → ส่ง → รอ Admin อนุมัติ</span></div>
+      <div class="fg">
+        <div class="fgr"><div class="flbl">วันที่ <span class="req">*</span></div><input class="fin" id="m-date" value="${thaiNow()}" readonly/></div>
+        <div class="fgr"><div class="flbl">จำนวนเงิน (บาท) <span class="req">*</span></div><input class="fin" id="m-amount" type="number" placeholder="0.00"/></div>
+        <div class="fgr"><div class="flbl">ผู้ขอเบิก <span class="req">*</span></div><input class="fin" id="m-requester" value="${user?.name||''}"/></div>
+        <div class="fgr"><div class="flbl">ผู้รับเงิน <span class="req">*</span></div><input class="fin" id="m-receiver" value="${user?.name||''}" placeholder="ชื่อผู้รับเงิน"/></div>
+        <div class="fgr"><div class="flbl">สาขา</div><select class="fin" id="m-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
+        <div class="fgr full"><div class="flbl">วัตถุประสงค์ <span class="req">*</span></div><textarea class="fin" id="m-purpose" rows="2" placeholder="ระบุวัตถุประสงค์การเบิกเงิน..."></textarea></div>
+        <div class="fgr full">
+          <div class="flbl">หลักฐาน</div>
+          <div style="display:flex;gap:12px;margin-bottom:8px">
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:700"><input type="radio" name="m-rcpt" value="yes" checked onchange="toggleRcpt()"> มีใบเสร็จ</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:700"><input type="radio" name="m-rcpt" value="no" onchange="toggleRcpt()"> ไม่มีใบเสร็จ (ออกเอกสารทางการ)</label>
           </div>
-          <input type="file" id="m-files" multiple accept="image/*,application/pdf" style="display:none" onchange="previewFiles('m-files','m-preview')"/>
-          <div id="m-preview" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
-        </div>
-        <div id="m-rcpt-no" style="display:none">
-          <div style="background:var(--orl);border:1.5px solid var(--or);border-radius:9px;padding:12px;margin-bottom:8px">
-            <div style="font-size:11px;font-weight:800;color:#8A5000;margin-bottom:8px">⚠️ กรอกข้อมูลแทนใบเสร็จ (เอกสารทางการ)</div>
-            <div class="fg" style="gap:8px">
-              <div class="fgr full"><div class="flbl">รายละเอียดการใช้เงิน <span>*</span></div><textarea class="fin" id="m-nr-detail" rows="2" placeholder="อธิบายรายละเอียดการใช้เงิน..."></textarea></div>
-              <div class="fgr full"><div class="flbl">เหตุผลที่ไม่มีใบเสร็จ <span>*</span></div><input class="fin" id="m-nr-reason" placeholder="เช่น ค่าใช้จ่ายเบ็ดเตล็ดระหว่างเดินทาง"/></div>
+          <div id="rcpt-yes">
+            <div class="ubox" onclick="el('m-files').click()">📎 คลิกแนบรูปภาพหลักฐาน<br><span style="font-size:11px;color:var(--tx3);font-weight:600">บันทึกขึ้น Google Drive อัตโนมัติ</span></div>
+            <input type="file" id="m-files" multiple accept="image/*,application/pdf" style="display:none" onchange="previewFiles('m-files','m-prev')"/>
+            <div id="m-prev" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
+          </div>
+          <div id="rcpt-no" style="display:none">
+            <div style="background:var(--orl);border:1.5px solid var(--or);border-radius:10px;padding:12px;margin-bottom:10px">
+              <div style="font-size:11px;font-weight:800;color:#8A5000;margin-bottom:8px">⚠️ กรอกข้อมูลแทนใบเสร็จ (เอกสารทางการ)</div>
+              <div class="fg" style="gap:8px">
+                <div class="fgr full"><div class="flbl">รายละเอียดการใช้เงิน <span class="req">*</span></div><textarea class="fin" id="m-nr-detail" rows="2" placeholder="อธิบายรายละเอียด..."></textarea></div>
+                <div class="fgr full"><div class="flbl">เหตุผลที่ไม่มีใบเสร็จ <span class="req">*</span></div><input class="fin" id="m-nr-reason" placeholder="เช่น ค่าใช้จ่ายเบ็ดเตล็ด"/></div>
+              </div>
+              <button class="btn btnor" style="width:100%;justify-content:center;margin-top:8px" onclick="showDocPreview()">👁️ ดูตัวอย่างเอกสารก่อนพิมพ์</button>
             </div>
-            <button class="btn btnor" style="width:100%;justify-content:center;margin-top:8px;background:var(--or);color:#fff;border-color:var(--or)" onclick="showDocPreview()">👁️ ดูตัวอย่างเอกสารก่อนพิมพ์</button>
+            <div class="sig-row">
+              <div class="sig-box"><div class="sig-lbl">ผู้ขอเบิก / ผู้รับเงิน</div><div class="sig-name" id="m-sig-name">${user?.name||'-'}</div><div class="sig-date">${thaiNow()}</div></div>
+              <div class="sig-box"><div class="sig-lbl">ผู้อนุมัติ</div><div class="sig-name" style="color:var(--tx3);font-style:italic">รอการอนุมัติ</div><div class="sig-date">—</div></div>
+            </div>
           </div>
-          ${sigRow()}
         </div>
       </div>
-    </div>
-    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" onclick="showPanel('dashboard')">ยกเลิก</button>
-      <button class="btn btnp" onclick="submitMoney()">📤 ส่งขอเบิก</button>
-    </div>
-  </div>
-  <div id="doc-preview-panel" style="display:none">
-    ${docPreview()}
-  </div>`;
-}
-
-function formBuy() {
-  return `<div style="background:var(--bll);border:1.5px solid #A8C0F0;border-radius:9px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--bl);font-weight:700">
-    🛒 เบิกซื้อของ — 2 ขั้นตอน: แจ้งรายการ → Admin อนุมัติ → แนบใบเสนอราคา → จ่ายเงิน
-  </div>
-  <div class="card">
-    <div class="ch"><span class="ct">Step 1 — รายการที่ต้องการซื้อ</span></div>
-    <div class="fg" style="margin-bottom:10px">
-      <div class="fgr"><div class="flbl">วันที่ <span>*</span></div><input class="fin" id="buy-date" value="${thaiDateNow()}" readonly/></div>
-      <div class="fgr"><div class="flbl">สาขา</div><select class="fin" id="buy-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
-      <div class="fgr full"><div class="flbl">วัตถุประสงค์</div><input class="fin" id="buy-purpose" placeholder="เช่น จัดซื้ออุปกรณ์สำนักงาน"/></div>
-    </div>
-    <div class="flbl" style="margin-bottom:5px">รายการสินค้า <span style="color:var(--r)">*</span></div>
-    <table class="items-tbl" id="buy-items">
-      <tr><th>#</th><th style="width:38%">ชื่อสินค้า</th><th>หน่วย</th><th>จำนวน</th><th>หมายเหตุ/สเปก</th></tr>
-      <tr><td style="text-align:center;color:var(--tx3)">1</td><td><input placeholder="ชื่อสินค้า"/></td><td><input placeholder="หน่วย" style="width:60px"/></td><td><input type="number" placeholder="1" style="width:50px"/></td><td><input placeholder="สเปก"/></td></tr>
-    </table>
-    <div class="add-row-btn" onclick="addItemRow('buy-items')">+ เพิ่มรายการ</div>
-    <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" onclick="showPanel('dashboard')">ยกเลิก</button>
-      <button class="btn btnp" onclick="submitBuy()">📤 ส่ง Step 1</button>
-    </div>
-  </div>`;
-}
-
-function formItem() {
-  return `<div class="card">
-    <div class="ch"><span class="ct">📦 เบิกของ</span><span style="font-size:11px;color:var(--tx3);background:var(--gl);padding:2px 8px;border-radius:5px;font-weight:700">ไม่มียอดเงิน</span></div>
-    <div class="fg" style="margin-bottom:10px">
-      <div class="fgr"><div class="flbl">วันที่ <span>*</span></div><input class="fin" id="item-date" value="${thaiDateNow()}" readonly/></div>
-      <div class="fgr"><div class="flbl">สาขา</div><select class="fin" id="item-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
-      <div class="fgr full"><div class="flbl">วัตถุประสงค์</div><input class="fin" id="item-purpose" placeholder="เช่น เบิกอุปกรณ์ซ่อมบำรุง"/></div>
-    </div>
-    <div class="flbl" style="margin-bottom:5px">รายการของที่ขอเบิก <span style="color:var(--r)">*</span></div>
-    <table class="items-tbl" id="item-items">
-      <tr><th>#</th><th style="width:42%">ชื่อของ</th><th>หน่วย</th><th>จำนวน</th><th>หมายเหตุ</th></tr>
-      <tr><td style="text-align:center;color:var(--tx3)">1</td><td><input placeholder="ชื่อของ"/></td><td><input placeholder="อัน" style="width:60px"/></td><td><input type="number" placeholder="1" style="width:50px"/></td><td><input placeholder=""/></td></tr>
-    </table>
-    <div class="add-row-btn" onclick="addItemRow('item-items')">+ เพิ่มรายการ</div>
-    ${sigRow()}
-    <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" onclick="showPanel('dashboard')">ยกเลิก</button>
-      <button class="btn btnp" onclick="submitItem()">📤 ส่งขอเบิกของ</button>
-    </div>
-  </div>`;
-}
-
-function formFuel() {
-  return `<div class="card">
-    <div class="ch"><span class="ct">🚗 เลือกรถ</span></div>
-    <div class="veh-grid" id="fuel-veh-grid"><div class="loading">กำลังโหลดรถ...</div></div>
-    <div class="type-switch">
-      <button class="tsw active" id="ft-f" onclick="switchFuel('f')">⛽ ค่าน้ำมัน</button>
-      <button class="tsw" id="ft-r" onclick="switchFuel('r')">🔧 ซ่อมรถ</button>
-      <button class="tsw" id="ft-t" onclick="switchFuel('t')">🛣️ ค่าทางด่วน</button>
-    </div>
-    <div id="ff-f">
-      <div class="fg">
-        <div class="fgr"><div class="flbl">วันที่ <span>*</span></div><input class="fin" id="fuel-date" value="${thaiDateNow()}" readonly/></div>
-        <div class="fgr"><div class="flbl">จำนวนเงิน (บาท) <span>*</span></div><input class="fin" id="fuel-amount" type="number" placeholder="0.00"/></div>
-        <div class="fgr full"><div class="flbl">สถานีน้ำมัน / รายละเอียด</div><input class="fin" id="fuel-detail" placeholder="เช่น เติมน้ำมัน ปตท."/></div>
-        <div class="fgr full"><div class="ubox" onclick="document.getElementById('fuel-files').click()"><div style="font-size:20px;margin-bottom:3px">📎</div><div style="font-size:12px;color:var(--tx2);font-weight:700">แนบรูปใบเสร็จน้ำมัน</div></div>
-        <input type="file" id="fuel-files" multiple accept="image/*" style="display:none" onchange="previewFiles('fuel-files','fuel-preview')"/><div id="fuel-preview" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div>
+      <div id="doc-preview-area" style="display:none;margin-top:12px"></div>
+      <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="showPanel('dashboard')">ยกเลิก</button>
+        <button class="btn btnp" id="m-submit-btn" onclick="submitMoney()">📤 ส่งขอเบิก</button>
       </div>
-    </div>
-    <div id="ff-r" style="display:none">
-      <div class="fg">
-        <div class="fgr"><div class="flbl">วันที่ <span>*</span></div><input class="fin" id="rep-date" value="${thaiDateNow()}" readonly/></div>
-        <div class="fgr"><div class="flbl">จำนวนเงิน (บาท) <span>*</span></div><input class="fin" id="rep-amount" type="number" placeholder="0.00"/></div>
-        <div class="fgr full"><div class="flbl">รายการซ่อม <span>*</span></div><input class="fin" id="rep-detail" placeholder="เช่น เปลี่ยนยาง เปลี่ยนน้ำมันเครื่อง"/></div>
-        <div class="fgr full"><div class="flbl">อู่ / ศูนย์บริการ</div><input class="fin" id="rep-shop" placeholder="เช่น อู่ช่างสมชาย"/></div>
-        <div class="fgr full"><div class="ubox" onclick="document.getElementById('rep-files').click()"><div style="font-size:20px;margin-bottom:3px">📎</div><div style="font-size:12px;color:var(--tx2);font-weight:700">แนบรูปใบเสร็จซ่อม</div></div>
-        <input type="file" id="rep-files" multiple accept="image/*" style="display:none" onchange="previewFiles('rep-files','rep-preview')"/><div id="rep-preview" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div>
-      </div>
-    </div>
-    <div id="ff-t" style="display:none">
-      <div class="fg">
-        <div class="fgr"><div class="flbl">วันที่ <span>*</span></div><input class="fin" id="toll-date" value="${thaiDateNow()}" readonly/></div>
-        <div class="fgr"><div class="flbl">จำนวนเงิน (บาท) <span>*</span></div><input class="fin" id="toll-amount" type="number" placeholder="0.00"/></div>
-        <div class="fgr full"><div class="flbl">เส้นทาง <span>*</span></div><input class="fin" id="toll-route" placeholder="เช่น ทางด่วนโทลล์เวย์ พระราม9-ดอนเมือง"/></div>
-        <div class="fgr full"><div class="flbl">วัตถุประสงค์</div><input class="fin" id="toll-purpose" placeholder="เช่น เดินทางไปพบลูกค้า"/></div>
-        <div class="fgr full"><div class="ubox" onclick="document.getElementById('toll-files').click()"><div style="font-size:20px;margin-bottom:3px">📎</div><div style="font-size:12px;color:var(--tx2);font-weight:700">แนบสลิปทางด่วน (ถ้ามี)</div></div>
-        <input type="file" id="toll-files" multiple accept="image/*" style="display:none" onchange="previewFiles('toll-files','toll-preview')"/><div id="toll-preview" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div>
-      </div>
-    </div>
-    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" onclick="showPanel('dashboard')">ยกเลิก</button>
-      <button class="btn btnp" onclick="submitFuel()">📤 ส่งขอเบิก</button>
-    </div>
-  </div>`;
+    </div>`;
 }
 
-function sigRow() {
-  const user = getUser();
-  return `<div class="sig-row">
-    <div class="sig-box"><div class="sig-lbl">ผู้ขอเบิก</div><div class="sig-name">${user?.name||'-'}</div><div class="sig-date">${thaiDateNow()}</div></div>
-    <div class="sig-box"><div class="sig-lbl">ผู้อนุมัติ</div><div class="sig-name" style="color:var(--tx3);font-style:italic">รอการอนุมัติ</div><div class="sig-date">—</div></div>
-  </div>`;
-}
-
-function docPreview() {
-  const user = getUser();
-  return `<div class="card">
-    <div class="ch"><span class="ct">👁️ ตัวอย่างเอกสารทางการ</span><button class="btn" onclick="document.getElementById('doc-preview-panel').style.display='none'">ปิด ✕</button></div>
-    <div class="doc-preview">
-      <div class="doc-watermark">ตัวอย่าง</div>
-      <div class="doc-content">
-        <div class="doc-header">
-          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px">
-            <svg width="32" height="30" viewBox="0 0 110 100"><polygon points="55,4 100,54 10,54" fill="#4CAF3E"/><polygon points="55,16 88,54 22,54" fill="#3A9430"/><text x="55" y="92" text-anchor="middle" font-size="28" font-weight="900" fill="#CC1A1A" font-family="Arial Black,Arial,sans-serif">S.S.T</text></svg>
-            <div style="font-size:14px;font-weight:800">บริษัท ศรีสุธา จำกัด</div>
-          </div>
-          <div class="doc-title">ใบขอเบิกเงิน / ใบรับเงิน</div>
-          <div style="font-size:11px;color:#555;font-weight:600">สาขา: ${user?.branch||'-'}</div>
-        </div>
-        <div class="doc-field-row"><span class="fdlbl">วันที่</span><span class="fdval">${thaiDateNow()}</span></div>
-        <div class="doc-field-row"><span class="fdlbl">ผู้ขอเบิก / ผู้รับเงิน</span><span class="fdval">${user?.name||'-'}</span></div>
-        <div class="doc-field-row"><span class="fdlbl">จำนวนเงิน</span><span class="fdval" id="doc-amount">-</span></div>
-        <div style="font-size:11px;font-weight:800;color:#333;margin:6px 0 3px">วัตถุประสงค์การใช้เงิน</div>
-        <div class="doc-purpose" id="doc-purpose">-</div>
-        <div class="doc-field-row"><span class="fdlbl">เหตุผลที่ไม่มีใบเสร็จ</span><span class="fdval" id="doc-reason">-</span></div>
-        <div class="doc-sig-row">
-          <div class="doc-sig-box"><div class="doc-sig-line">ลงชื่อ ผู้ขอเบิก / ผู้รับเงิน<br>(${user?.name||'-'})</div></div>
-          <div class="doc-sig-box"><div class="doc-sig-line">ลงชื่อ ผู้อนุมัติ<br>(....................)</div></div>
-        </div>
-        <div style="font-size:9px;color:#999;text-align:center;margin-top:8px;border-top:1px solid #eee;padding-top:5px;font-weight:600">S.S.T Expense Management · ${thaiDateNow()}</div>
-      </div>
-    </div>
-    <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btnp" onclick="window.print()">🖨️ พิมพ์เอกสาร</button>
-    </div>
-  </div>`;
+function toggleRcpt() {
+  const no = document.querySelector('input[name="m-rcpt"]:checked')?.value === 'no';
+  el('rcpt-yes').style.display = no ? 'none' : '';
+  el('rcpt-no').style.display = no ? '' : 'none';
 }
 
 function showDocPreview() {
-  const panel = document.getElementById('doc-preview-panel');
-  if (!panel) return;
-  const amount = document.getElementById('m-amount')?.value;
-  const purpose = document.getElementById('m-nr-detail')?.value;
-  const reason = document.getElementById('m-nr-reason')?.value;
-  if (document.getElementById('doc-amount')) document.getElementById('doc-amount').textContent = amount ? `฿${Number(amount).toLocaleString()}` : '-';
-  if (document.getElementById('doc-purpose')) document.getElementById('doc-purpose').textContent = purpose || '-';
-  if (document.getElementById('doc-reason')) document.getElementById('doc-reason').textContent = reason || '-';
-  panel.style.display = '';
-  panel.scrollIntoView({ behavior: 'smooth' });
-}
-
-function toggleRcpt(prefix) {
-  const val = document.querySelector(`input[name="${prefix}-rcpt"]:checked`)?.value;
-  const yes = document.getElementById(`${prefix}-rcpt-yes`);
-  const no = document.getElementById(`${prefix}-rcpt-no`);
-  if (yes) yes.style.display = val === 'yes' ? '' : 'none';
-  if (no) no.style.display = val === 'no' ? '' : 'none';
-}
-
-function addItemRow(tableId) {
-  const tbl = document.getElementById(tableId);
-  const rows = tbl.querySelectorAll('tr').length;
-  const tr = document.createElement('tr');
-  tr.innerHTML = `<td style="text-align:center;color:var(--tx3)">${rows}</td><td><input placeholder="ชื่อ"/></td><td><input placeholder="หน่วย" style="width:60px"/></td><td><input type="number" placeholder="1" style="width:50px"/></td><td><input placeholder=""/></td>`;
-  tbl.appendChild(tr);
-}
-
-function previewFiles(inputId, previewId) {
-  const files = document.getElementById(inputId)?.files;
-  const preview = document.getElementById(previewId);
-  if (!preview) return;
-  preview.innerHTML = '';
-  Array.from(files||[]).forEach(f => {
-    const el = document.createElement('div');
-    el.style.cssText = 'background:var(--gl);border:1px solid var(--bd);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--tx2);font-weight:600';
-    el.textContent = `📎 ${f.name}`;
-    preview.appendChild(el);
-  });
-}
-
-function getItemRows(tableId) {
-  const rows = document.querySelectorAll(`#${tableId} tr`);
-  const items = [];
-  rows.forEach((r, i) => {
-    if (i === 0) return;
-    const inputs = r.querySelectorAll('input');
-    if (inputs[0]?.value) items.push({ name: inputs[0].value, unit: inputs[1]?.value, qty: inputs[2]?.value, note: inputs[3]?.value });
-  });
-  return items;
+  const area = el('doc-preview-area');
+  const user = getUser();
+  const amount = val('m-amount');
+  const purpose = val('m-nr-detail');
+  const reason = val('m-nr-reason');
+  const receiver = val('m-receiver') || user?.name || '-';
+  area.style.display = '';
+  area.innerHTML = `
+    <div class="card" style="border:2px solid var(--or)">
+      <div class="ch"><span class="ct">👁️ ตัวอย่างเอกสารทางการ</span><button class="btn" onclick="el('doc-preview-area').style.display='none'">ปิด</button></div>
+      <div class="doc-box">
+        <div class="doc-watermark">ตัวอย่าง</div>
+        <div class="doc-hd">
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px">
+            <img src="IMG_0012.JPG" style="width:32px;height:32px;object-fit:contain" onerror="this.style.display='none'"/>
+            <div style="font-size:13px;font-weight:800">บริษัท ศรีสุธา จำกัด</div>
+          </div>
+          <div class="doc-title">ใบขอเบิกเงิน / ใบรับเงิน</div>
+          <div style="font-size:10px;color:#555;font-weight:600">สาขา: ${user?.branch||'-'}</div>
+        </div>
+        <div class="doc-row"><span class="doc-lbl">วันที่</span><span class="doc-val">${thaiNow()}</span></div>
+        <div class="doc-row"><span class="doc-lbl">ผู้ขอเบิก / ผู้รับเงิน</span><span class="doc-val">${receiver}</span></div>
+        <div class="doc-row"><span class="doc-lbl">จำนวนเงิน</span><span class="doc-val">${amount ? '฿'+Number(amount).toLocaleString() : '-'}</span></div>
+        <div style="font-size:11px;font-weight:800;color:#333;margin:6px 0 3px">วัตถุประสงค์</div>
+        <div class="doc-purpose-box">${purpose || '-'}</div>
+        <div class="doc-row"><span class="doc-lbl">เหตุผลที่ไม่มีใบเสร็จ</span><span class="doc-val">${reason || '-'}</span></div>
+        <div class="doc-sig">
+          <div class="doc-sig-box"><div class="doc-sig-line">ลงชื่อ ผู้ขอเบิก / ผู้รับเงิน<br>(${receiver})</div></div>
+          <div class="doc-sig-box"><div class="doc-sig-line">ลงชื่อ ผู้อนุมัติ<br>(....................)</div></div>
+        </div>
+        <div style="font-size:9px;color:#999;text-align:center;margin-top:10px;border-top:1px solid #eee;padding-top:5px;font-weight:600">S.S.T Expense Management · ${thaiNow()}</div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btnp" onclick="window.print()">🖨️ พิมพ์เอกสาร</button>
+      </div>
+    </div>`;
+  area.scrollIntoView({ behavior: 'smooth' });
 }
 
 async function submitMoney() {
-  const purpose = document.getElementById('m-purpose')?.value;
-  const amount = document.getElementById('m-amount')?.value;
-  if (!purpose || !amount) { showToast('กรุณากรอกข้อมูลให้ครบ', 'error'); return; }
-  const noReceipt = document.querySelector('input[name="m-rcpt"]:checked')?.value === 'no';
+  const purpose = val('m-purpose');
+  const amount = val('m-amount');
+  const receiver = val('m-receiver');
+  if (!purpose || !amount || !receiver) { showToast('กรุณากรอกข้อมูลให้ครบ', 'error'); return; }
+  const noRcpt = document.querySelector('input[name="m-rcpt"]:checked')?.value === 'no';
   const user = getUser();
+  const btn = el('m-submit-btn');
+  btn.disabled = true; btn.textContent = 'กำลังส่ง...';
   let imageUrls = '';
-  const files = document.getElementById('m-files')?.files;
+  const files = el('m-files')?.files;
   if (files?.length) {
     const urls = await uploadImages(Array.from(files), 'เบิกเงิน', user.branch);
     imageUrls = urls.join(',');
   }
   enqueue('submitRequest', {
     type: 'เบิกเงิน', amount, purpose,
-    branch: document.getElementById('m-branch')?.value || user.branch,
-    noReceipt, noReceiptReason: document.getElementById('m-nr-reason')?.value || '',
-    imageUrls,
-  }, () => { showToast('ส่งขอเบิกเงินสำเร็จ', 'success'); showPanel('mylist'); });
+    requester: val('m-requester') || user.name,
+    receiver, branch: val('m-branch') || user.branch,
+    noReceipt: noRcpt, noReceiptReason: val('m-nr-reason'), imageUrls,
+  }, () => { showPanel('mylist'); }, () => { btn.disabled = false; btn.textContent = '📤 ส่งขอเบิก'; });
+}
+
+// --- เบิกซื้อของ (2 Step) ---
+function formBuy() {
+  return `
+    <div class="step2-notice">
+      <div class="title">🛒 เบิกซื้อของ — 2 ขั้นตอน</div>
+      <div class="sub">Step 1: แจ้งรายการ → Admin อนุมัติรายการ → Step 2: แนบใบเสนอราคา → Admin อนุมัติราคา → จ่ายเงิน</div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Step 1 — รายการที่ต้องการซื้อ</span><span class="badge bw">รอ Admin อนุมัติรายการ</span></div>
+      <div class="fg" style="margin-bottom:10px">
+        <div class="fgr"><div class="flbl">วันที่</div><input class="fin" id="buy-date" value="${thaiNow()}" readonly/></div>
+        <div class="fgr"><div class="flbl">สาขา</div><select class="fin" id="buy-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
+        <div class="fgr full"><div class="flbl">วัตถุประสงค์</div><input class="fin" id="buy-purpose" placeholder="เช่น จัดซื้ออุปกรณ์สำนักงาน"/></div>
+      </div>
+      <div class="flbl" style="margin-bottom:5px">รายการสินค้า <span class="req">*</span></div>
+      <table class="items-tbl" id="buy-tbl">
+        <tr><th>#</th><th style="width:38%">ชื่อสินค้า</th><th>หน่วย</th><th>จำนวน</th><th>หมายเหตุ/สเปก</th></tr>
+        <tr><td style="text-align:center;color:var(--tx3)">1</td><td><input placeholder="ชื่อสินค้า"/></td><td><input placeholder="หน่วย" style="width:60px"/></td><td><input type="number" placeholder="1" style="width:50px"/></td><td><input placeholder="สเปก"/></td></tr>
+      </table>
+      <div class="add-row-btn" onclick="addRow('buy-tbl')">+ เพิ่มรายการ</div>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="showPanel('dashboard')">ยกเลิก</button>
+        <button class="btn btnp" id="buy-btn" onclick="submitBuy()">📤 ส่ง Step 1</button>
+      </div>
+    </div>
+    <div class="card" style="opacity:.5;pointer-events:none">
+      <div class="ch"><span class="ct">Step 2 — ใบเสนอราคา</span><span class="badge" style="background:#eee;color:#888">รอ Step 1 ก่อน</span></div>
+      <div class="empty-el">⏳ เมื่อ Admin อนุมัติรายการแล้ว จึงจะดำเนินการ Step 2 ได้</div>
+    </div>`;
+}
+
+function addRow(tableId) {
+  const tbl = document.getElementById(tableId);
+  const n = tbl.querySelectorAll('tr').length;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td style="text-align:center;color:var(--tx3)">${n}</td><td><input placeholder="ชื่อ"/></td><td><input placeholder="หน่วย" style="width:60px"/></td><td><input type="number" placeholder="1" style="width:50px"/></td><td><input placeholder=""/></td>`;
+  tbl.appendChild(tr);
+}
+
+function getRows(tableId) {
+  const rows = document.querySelectorAll(`#${tableId} tr`);
+  const items = [];
+  rows.forEach((r, i) => {
+    if (i === 0) return;
+    const inp = r.querySelectorAll('input');
+    if (inp[0]?.value) items.push({ name: inp[0].value, unit: inp[1]?.value, qty: inp[2]?.value, note: inp[3]?.value });
+  });
+  return items;
 }
 
 async function submitBuy() {
-  const items = getItemRows('buy-items');
-  if (!items.length) { showToast('กรุณาใส่รายการสินค้า', 'error'); return; }
+  const items = getRows('buy-tbl');
+  if (!items.length) { showToast('กรุณาใส่รายการสินค้าอย่างน้อย 1 รายการ', 'error'); return; }
   const user = getUser();
+  const btn = el('buy-btn');
+  btn.disabled = true; btn.textContent = 'กำลังส่ง...';
   enqueue('submitRequest', {
-    type: 'เบิกซื้อของ',
-    purpose: document.getElementById('buy-purpose')?.value || 'เบิกซื้อของ',
-    branch: document.getElementById('buy-branch')?.value || user.branch,
-    items: JSON.stringify(items), step: '1',
-  }, () => { showToast('ส่ง Step 1 สำเร็จ', 'success'); showPanel('mylist'); });
+    type: 'เบิกซื้อของ', step: '1',
+    purpose: val('buy-purpose') || 'เบิกซื้อของ',
+    branch: val('buy-branch') || user?.branch,
+    items: JSON.stringify(items),
+  }, () => { showPanel('mylist'); }, () => { btn.disabled = false; btn.textContent = '📤 ส่ง Step 1'; });
+}
+
+// --- เบิกของ ---
+function formItem() {
+  return `
+    <div class="card">
+      <div class="ch"><span class="ct">📦 เบิกของ</span><span style="font-size:11px;color:var(--tx3);background:var(--gl);padding:3px 8px;border-radius:6px;font-weight:700">ไม่มียอดเงิน</span></div>
+      <div class="fg" style="margin-bottom:10px">
+        <div class="fgr"><div class="flbl">วันที่</div><input class="fin" id="item-date" value="${thaiNow()}" readonly/></div>
+        <div class="fgr"><div class="flbl">สาขา</div><select class="fin" id="item-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
+        <div class="fgr full"><div class="flbl">วัตถุประสงค์</div><input class="fin" id="item-purpose" placeholder="เช่น เบิกอุปกรณ์สำนักงาน"/></div>
+      </div>
+      <div class="flbl" style="margin-bottom:5px">รายการของที่ขอเบิก <span class="req">*</span></div>
+      <table class="items-tbl" id="item-tbl">
+        <tr><th>#</th><th style="width:42%">ชื่อของ</th><th>หน่วย</th><th>จำนวน</th><th>หมายเหตุ</th></tr>
+        <tr><td style="text-align:center;color:var(--tx3)">1</td><td><input placeholder="ชื่อของ"/></td><td><input placeholder="อัน" style="width:60px"/></td><td><input type="number" placeholder="1" style="width:50px"/></td><td><input placeholder=""/></td></tr>
+      </table>
+      <div class="add-row-btn" onclick="addRow('item-tbl')">+ เพิ่มรายการ</div>
+      <div class="sig-row">
+        <div class="sig-box"><div class="sig-lbl">ผู้ขอเบิก</div><div class="sig-name">${getUser()?.name||'-'}</div><div class="sig-date">${thaiNow()}</div></div>
+        <div class="sig-box"><div class="sig-lbl">ผู้อนุมัติ</div><div class="sig-name" style="color:var(--tx3);font-style:italic">รอการอนุมัติ</div><div class="sig-date">—</div></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="showPanel('dashboard')">ยกเลิก</button>
+        <button class="btn btnp" id="item-btn" onclick="submitItem()">📤 ส่งขอเบิกของ</button>
+      </div>
+    </div>`;
 }
 
 async function submitItem() {
-  const items = getItemRows('item-items');
+  const items = getRows('item-tbl');
   if (!items.length) { showToast('กรุณาใส่รายการของ', 'error'); return; }
   const user = getUser();
+  const btn = el('item-btn');
+  btn.disabled = true; btn.textContent = 'กำลังส่ง...';
   enqueue('submitRequest', {
-    type: 'เบิกของ',
-    purpose: document.getElementById('item-purpose')?.value || 'เบิกของ',
-    branch: document.getElementById('item-branch')?.value || user.branch,
+    type: 'เบิกของ', purpose: val('item-purpose') || 'เบิกของ',
+    branch: val('item-branch') || user?.branch,
     items: JSON.stringify(items),
-  }, () => { showToast('ส่งขอเบิกของสำเร็จ', 'success'); showPanel('mylist'); });
+  }, () => { showPanel('mylist'); }, () => { btn.disabled = false; btn.textContent = '📤 ส่งขอเบิกของ'; });
 }
 
-let selectedVehiclePlate = '';
-function switchFuel(t) {
+// --- รถ/เดินทาง ---
+let selPlate = '';
+async function loadFuelForm() {
+  setHTML('b-fuel', '<div class="loading-el">⏳ โหลดข้อมูลรถ...</div>');
+  try {
+    const r = await apiGet('getVehicles');
+    const vehs = r?.data || [];
+    setHTML('b-fuel', `
+      <div class="card">
+        <div class="ch"><span class="ct">🚗 เลือกรถ</span></div>
+        <div class="veh-grid">
+          ${vehs.map(v => `
+            <div class="veh-card" onclick="selVeh(this,'${v.plate}')">
+              <span class="veh-icon">${v.type?.includes('ตู้')?'🚌':'🚗'}</span>
+              <div class="veh-plate">${v.plate}</div>
+              <div class="veh-type">${v.type||''} · ${v.branch||''}</div>
+            </div>`).join('')}
+          <div class="veh-card" style="border-style:dashed;border-color:var(--gm);background:var(--gl)" onclick="showPanel('vehicles')">
+            <span class="veh-icon" style="font-size:22px;opacity:.4">➕</span>
+            <div style="font-size:11px;color:var(--tx3);font-weight:600">เพิ่มรถใหม่</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;margin-bottom:12px;background:var(--gl);padding:4px;border-radius:9px">
+          <button class="tsw active" id="ft-f" onclick="switchFuelType('f')" style="flex:1;padding:7px;border-radius:7px;font-size:12px;font-weight:700;border:1.5px solid var(--bd);background:#fff;color:var(--gd);cursor:pointer">⛽ ค่าน้ำมัน</button>
+          <button class="tsw" id="ft-r" onclick="switchFuelType('r')" style="flex:1;padding:7px;border-radius:7px;font-size:12px;font-weight:700;border:none;background:transparent;color:var(--tx2);cursor:pointer">🔧 ซ่อมรถ</button>
+          <button class="tsw" id="ft-t" onclick="switchFuelType('t')" style="flex:1;padding:7px;border-radius:7px;font-size:12px;font-weight:700;border:none;background:transparent;color:var(--tx2);cursor:pointer">🛣️ ค่าทางด่วน</button>
+        </div>
+        <div id="ff-f">${fuelFormContent('f')}</div>
+        <div id="ff-r" style="display:none">${fuelFormContent('r')}</div>
+        <div id="ff-t" style="display:none">${fuelFormContent('t')}</div>
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" onclick="showPanel('dashboard')">ยกเลิก</button>
+          <button class="btn btnp" id="fuel-btn" onclick="submitFuel()">📤 ส่งขอเบิก</button>
+        </div>
+      </div>`);
+  } catch(e) { setHTML('b-fuel', `<div class="empty-el">❌ ${e.message}</div>`); }
+}
+
+function fuelFormContent(type) {
+  if (type === 'f') return `
+    <div class="fg">
+      <div class="fgr"><div class="flbl">วันที่</div><input class="fin" id="fu-date" value="${thaiNow()}" readonly/></div>
+      <div class="fgr"><div class="flbl">จำนวนเงิน <span class="req">*</span></div><input class="fin" id="fu-amount" type="number" placeholder="0.00"/></div>
+      <div class="fgr full"><div class="flbl">สถานีน้ำมัน / รายละเอียด</div><input class="fin" id="fu-detail" placeholder="เช่น เติมน้ำมัน ปตท."/></div>
+      <div class="fgr full"><div class="ubox" onclick="el('fu-files').click()">📎 แนบรูปใบเสร็จน้ำมัน</div>
+        <input type="file" id="fu-files" multiple accept="image/*" style="display:none" onchange="previewFiles('fu-files','fu-prev')"/>
+        <div id="fu-prev" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div>
+    </div>`;
+  if (type === 'r') return `
+    <div class="fg">
+      <div class="fgr"><div class="flbl">วันที่</div><input class="fin" id="re-date" value="${thaiNow()}" readonly/></div>
+      <div class="fgr"><div class="flbl">จำนวนเงิน <span class="req">*</span></div><input class="fin" id="re-amount" type="number" placeholder="0.00"/></div>
+      <div class="fgr full"><div class="flbl">รายการซ่อม <span class="req">*</span></div><input class="fin" id="re-detail" placeholder="เช่น เปลี่ยนยาง เปลี่ยนน้ำมันเครื่อง"/></div>
+      <div class="fgr full"><div class="flbl">อู่ / ศูนย์บริการ</div><input class="fin" id="re-shop" placeholder="เช่น อู่ช่างสมชาย"/></div>
+      <div class="fgr full"><div class="ubox" onclick="el('re-files').click()">📎 แนบรูปใบเสร็จซ่อม</div>
+        <input type="file" id="re-files" multiple accept="image/*" style="display:none" onchange="previewFiles('re-files','re-prev')"/>
+        <div id="re-prev" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div>
+    </div>`;
+  return `
+    <div class="fg">
+      <div class="fgr"><div class="flbl">วันที่</div><input class="fin" id="tl-date" value="${thaiNow()}" readonly/></div>
+      <div class="fgr"><div class="flbl">จำนวนเงิน <span class="req">*</span></div><input class="fin" id="tl-amount" type="number" placeholder="0.00"/></div>
+      <div class="fgr full"><div class="flbl">เส้นทาง / ชื่อทางด่วน <span class="req">*</span></div><input class="fin" id="tl-route" placeholder="เช่น ทางด่วนโทลล์เวย์ พระราม9-ดอนเมือง"/></div>
+      <div class="fgr full"><div class="flbl">วัตถุประสงค์การเดินทาง</div><input class="fin" id="tl-purpose" placeholder="เช่น ไปพบลูกค้า"/></div>
+      <div class="fgr full"><div class="ubox" onclick="el('tl-files').click()">📎 แนบสลิปทางด่วน (ถ้ามี)</div>
+        <input type="file" id="tl-files" multiple accept="image/*" style="display:none" onchange="previewFiles('tl-files','tl-prev')"/>
+        <div id="tl-prev" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div>
+    </div>`;
+}
+
+function switchFuelType(t) {
   ['f','r','t'].forEach(x => {
-    document.getElementById(`ff-${x}`).style.display = x === t ? '' : 'none';
-    document.getElementById(`ft-${x}`).classList.toggle('active', x === t);
+    const btn = el(`ft-${x}`);
+    const form = el(`ff-${x}`);
+    if (btn) { btn.style.background = x===t?'#fff':'transparent'; btn.style.border = x===t?'1.5px solid var(--bd)':'none'; btn.style.color = x===t?'var(--gd)':'var(--tx2)'; }
+    if (form) form.style.display = x===t?'':'none';
   });
 }
 
-async function loadVehicleCards() {
-  try {
-    const r = await apiGet('getVehicles');
-    const grid = document.getElementById('fuel-veh-grid');
-    if (!grid) return;
-    if (!r.data.length) { grid.innerHTML = '<div class="empty">ยังไม่มีรถในระบบ</div>'; return; }
-    grid.innerHTML = r.data.map(v => `
-      <div class="veh-card" onclick="selectVeh(this,'${v.plate}')">
-        <span class="veh-icon">${v.type?.includes('ตู้') ? '🚌' : '🚗'}</span>
-        <div class="veh-plate">${v.plate}</div>
-        <div class="veh-type">${v.type||''} · ${v.branch||''}</div>
-      </div>`).join('') +
-      `<div class="veh-card" style="border-style:dashed;border-color:var(--gm);background:var(--gl)" onclick="showPanel('vehicles')">
-        <span class="veh-icon" style="font-size:22px;opacity:.4">➕</span>
-        <div style="font-size:11px;color:var(--tx3);margin-top:3px;font-weight:600">เพิ่มรถใหม่</div>
-      </div>`;
-  } catch(e) {}
-}
-
-function selectVeh(el, plate) {
+function selVeh(el, plate) {
   document.querySelectorAll('.veh-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedVehiclePlate = plate;
+  el.classList.add('selected'); selPlate = plate;
 }
 
 async function submitFuel() {
   const user = getUser();
-  const fuelType = document.getElementById('ft-f').classList.contains('active') ? 'ค่าน้ำมัน' :
-                   document.getElementById('ft-r').classList.contains('active') ? 'ซ่อมรถ' : 'ค่าทางด่วน';
-  let amount, purpose, files, previewId;
-  if (fuelType === 'ค่าน้ำมัน') {
-    amount = document.getElementById('fuel-amount')?.value;
-    purpose = document.getElementById('fuel-detail')?.value || 'เติมน้ำมัน';
-    files = document.getElementById('fuel-files')?.files;
-    previewId = 'fuel-preview';
-  } else if (fuelType === 'ซ่อมรถ') {
-    amount = document.getElementById('rep-amount')?.value;
-    purpose = document.getElementById('rep-detail')?.value || 'ซ่อมรถ';
-    files = document.getElementById('rep-files')?.files;
-    previewId = 'rep-preview';
-  } else {
-    amount = document.getElementById('toll-amount')?.value;
-    purpose = document.getElementById('toll-route')?.value || 'ค่าทางด่วน';
-    files = document.getElementById('toll-files')?.files;
-    previewId = 'toll-preview';
-  }
+  const btn = el('fuel-btn');
+  const fActive = el('ff-f')?.style.display !== 'none';
+  const rActive = el('ff-r')?.style.display !== 'none';
+  let type, amount, purpose, filesEl, prevEl;
+  if (fActive) { type='ค่าน้ำมัน'; amount=val('fu-amount'); purpose=val('fu-detail')||'เติมน้ำมัน'; filesEl='fu-files'; prevEl='fu-prev'; }
+  else if (rActive) { type='ซ่อมรถ'; amount=val('re-amount'); purpose=val('re-detail')||'ซ่อมรถ'; filesEl='re-files'; prevEl='re-prev'; }
+  else { type='ค่าทางด่วน'; amount=val('tl-amount'); purpose=val('tl-route')||'ค่าทางด่วน'; filesEl='tl-files'; prevEl='tl-prev'; }
   if (!amount) { showToast('กรุณากรอกจำนวนเงิน', 'error'); return; }
+  btn.disabled = true; btn.textContent = 'กำลังส่ง...';
   let imageUrls = '';
+  const files = el(filesEl)?.files;
   if (files?.length) {
-    const urls = await uploadImages(Array.from(files), fuelType, user.branch);
+    const urls = await uploadImages(Array.from(files), type, user.branch);
     imageUrls = urls.join(',');
   }
-  enqueue('submitRequest', {
-    type: fuelType, amount, purpose,
-    vehiclePlate: selectedVehiclePlate,
-    branch: user.branch, imageUrls,
-  }, () => { showToast(`ส่งขอเบิก${fuelType}สำเร็จ`, 'success'); showPanel('mylist'); });
+  enqueue('submitRequest', { type, amount, purpose, vehiclePlate: selPlate, branch: user?.branch, imageUrls },
+    () => { showPanel('mylist'); },
+    () => { btn.disabled = false; btn.textContent = '📤 ส่งขอเบิก'; });
 }
 
-// ===================================================
+function previewFiles(inputId, previewId) {
+  const files = el(inputId)?.files;
+  const prev = el(previewId);
+  if (!prev) return;
+  prev.innerHTML = Array.from(files||[]).map(f => `<div style="background:var(--gl);border:1px solid var(--bd);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--tx2);font-weight:600">📎 ${f.name}</div>`).join('');
+}
+
+// =========================================
 // LEDGER
-// ===================================================
+// =========================================
 async function renderLedger() {
-  document.getElementById('main-content').innerHTML = `
-    <div style="background:var(--pul);border:1.5px solid #C8A8F0;border-radius:9px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:var(--pu);display:flex;align-items:center;gap:8px;font-weight:700">
-      ✨ รายจ่ายบันทึกอัตโนมัติเมื่ออนุมัติ
+  setHTML('main-content', `
+    <div style="background:var(--pul);border:1.5px solid #C8A8F0;border-radius:9px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:var(--pu);font-weight:700">
+      ✨ รายจ่ายบันทึกอัตโนมัติเมื่ออนุมัติ · กดหัวหมวดเพื่อขยาย/ย่อ
     </div>
     <div class="filter-bar">
-      <div class="filter-group"><div class="filter-lbl">📅 ช่วงเวลา</div>
-        <select class="fin" id="led-period" style="width:140px" onchange="applyLedgerFilter()">
+      <div><div class="filter-lbl">📅 ช่วงเวลา</div>
+        <select class="fin" id="led-period" style="width:130px">
           <option value="month">เดือนนี้</option><option value="last">เดือนที่แล้ว</option>
-          <option value="3month">3 เดือนล่าสุด</option><option value="year">ปีนี้</option>
+          <option value="3m">3 เดือนล่าสุด</option><option value="year">ปีนี้</option>
         </select>
       </div>
-      <div class="filter-group"><div class="filter-lbl">🏬 สาขา</div>
+      <div><div class="filter-lbl">🏬 สาขา</div>
         <select class="fin" id="led-branch" style="width:110px">
           <option value="all">ทุกสาขา</option><option>สาขา 1</option><option>สาขา 2</option>
         </select>
       </div>
-      <div class="filter-group"><div class="filter-lbl">📂 ประเภท</div>
+      <div><div class="filter-lbl">📂 ประเภท</div>
         <select class="fin" id="led-type" style="width:140px">
           <option value="all">ทุกประเภท</option><option>เบิกเงิน</option><option>เบิกซื้อของ</option>
           <option>เบิกของ</option><option>ค่าน้ำมัน</option><option>ซ่อมรถ</option><option>ค่าทางด่วน</option><option>รายจ่ายทั่วไป</option>
         </select>
       </div>
-      <button class="btn btnp" onclick="applyLedgerFilter()">🔍 ค้นหา</button>
+      <button class="btn btnp" onclick="loadLedger()">🔍 ค้นหา</button>
       <div style="margin-left:auto"><button class="btn btnb" onclick="showAddExpense()">+ เพิ่มรายจ่ายเอง</button></div>
     </div>
-    <div id="ledger-content"><div class="loading">⏳ กำลังโหลด...</div></div>`;
-  applyLedgerFilter();
+    <div id="add-exp-area"></div>
+    <div id="ledger-data"><div class="loading-el">⏳ กำลังโหลด...</div></div>`);
+  loadLedger();
 }
 
-async function applyLedgerFilter() {
-  const branch = document.getElementById('led-branch')?.value || 'all';
-  const type = document.getElementById('led-type')?.value || 'all';
+async function loadLedger() {
+  const branch = val('led-branch') || 'all';
+  const type = val('led-type') || 'all';
+  loading('ledger-data');
   try {
     const r = await apiGet('getLedger', { branch, type });
-    const data = r.data;
+    const data = r?.data || [];
+    if (!data.length) { empty('ledger-data', '📭 ไม่พบรายการ'); return; }
     const groups = {};
-    data.forEach(item => {
-      const t = item.type || 'อื่นๆ';
-      if (!groups[t]) groups[t] = [];
-      groups[t].push(item);
-    });
+    data.forEach(i => { const t = i.type||'อื่นๆ'; if (!groups[t]) groups[t] = []; groups[t].push(i); });
     const icons = { 'เบิกเงิน':'💵','เบิกซื้อของ':'🛒','เบิกของ':'📦','ค่าน้ำมัน':'⛽','ซ่อมรถ':'🔧','ค่าทางด่วน':'🛣️','รายจ่ายทั่วไป':'📋' };
     let html = '';
-    if (!data.length) html = '<div class="empty">ไม่พบรายการ</div>';
-    else {
-      Object.entries(groups).forEach(([type, items]) => {
-        const total = items.reduce((s, i) => s + (+i.amount||0), 0);
-        const rows = items.map(i => `<tr>
-          <td>${i.date||'-'}</td><td>${i.name||'-'}</td><td>${i.branch||'-'}</td>
-          <td>${i.purpose||'-'}</td><td>${i.vehiclePlate||'-'}</td>
-          <td>฿${(+i.amount||0).toLocaleString()}</td>
-          <td><span class="badge ${i.source==='auto'?'bauto':'brec'}">${i.source==='auto'?'อัตโนมัติ':'กรอกเอง'}</span></td>
-        </tr>`).join('');
-        html += `<div class="exp-cat">
-          <div class="exp-cat-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'">
-            <div class="exp-cat-title"><div class="exp-cat-ico">${icons[type]||'📋'}</div>${type}
-              <span class="${items[0]?.source==='auto'?'auto-tag':'manual-tag'}">${items[0]?.source==='auto'?'อัตโนมัติ':'กรอกเอง'}</span>
-            </div>
-            <div class="exp-cat-total">฿${total.toLocaleString()}</div>
+    Object.entries(groups).forEach(([t, items]) => {
+      const total = items.reduce((s, i) => s + (+i.amount||0), 0);
+      const rows = items.map(i => `<tr>
+        <td>${i.date||'-'}</td><td>${i.name||'-'}</td><td>${i.branch||'-'}</td>
+        <td>${i.purpose||'-'}</td><td>${i.vehiclePlate||'-'}</td>
+        <td style="font-weight:800">฿${(+i.amount||0).toLocaleString()}</td>
+        <td><span class="badge ${i.source==='auto'?'bauto':'brec'}">${i.source==='auto'?'อัตโนมัติ':'กรอกเอง'}</span></td>
+      </tr>`).join('');
+      html += `<div class="exp-cat">
+        <div class="exp-cat-head" onclick="toggleSection(this)">
+          <div class="exp-cat-title"><div class="exp-cat-ico">${icons[t]||'📋'}</div>${t}
+            <span class="${items[0]?.source==='auto'?'auto-tag':'manual-tag'}">${items[0]?.source==='auto'?'อัตโนมัติ':'กรอกเอง'}</span>
           </div>
-          <div class="exp-cat-body" style="display:none">
-            <table class="tbl" style="margin-top:6px">
-              <tr><th>วันที่</th><th>ชื่อ</th><th>สาขา</th><th>รายละเอียด</th><th>ทะเบียน</th><th>จำนวน</th><th>ที่มา</th></tr>
-              ${rows}
-            </table>
-          </div>
-        </div>`;
-      });
-      const grandTotal = data.reduce((s,i)=>s+(+i.amount||0),0);
-      html += `<div style="background:#fff;border:1.5px solid var(--bd);border-radius:9px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:12px;color:var(--tx2);font-weight:700">ยอดรวมทั้งหมด</span>
-        <span style="font-size:18px;font-weight:800;color:var(--gd)">฿${grandTotal.toLocaleString()}</span>
+          <div class="exp-cat-total">฿${total.toLocaleString()}</div>
+        </div>
+        <div class="exp-cat-body" style="display:none">
+          <table class="tbl" style="margin-top:6px">
+            <tr><th>วันที่</th><th>ชื่อ</th><th>สาขา</th><th>รายละเอียด</th><th>ทะเบียน</th><th>จำนวน</th><th>ที่มา</th></tr>
+            ${rows}
+          </table>
+        </div>
       </div>`;
-    }
-    document.getElementById('ledger-content').innerHTML = html;
-  } catch(e) {
-    document.getElementById('ledger-content').innerHTML = `<div class="empty">❌ ${e.message}</div>`;
-  }
+    });
+    const grand = data.reduce((s,i) => s+(+i.amount||0), 0);
+    html += `<div style="background:#fff;border:1.5px solid var(--bd);border-radius:9px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;color:var(--tx2);font-weight:700">ยอดรวมทั้งหมด</span>
+      <span style="font-size:18px;font-weight:800;color:var(--gd)">฿${grand.toLocaleString()}</span>
+    </div>`;
+    setHTML('ledger-data', html);
+  } catch(e) { setHTML('ledger-data', `<div class="empty-el">❌ ${e.message}</div>`); }
+}
+
+function toggleSection(head) {
+  const body = head.nextElementSibling;
+  if (body) body.style.display = body.style.display === 'none' ? '' : 'none';
 }
 
 function showAddExpense() {
   const user = getUser();
-  document.getElementById('ledger-content').insertAdjacentHTML('afterbegin', `
-    <div class="card" id="add-expense-card" style="border:2px solid var(--bl)">
-      <div class="ch"><span class="ct">➕ เพิ่มรายจ่ายทั่วไป</span><button class="btn" onclick="document.getElementById('add-expense-card').remove()">ปิด</button></div>
+  el('add-exp-area').innerHTML = `
+    <div class="card" style="border:2px solid var(--bl);margin-bottom:10px">
+      <div class="ch"><span class="ct">➕ เพิ่มรายจ่ายทั่วไป</span><button class="btn" onclick="el('add-exp-area').innerHTML=''">ปิด</button></div>
       <div class="fg">
         <div class="fgr"><div class="flbl">ประเภท</div><select class="fin" id="ae-type"><option>รายจ่ายทั่วไป</option><option>ค่าน้ำ/ค่าไฟ</option><option>ค่าโทรศัพท์</option><option>ค่าเช่า</option></select></div>
-        <div class="fgr"><div class="flbl">จำนวนเงิน <span>*</span></div><input class="fin" id="ae-amount" type="number" placeholder="0.00"/></div>
-        <div class="fgr full"><div class="flbl">รายละเอียด <span>*</span></div><input class="fin" id="ae-purpose" placeholder="รายละเอียดค่าใช้จ่าย"/></div>
+        <div class="fgr"><div class="flbl">จำนวนเงิน <span class="req">*</span></div><input class="fin" id="ae-amount" type="number" placeholder="0.00"/></div>
+        <div class="fgr full"><div class="flbl">รายละเอียด <span class="req">*</span></div><input class="fin" id="ae-purpose" placeholder="รายละเอียดค่าใช้จ่าย"/></div>
       </div>
       <div class="sig-row">
-        <div class="sig-box"><div class="sig-lbl">ผู้บันทึก</div><div class="sig-name">${user?.name||'-'}</div><div class="sig-date">${thaiDateNow()}</div></div>
+        <div class="sig-box"><div class="sig-lbl">ผู้บันทึก</div><div class="sig-name">${user?.name||'-'}</div><div class="sig-date">${thaiNow()}</div></div>
         <div class="sig-box"><div class="sig-lbl">ผู้ตรวจสอบ</div><div class="sig-name" style="color:var(--tx3);font-style:italic">รอตรวจสอบ</div><div class="sig-date">—</div></div>
       </div>
       <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
-        <button class="btn btnb" onclick="submitAddExpense()">💾 บันทึก</button>
+        <button class="btn btnb" id="ae-btn" onclick="submitAddExp()">💾 บันทึก</button>
       </div>
-    </div>`);
+    </div>`;
 }
 
-function submitAddExpense() {
-  const amount = document.getElementById('ae-amount')?.value;
-  const purpose = document.getElementById('ae-purpose')?.value;
+function submitAddExp() {
+  const amount = val('ae-amount');
+  const purpose = val('ae-purpose');
   if (!amount || !purpose) { showToast('กรุณากรอกข้อมูลให้ครบ', 'error'); return; }
-  enqueue('addLedger', {
-    type: document.getElementById('ae-type')?.value || 'รายจ่ายทั่วไป',
-    amount, purpose,
-  }, () => { showToast('บันทึกสำเร็จ', 'success'); document.getElementById('add-expense-card')?.remove(); applyLedgerFilter(); });
+  const btn = el('ae-btn');
+  btn.disabled = true;
+  enqueue('addLedger', { type: val('ae-type')||'รายจ่ายทั่วไป', amount, purpose },
+    () => { el('add-exp-area').innerHTML = ''; loadLedger(); },
+    () => { btn.disabled = false; });
 }
 
-// ===================================================
+// =========================================
 // MY LIST
-// ===================================================
+// =========================================
 async function renderMyList() {
+  loading('main-content');
   try {
-    const r = await apiGet('getRequests', {});
-    const data = r.data;
-    const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
-    const rows = data.length ? data.reverse().map(item => {
-      const canEdit = item.status === 'pending';
-      return `<tr>
+    const r = await apiGet('getRequests', {}, true);
+    const data = (r?.data || []).reverse();
+    const rows = data.length ? data.map(item => `
+      <tr>
         <td>${item.date||'-'}</td>
-        <td>${item.type||'-'}</td>
+        <td>${item.type||'-'}${item.step==='1'?' (Step1)':item.step==='2'?' (Step2)':''}</td>
         <td>${item.purpose||'-'}</td>
         <td>${item.vehiclePlate||'-'}</td>
         <td>${item.amount?'฿'+Number(item.amount).toLocaleString():'—'}</td>
         <td>${statusBadge(item.status)}</td>
-        <td>${canEdit?`<span style="color:var(--g);cursor:pointer;font-weight:700;font-size:12px">แก้ไข</span>`:'<span style="font-size:11px;color:var(--tx3)">ล็อก</span>'}</td>
-      </tr>`;
-    }).join('') : `<tr><td colspan="7" class="empty">ยังไม่มีรายการ</td></tr>`;
+        <td>${item.status==='pending'?`<span style="color:var(--g);cursor:pointer;font-weight:700;font-size:12px" onclick="showPanel('request')">แก้ไข</span>`:'<span style="color:var(--tx3);font-size:11px">ล็อก</span>'}</td>
+      </tr>
+      ${item.status==='approved'&&item.type==='เบิกซื้อของ'&&item.step==='1'?`
+      <tr style="background:#EEF0FB">
+        <td colspan="7" style="padding:8px 14px">
+          <span style="color:var(--bl);font-weight:800;font-size:12px">📎 Step 2: แนบใบเสนอราคา</span>
+          <button class="btn btnb" style="font-size:11px;margin-left:10px" onclick="showStep2Form('${item.id}')">+ แนบใบเสนอราคา</button>
+        </td>
+      </tr>` : ''}`) .join('') : `<tr><td colspan="7" class="empty-el">ยังไม่มีรายการ</td></tr>`;
 
-    document.getElementById('main-content').innerHTML = `
+    setHTML('main-content', `
       <div class="tab-row">
-        <div class="tab active" onclick="filterMyList(this,'all')">ทั้งหมด</div>
-        <div class="tab" onclick="filterMyList(this,'pending')">รอพิจารณา</div>
-        <div class="tab" onclick="filterMyList(this,'approved')">อนุมัติแล้ว</div>
-        <div class="tab" onclick="filterMyList(this,'rejected')">ไม่อนุมัติ</div>
+        <div class="tab active" onclick="filterList(this,'all')">ทั้งหมด</div>
+        <div class="tab" onclick="filterList(this,'pending')">รอพิจารณา</div>
+        <div class="tab" onclick="filterList(this,'approved')">อนุมัติแล้ว</div>
+        <div class="tab" onclick="filterList(this,'rejected')">ไม่อนุมัติ</div>
       </div>
+      <div id="step2-area"></div>
       <div class="card">
         <table class="tbl" id="mylist-tbl">
           <tr><th>วันที่</th><th>ประเภท</th><th>รายละเอียด</th><th>ทะเบียน</th><th>จำนวน</th><th>สถานะ</th><th>แก้ไข</th></tr>
           ${rows}
         </table>
         <div class="hint">🔒 แก้ไขได้เฉพาะรายการที่ยังรอพิจารณา · รายการที่อนุมัติแล้วจะบันทึกลงรายจ่ายอัตโนมัติ</div>
-      </div>`;
-  } catch(e) {
-    document.getElementById('main-content').innerHTML = `<div class="empty">❌ ${e.message}</div>`;
-  }
+      </div>`);
+  } catch(e) { setHTML('main-content', `<div class="empty-el">❌ ${e.message}</div>`); }
 }
 
-function filterMyList(el, status) {
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+function filterList(el, status) {
+  document.querySelectorAll('.tab-row .tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
 }
 
-// ===================================================
+function showStep2Form(requestId) {
+  const user = getUser();
+  el('step2-area').innerHTML = `
+    <div class="card" style="border:2px solid var(--bl);margin-bottom:10px">
+      <div class="ch"><span class="ct">📎 Step 2 — แนบใบเสนอราคา</span><button class="btn" onclick="el('step2-area').innerHTML=''">ปิด</button></div>
+      <div class="fg">
+        <div class="fgr"><div class="flbl">ราคารวม (บาท) <span class="req">*</span></div><input class="fin" id="s2-amount" type="number" placeholder="0.00"/></div>
+        <div class="fgr"><div class="flbl">ชื่อร้าน / ผู้ขาย</div><input class="fin" id="s2-shop" placeholder="เช่น ร้านออฟฟิศเมท"/></div>
+        <div class="fgr full">
+          <div class="flbl">แนบใบเสนอราคา <span class="req">*</span></div>
+          <div class="ubox" onclick="el('s2-files').click()">📎 คลิกแนบใบเสนอราคา<br><span style="font-size:11px;color:var(--tx3);font-weight:600">หรือถ้าไม่มีใบเสนอราคา ให้กรอกฟอร์มด้านล่าง</span></div>
+          <input type="file" id="s2-files" multiple accept="image/*,application/pdf" style="display:none" onchange="previewFiles('s2-files','s2-prev')"/>
+          <div id="s2-prev" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
+        </div>
+        <div class="fgr full">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;font-weight:700;margin-bottom:6px">
+            <input type="checkbox" id="s2-noquote" onchange="toggleS2NoQuote()"> ไม่มีใบเสนอราคา (กรอกฟอร์มแทน)
+          </label>
+          <div id="s2-noquote-area" style="display:none;background:var(--orl);border:1.5px solid var(--or);border-radius:8px;padding:10px">
+            <div class="flbl" style="margin-bottom:5px">เหตุผลที่ไม่มีใบเสนอราคา <span class="req">*</span></div>
+            <input class="fin" id="s2-reason" placeholder="เช่น ร้านค้าไม่ออกใบเสนอราคา"/>
+          </div>
+        </div>
+      </div>
+      <div class="sig-row">
+        <div class="sig-box"><div class="sig-lbl">ผู้ขอเบิก</div><div class="sig-name">${user?.name||'-'}</div><div class="sig-date">${thaiNow()}</div></div>
+        <div class="sig-box"><div class="sig-lbl">ผู้อนุมัติ</div><div class="sig-name" style="color:var(--tx3);font-style:italic">รอการอนุมัติ</div><div class="sig-date">—</div></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="el('step2-area').innerHTML=''">ยกเลิก</button>
+        <button class="btn btnb" id="s2-btn" onclick="submitStep2('${requestId}')">📤 ส่ง Step 2</button>
+      </div>
+    </div>`;
+  el('step2-area').scrollIntoView({ behavior: 'smooth' });
+}
+
+function toggleS2NoQuote() {
+  const checked = el('s2-noquote')?.checked;
+  const area = el('s2-noquote-area');
+  if (area) area.style.display = checked ? '' : 'none';
+}
+
+async function submitStep2(requestId) {
+  const amount = val('s2-amount');
+  if (!amount) { showToast('กรุณากรอกราคารวม', 'error'); return; }
+  const user = getUser();
+  const btn = el('s2-btn');
+  btn.disabled = true; btn.textContent = 'กำลังส่ง...';
+  let imageUrls = '';
+  const files = el('s2-files')?.files;
+  if (files?.length) {
+    const urls = await uploadImages(Array.from(files), 'เบิกซื้อของ-step2', user.branch);
+    imageUrls = urls.join(',');
+  }
+  enqueue('submitRequest', {
+    type: 'เบิกซื้อของ', step: '2',
+    amount, purpose: val('s2-shop') || 'ใบเสนอราคา',
+    noReceipt: el('s2-noquote')?.checked,
+    noReceiptReason: val('s2-reason'),
+    imageUrls, parentId: requestId,
+    branch: user?.branch,
+  }, () => { el('step2-area').innerHTML = ''; showPanel('mylist'); },
+  () => { btn.disabled = false; btn.textContent = '📤 ส่ง Step 2'; });
+}
+
+// =========================================
 // PHOTOS
-// ===================================================
+// =========================================
 async function renderPhotos() {
-  document.getElementById('main-content').innerHTML = `
+  setHTML('main-content', `
     <div class="card">
       <div class="ch"><span class="ct">🖼️ หลักฐานรูปภาพ</span></div>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <select class="fin" id="ph-type" style="flex:1"><option>ทุกประเภท</option><option>เบิกเงิน</option><option>ค่าน้ำมัน</option><option>ซ่อมรถ</option><option>ค่าทางด่วน</option></select>
-        <select class="fin" id="ph-month" style="width:150px">${THAI_MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}</select>
-        <button class="btn btnp" onclick="loadPhotos()">🔍 ค้นหา</button>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <div><div class="filter-lbl">ประเภท</div><select class="fin" id="ph-type" style="width:140px"><option>ทุกประเภท</option><option>เบิกเงิน</option><option>ค่าน้ำมัน</option><option>ซ่อมรถ</option><option>ค่าทางด่วน</option><option>เบิกซื้อของ</option></select></div>
+        <div><div class="filter-lbl">เดือน</div><select class="fin" id="ph-month" style="width:140px">${MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}</select></div>
+        <div style="align-self:flex-end"><button class="btn btnp" onclick="loadPhotos()">🔍 ค้นหา</button></div>
       </div>
-      <div id="photos-grid"><div class="loading">เลือกประเภทแล้วกดค้นหา</div></div>
-    </div>`;
-  const now = new Date();
-  const sel = document.getElementById('ph-month');
-  if (sel) sel.value = now.getMonth();
+      <div id="photos-grid"><div class="empty-el">เลือกเดือนแล้วกดค้นหา</div></div>
+    </div>`);
+  el('ph-month').value = new Date().getMonth();
 }
 
 async function loadPhotos() {
-  const category = document.getElementById('ph-type')?.value || 'ทุกประเภท';
   const user = getUser();
-  const grid = document.getElementById('photos-grid');
-  grid.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
+  loading('photos-grid');
   try {
-    const r = await apiGet('getImages', { category, branch: user.branch, year: `${new Date().getFullYear()+543}`, month: THAI_MONTHS[+document.getElementById('ph-month')?.value||0] });
-    if (!r.data.length) { grid.innerHTML = '<div class="empty">ไม่พบรูปภาพ</div>'; return; }
-    grid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">${r.data.map(f=>`
-      <div>
-        <a href="${f.url}" target="_blank" style="text-decoration:none">
-          <div style="background:var(--gl);border:1.5px solid var(--bd);border-radius:8px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer">🖼️</div>
-        </a>
-        <div style="font-size:10px;color:var(--tx2);text-align:center;margin-top:3px;font-weight:600">${f.name.slice(0,20)}</div>
-      </div>`).join('')}</div>`;
-  } catch(e) {
-    grid.innerHTML = `<div class="empty">❌ ${e.message}</div>`;
-  }
+    const cat = val('ph-type');
+    const month = MONTHS[+val('ph-month')] || MONTHS[new Date().getMonth()];
+    const year = String(new Date().getFullYear() + 543);
+    const r = await apiGet('getImages', { category: cat, branch: user?.branch, year, month });
+    const files = r?.data || [];
+    if (!files.length) { empty('photos-grid', '📭 ไม่พบรูปภาพ'); return; }
+    setHTML('photos-grid', `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+      ${files.map(f => `
+        <div>
+          <a href="${f.url}" target="_blank">
+            <div style="background:var(--gl);border:1.5px solid var(--bd);border-radius:8px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--g)'" onmouseout="this.style.borderColor='var(--bd)'">🖼️</div>
+          </a>
+          <div style="font-size:10px;color:var(--tx2);text-align:center;margin-top:3px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name.slice(0,18)}...</div>
+        </div>`).join('')}
+    </div>`);
+  } catch(e) { setHTML('photos-grid', `<div class="empty-el">❌ ${e.message}</div>`); }
 }
 
-// ===================================================
+// =========================================
 // VEHICLES
-// ===================================================
+// =========================================
 async function renderVehicles() {
-  document.getElementById('main-content').innerHTML = `
+  setHTML('main-content', `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div style="font-size:13px;font-weight:800;color:var(--tx)">รถทั้งหมดในระบบ</div>
-      <button class="btn btnp" onclick="showAddVehicle()">+ เพิ่มรถใหม่</button>
+      <span style="font-size:13px;font-weight:800;color:var(--tx)">รถทั้งหมดในระบบ</span>
+      <button class="btn btnp" onclick="showAddVeh()">+ เพิ่มรถใหม่</button>
     </div>
-    <div id="vehicles-list"><div class="loading">⏳ กำลังโหลด...</div></div>
-    <div id="add-vehicle-form" style="display:none"></div>`;
-  loadVehiclesList();
+    <div id="add-veh-area"></div>
+    <div id="veh-list"><div class="loading-el">⏳ กำลังโหลด...</div></div>`);
+  loadVehList();
 }
 
-async function loadVehiclesList() {
+async function loadVehList() {
   try {
     const r = await apiGet('getVehicles');
-    const el = document.getElementById('vehicles-list');
-    if (!r.data.length) { el.innerHTML = '<div class="empty">ยังไม่มีรถในระบบ</div>'; return; }
-    el.innerHTML = r.data.map(v => {
-      const today = new Date();
-      function daysDiff(dateStr) {
-        if (!dateStr) return null;
-        const d = new Date(dateStr);
-        return Math.ceil((d - today) / 86400000);
-      }
-      function expClass(days) {
-        if (days === null) return 'ok';
-        if (days <= 7) return 'danger';
-        if (days <= 10) return 'warn';
-        return 'ok';
-      }
-      function expText(days) {
-        if (days === null) return '—';
-        if (days < 0) return '⛔ หมดแล้ว';
-        if (days <= 7) return `⚠ อีก ${days} วัน!`;
-        if (days <= 10) return `⚠ อีก ${days} วัน`;
-        return `อีก ${days} วัน`;
-      }
-      const prbDays = daysDiff(v.prbDate);
-      const insDays = daysDiff(v.insurDate);
-      const taxDays = daysDiff(v.taxDate);
+    const data = r?.data || [];
+    if (!data.length) { empty('veh-list', '🚗 ยังไม่มีรถในระบบ'); return; }
+    const today = new Date();
+    setHTML('veh-list', data.map(v => {
+      function dd(s) { if (!s) return null; const d = new Date(s); return Math.ceil((d-today)/86400000); }
+      function cls(n) { return n===null?'ok':n<=7?'danger':n<=10?'warn':'ok'; }
+      function txt(n) { return n===null?'—':n<0?'⛔ หมดแล้ว':n<=7?`⚠ อีก ${n} วัน!`:n<=10?`⚠ อีก ${n} วัน`:`อีก ${n} วัน`; }
+      function col(n) { return n===null?'var(--gd)':n<=7?'var(--r)':n<=10?'var(--or)':'var(--gd)'; }
+      const p=dd(v.prbDate), ins=dd(v.insurDate), tax=dd(v.taxDate);
       return `<div class="veh-detail-card">
-        <div class="veh-detail-head">
+        <div style="background:var(--gl);padding:12px 14px;display:flex;align-items:center;gap:12px">
           <div style="font-size:38px">${v.type?.includes('ตู้')?'🚌':'🚗'}</div>
           <div>
             <div class="veh-plate" style="font-size:15px">${v.plate}</div>
-            <div style="font-size:11px;color:var(--tx2);margin-top:3px;font-weight:600">${v.type||''} · ${v.branch||''} · เพิ่มโดย ${v.addedBy||'-'}</div>
+            <div style="font-size:11px;color:var(--tx2);margin-top:3px;font-weight:600">${v.type||''} · ${v.branch||''}</div>
           </div>
         </div>
-        <div class="exp-row">
-          <div class="exp-item ${expClass(prbDays)}"><div class="exp-label">พ.ร.บ.</div><div class="exp-date">${toThaiDate(v.prbDate)}</div><div class="exp-days" style="color:${prbDays<=7?'var(--r)':prbDays<=10?'var(--or)':'var(--gd)'}">${expText(prbDays)}</div></div>
-          <div class="exp-item ${expClass(insDays)}"><div class="exp-label">ประกันภัย</div><div class="exp-date">${toThaiDate(v.insurDate)}</div><div class="exp-days" style="color:${insDays<=7?'var(--r)':insDays<=10?'var(--or)':'var(--gd)'}">${expText(insDays)}</div></div>
-          <div class="exp-item ${expClass(taxDays)}"><div class="exp-label">ภาษีประจำปี</div><div class="exp-date">${toThaiDate(v.taxDate)}</div><div class="exp-days" style="color:${taxDays<=7?'var(--r)':taxDays<=10?'var(--or)':'var(--gd)'}">${expText(taxDays)}</div></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 14px">
+          <div class="exp-item ${cls(p)}"><div class="exp-label">พ.ร.บ.</div><div class="exp-date">${toThai(v.prbDate)}</div><div class="exp-days" style="color:${col(p)}">${txt(p)}</div></div>
+          <div class="exp-item ${cls(ins)}"><div class="exp-label">ประกันภัย</div><div class="exp-date">${toThai(v.insurDate)}</div><div class="exp-days" style="color:${col(ins)}">${txt(ins)}</div></div>
+          <div class="exp-item ${cls(tax)}"><div class="exp-label">ภาษีประจำปี</div><div class="exp-date">${toThai(v.taxDate)}</div><div class="exp-days" style="color:${col(tax)}">${txt(tax)}</div></div>
         </div>
       </div>`;
-    }).join('');
-  } catch(e) {
-    document.getElementById('vehicles-list').innerHTML = `<div class="empty">❌ ${e.message}</div>`;
-  }
+    }).join(''));
+  } catch(e) { setHTML('veh-list', `<div class="empty-el">❌ ${e.message}</div>`); }
 }
 
-function showAddVehicle() {
-  const form = document.getElementById('add-vehicle-form');
-  form.style.display = '';
-  form.innerHTML = `<div class="card" style="border:2px solid var(--g)">
-    <div class="ch"><span class="ct">🚗 เพิ่มรถใหม่</span><button class="btn" onclick="document.getElementById('add-vehicle-form').style.display='none'">ปิด</button></div>
-    <div class="fg">
-      <div class="fgr"><div class="flbl">ทะเบียนรถ <span>*</span></div><input class="fin" id="veh-plate" placeholder="เช่น กข-1234"/></div>
-      <div class="fgr"><div class="flbl">ประเภทรถ</div><select class="fin" id="veh-type"><option>รถกระบะ</option><option>รถตู้</option><option>รถเก๋ง</option><option>รถบรรทุก</option></select></div>
-      <div class="fgr"><div class="flbl">สาขา</div><select class="fin" id="veh-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
-      <div class="fgr"><div class="flbl">วันหมดอายุ พ.ร.บ.</div><input class="fin" id="veh-prb" type="date"/></div>
-      <div class="fgr"><div class="flbl">วันหมดอายุประกัน</div><input class="fin" id="veh-ins" type="date"/></div>
-      <div class="fgr"><div class="flbl">วันหมดอายุภาษี</div><input class="fin" id="veh-tax" type="date"/></div>
-    </div>
-    <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btnp" onclick="submitVehicle()">💾 บันทึกรถ</button>
-    </div>
-  </div>`;
-  form.scrollIntoView({ behavior: 'smooth' });
+function showAddVeh() {
+  el('add-veh-area').innerHTML = `
+    <div class="card" style="border:2px solid var(--g);margin-bottom:10px">
+      <div class="ch"><span class="ct">🚗 เพิ่มรถใหม่</span><button class="btn" onclick="el('add-veh-area').innerHTML=''">ปิด</button></div>
+      <div class="fg">
+        <div class="fgr"><div class="flbl">ทะเบียนรถ <span class="req">*</span></div><input class="fin" id="veh-plate" placeholder="เช่น กข-1234"/></div>
+        <div class="fgr"><div class="flbl">ประเภทรถ</div><select class="fin" id="veh-type"><option>รถกระบะ</option><option>รถตู้</option><option>รถเก๋ง</option><option>รถบรรทุก</option></select></div>
+        <div class="fgr"><div class="flbl">สาขา</div><select class="fin" id="veh-br"><option>สาขา 1</option><option>สาขา 2</option></select></div>
+        <div class="fgr"><div class="flbl">วันหมดอายุ พ.ร.บ.</div><input class="fin" id="veh-prb" type="date"/></div>
+        <div class="fgr"><div class="flbl">วันหมดอายุประกัน</div><input class="fin" id="veh-ins" type="date"/></div>
+        <div class="fgr"><div class="flbl">วันหมดอายุภาษี</div><input class="fin" id="veh-tax" type="date"/></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btnp" id="veh-btn" onclick="submitVeh()">💾 บันทึกรถ</button>
+      </div>
+    </div>`;
 }
 
-function submitVehicle() {
-  const plate = document.getElementById('veh-plate')?.value;
+function submitVeh() {
+  const plate = val('veh-plate');
   if (!plate) { showToast('กรุณากรอกทะเบียนรถ', 'error'); return; }
-  enqueue('addVehicle', {
-    plate, type: document.getElementById('veh-type')?.value,
-    branch: document.getElementById('veh-branch')?.value,
-    prbDate: document.getElementById('veh-prb')?.value,
-    insurDate: document.getElementById('veh-ins')?.value,
-    taxDate: document.getElementById('veh-tax')?.value,
-  }, () => { showToast('เพิ่มรถสำเร็จ', 'success'); document.getElementById('add-vehicle-form').style.display='none'; loadVehiclesList(); });
+  const btn = el('veh-btn');
+  btn.disabled = true;
+  enqueue('addVehicle', { plate, type: val('veh-type'), branch: val('veh-br'), prbDate: val('veh-prb'), insurDate: val('veh-ins'), taxDate: val('veh-tax') },
+    () => { el('add-veh-area').innerHTML = ''; loadVehList(); loadAlertBadge(); },
+    () => { btn.disabled = false; });
 }
 
-// ===================================================
-// CALENDAR / ALERTS
-// ===================================================
+// =========================================
+// CALENDAR
+// =========================================
 async function renderCalendar() {
+  loading('main-content');
   try {
-    const r = await apiGet('getAlerts');
-    const alerts = r.data;
+    const r = await apiGet('getAlerts', {}, true);
+    const alerts = r?.data || [];
     const now = new Date();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
-    const alertDays = {};
-    alerts.forEach(a => {
-      const d = new Date(a.expDate);
-      if (d.getMonth() === now.getMonth()) {
-        alertDays[d.getDate()] = a.level;
-      }
-    });
-    let calCells = '<div class="cal-day-lbl">อา</div><div class="cal-day-lbl">จ</div><div class="cal-day-lbl">อ</div><div class="cal-day-lbl">พ</div><div class="cal-day-lbl">พฤ</div><div class="cal-day-lbl">ศ</div><div class="cal-day-lbl">ส</div>';
-    for (let i = 0; i < firstDay; i++) calCells += '<div class="cal-day"></div>';
-    for (let d = 1; d <= daysInMonth; d++) {
-      const isToday = d === now.getDate();
-      const level = alertDays[d];
-      calCells += `<div class="cal-day ${isToday?'today':''}">${d}${level?`<span class="dot dot-${level==='urgent'?'r':'o'}"></span>`:''}${isToday&&!level?'<span class="dot dot-g"></span>':''}</div>`;
+    const dim = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    const fd = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+    const adays = {};
+    alerts.forEach(a => { const d = new Date(a.expDate); if (d.getMonth()===now.getMonth()) adays[d.getDate()]=a.level; });
+    let cells = ['อา','จ','อ','พ','พฤ','ศ','ส'].map(d=>`<div style="text-align:center;font-size:10px;font-weight:700;color:var(--tx2);padding:3px 0">${d}</div>`).join('');
+    for (let i=0;i<fd;i++) cells += '<div></div>';
+    for (let d=1;d<=dim;d++) {
+      const t = d===now.getDate(); const lv = adays[d];
+      cells += `<div style="text-align:center;padding:4px 2px;border-radius:5px;font-size:11px;font-weight:${t?'800':'600'};background:${t?'var(--g)':'transparent'};color:${t?'#fff':lv?'var(--r)':'var(--tx2)'};cursor:pointer;min-height:28px">
+        ${d}${lv?`<div style="width:5px;height:5px;border-radius:50%;background:${lv==='urgent'?'var(--r)':'var(--or)'};margin:2px auto 0"></div>`:''}
+      </div>`;
     }
-    const alertCards = alerts.length ? alerts.map(a => `
+    const cards = alerts.length ? alerts.map(a => `
       <div class="alert-card">
         <div class="alert-ico ${a.level}">${a.level==='urgent'?'⚠️':'🗓️'}</div>
-        <div class="alert-meta">
-          <div class="alert-title">${a.field==='prbDate'?'พ.ร.บ.':a.field==='insurDate'?'ประกันภัย':'ภาษีประจำปี'} · ${a.plate}</div>
-          <div class="alert-sub">หมดอายุ ${toThaiDate(a.expDate)} · สาขา ${a.branch}</div>
-          <span class="alert-tag ${a.level==='urgent'?'tag-r':'tag-o'}">${a.level==='urgent'?'🔴':'🟠'} อีก ${a.daysLeft} วัน</span>
+        <div class="ameta">
+          <div class="aname">${a.field==='prbDate'?'พ.ร.บ.':a.field==='insurDate'?'ประกันภัย':'ภาษีประจำปี'} · ${a.plate}</div>
+          <div class="adet">หมดอายุ ${toThai(a.expDate)} · สาขา ${a.branch}</div>
+          <span class="badge ${a.level==='urgent'?'bno':'bw'}" style="margin-top:4px">${a.level==='urgent'?'🔴':'🟠'} อีก ${a.daysLeft} วัน</span>
         </div>
         <button class="btn btnp" style="font-size:10px;align-self:flex-start" onclick="showDoneAlert('${a.vehicleId}','${a.field}','${a.plate}')">✅ ดำเนินการแล้ว</button>
-      </div>`).join('') : '<div class="empty">✅ ไม่มีการแจ้งเตือนในขณะนี้</div>';
+      </div>`) .join('') : '<div class="empty-el">✅ ไม่มีการแจ้งเตือน</div>';
 
-    document.getElementById('main-content').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    setHTML('main-content', `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div class="card">
-          <div class="cal-header">
-            <span class="cal-title">${THAI_MONTHS[now.getMonth()]} ${now.getFullYear()+543}</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span style="font-size:13px;font-weight:800;color:var(--tx)">${MONTHS[now.getMonth()]} ${now.getFullYear()+543}</span>
           </div>
-          <div class="cal-grid">${calCells}</div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px">${cells}</div>
           <div style="display:flex;gap:10px;font-size:10px;color:var(--tx2);padding-top:6px;border-top:1px solid var(--gl);font-weight:600">
             <span>🔴 เร่งด่วน</span><span>🟠 ใกล้ถึง</span><span>🟢 วันนี้</span>
           </div>
         </div>
         <div>
           <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:8px">รายการแจ้งเตือน</div>
-          ${alertCards}
+          ${cards}
         </div>
       </div>
-      <div id="done-alert-form" style="display:none"></div>`;
-  } catch(e) {
-    document.getElementById('main-content').innerHTML = `<div class="empty">❌ ${e.message}</div>`;
-  }
+      <div id="done-alert-area" style="margin-top:12px"></div>`);
+  } catch(e) { setHTML('main-content', `<div class="empty-el">❌ ${e.message}</div>`); }
 }
 
 function showDoneAlert(vehicleId, field, plate) {
-  const form = document.getElementById('done-alert-form');
-  form.style.display = '';
   const user = getUser();
-  form.innerHTML = `<div class="card" style="border:2px solid var(--r);margin-top:12px">
-    <div style="font-size:12px;font-weight:800;color:var(--r);margin-bottom:10px">✅ บันทึกการดำเนินการ — ${plate}</div>
-    <div class="fg">
-      <div class="fgr"><div class="flbl">วันที่นำเข้าต่อ <span>*</span></div><input class="fin" id="da-done" type="date"/></div>
-      <div class="fgr"><div class="flbl">ต้องต่อครั้งหน้าวันที่ <span>*</span></div><input class="fin" id="da-next" type="date"/></div>
-    </div>
-    <div class="sig-row">
-      <div class="sig-box"><div class="sig-lbl">ผู้ดำเนินการ</div><div class="sig-name">${user?.name||'-'}</div><div class="sig-date">${thaiDateNow()}</div></div>
-      <div class="sig-box"><div class="sig-lbl">ผู้รับทราบ</div><div class="sig-name" style="color:var(--tx3);font-style:italic">รอการรับทราบ</div><div class="sig-date">—</div></div>
-    </div>
-    <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" onclick="document.getElementById('done-alert-form').style.display='none'">ยกเลิก</button>
-      <button class="btn btnp" onclick="submitDoneAlert('${vehicleId}','${field}')">✅ ยืนยันดำเนินการแล้ว</button>
-    </div>
-  </div>`;
-  form.scrollIntoView({ behavior: 'smooth' });
+  el('done-alert-area').innerHTML = `
+    <div class="card" style="border:2px solid var(--r)">
+      <div style="font-size:12px;font-weight:800;color:var(--r);margin-bottom:10px">✅ บันทึกการดำเนินการ — ${plate}</div>
+      <div class="fg">
+        <div class="fgr"><div class="flbl">วันที่นำเข้าต่อ <span class="req">*</span></div><input class="fin" id="da-done" type="date"/></div>
+        <div class="fgr"><div class="flbl">ต้องต่อครั้งหน้าวันที่ <span class="req">*</span></div><input class="fin" id="da-next" type="date"/></div>
+      </div>
+      <div class="sig-row">
+        <div class="sig-box"><div class="sig-lbl">ผู้ดำเนินการ</div><div class="sig-name">${user?.name||'-'}</div><div class="sig-date">${thaiNow()}</div></div>
+        <div class="sig-box"><div class="sig-lbl">ผู้รับทราบ</div><div class="sig-name" style="color:var(--tx3);font-style:italic">รอการรับทราบ</div><div class="sig-date">—</div></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="el('done-alert-area').innerHTML=''">ยกเลิก</button>
+        <button class="btn btnp" id="da-btn" onclick="submitDoneAlert('${vehicleId}','${field}')">✅ ยืนยันดำเนินการแล้ว</button>
+      </div>
+    </div>`;
+  el('done-alert-area').scrollIntoView({ behavior: 'smooth' });
 }
 
 function submitDoneAlert(vehicleId, field) {
-  const doneDate = document.getElementById('da-done')?.value;
-  const nextDate = document.getElementById('da-next')?.value;
+  const doneDate = val('da-done');
+  const nextDate = val('da-next');
   if (!doneDate || !nextDate) { showToast('กรุณากรอกวันที่', 'error'); return; }
+  const btn = el('da-btn');
+  btn.disabled = true;
   enqueue('updateAlert', { vehicleId, field, doneDate, nextDate },
-    () => { showToast('บันทึกสำเร็จ', 'success'); renderCalendar(); });
+    () => { showToast('บันทึกสำเร็จ', 'success'); renderCalendar(); },
+    () => { btn.disabled = false; });
 }
 
-// ===================================================
-// APPROVE
-// ===================================================
+// =========================================
+// APPROVE — อนุมัติ พร้อม modal เหตุผล
+// =========================================
 async function renderApprove() {
-  if (!isAdmin()) { document.getElementById('main-content').innerHTML = '<div class="empty">ไม่มีสิทธิ์เข้าถึง</div>'; return; }
+  if (!isAdmin()) { setHTML('main-content', '<div class="empty-el">ไม่มีสิทธิ์เข้าถึง</div>'); return; }
+  loading('main-content');
   try {
-    const r = await apiGet('getRequests', { status: 'pending' });
-    const data = r.data;
-    const cards = data.length ? data.map(item => `
-      <div class="acard">
-        <div class="aico m">${item.type==='เบิกเงิน'?'💵':item.type==='ค่าน้ำมัน'?'⛽':item.type==='ซ่อมรถ'?'🔧':item.type==='ค่าทางด่วน'?'🛣️':item.type==='เบิกซื้อของ'?'🛒':'📦'}</div>
-        <div class="ameta">
-          <div class="aname">${item.requester||'-'} · ${item.branch||'-'}</div>
-          <div class="adet">${item.type} · ${item.purpose||'-'} · ${item.date||'-'} ${item.vehiclePlate?'· ทะเบียน <strong>'+item.vehiclePlate+'</strong>':''} ${item.noReceipt==='true'?'· <span style="color:var(--r);font-weight:800">ไม่มีใบเสร็จ</span>':''}</div>
-          ${item.imageUrls?`<div style="margin-top:4px"><a href="${item.imageUrls.split(',')[0]}" target="_blank" style="font-size:11px;color:var(--bl);font-weight:700">🖼️ ดูหลักฐาน →</a></div>`:''}
-          <div class="aact">
-            <button class="abtn-ok" onclick="doApprove('${item.id}')">✓ อนุมัติ</button>
-            <button class="abtn-no" onclick="doReject('${item.id}')">✕ ไม่อนุมัติ</button>
+    const r = await apiGet('getRequests', { status: 'pending' }, true);
+    const data = r?.data || [];
+    const cards = data.length ? data.map(item => {
+      const ico = { 'เบิกเงิน':'💵','ค่าน้ำมัน':'⛽','ซ่อมรถ':'🔧','ค่าทางด่วน':'🛣️','เบิกซื้อของ':'🛒','เบิกของ':'📦' };
+      return `
+        <div class="acard" id="acard-${item.id}">
+          <div class="acard-top">
+            <div class="aico m">${ico[item.type]||'📋'}</div>
+            <div class="ameta">
+              <div class="aname">${item.requester||item.name||'-'} · ${item.branch||'-'}</div>
+              <div class="adet">
+                ${item.type||'-'}${item.step?' (Step '+item.step+')':''} · ${item.purpose||'-'} · ${item.date||'-'}
+                ${item.vehiclePlate?` · ทะเบียน <strong>${item.vehiclePlate}</strong>`:''}
+                ${item.noReceipt==='true'?' · <span style="color:var(--r);font-weight:800">ไม่มีใบเสร็จ</span>':''}
+              </div>
+              ${item.imageUrls?`<div style="margin-top:6px"><a href="${item.imageUrls.split(',')[0]}" target="_blank" style="color:var(--bl);font-size:12px;font-weight:700">🖼️ ดูหลักฐาน →</a></div>`:''}
+              ${item.items?`<div style="margin-top:4px;font-size:11px;color:var(--tx2);font-weight:600">รายการ: ${JSON.parse(item.items||'[]').map(i=>i.name).join(', ')}</div>`:''}
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:15px;font-weight:800;color:var(--tx)">${item.amount?'฿'+Number(item.amount).toLocaleString():'—'}</div>
+              <span class="badge bw">รอพิจารณา</span>
+            </div>
           </div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:14px;font-weight:800;color:var(--tx)">${item.amount?'฿'+Number(item.amount).toLocaleString():'—'}</div>
-          <span class="badge bw">รอ</span>
-        </div>
-      </div>`).join('') : '<div class="empty">✅ ไม่มีรายการรออนุมัติ</div>';
+          <div class="aact">
+            <button class="abtn-ok" id="ok-${item.id}" onclick="doApprove('${item.id}')">✓ อนุมัติ</button>
+            <button class="abtn-no" id="no-${item.id}" onclick="showRejectModal('${item.id}','${item.requester||item.name||''}')">✕ ไม่อนุมัติ</button>
+            <span style="font-size:11px;color:var(--tx3);font-weight:600;margin-left:auto">ID: ${item.id}</span>
+          </div>
+        </div>`;
+    }).join('') : '<div class="empty-el">✅ ไม่มีรายการรออนุมัติ</div>';
 
-    document.getElementById('main-content').innerHTML = `
+    setHTML('main-content', `
       <div style="background:var(--pul);border:1.5px solid #C8A8F0;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--pu);display:flex;align-items:center;gap:7px;font-weight:700">
-        ✨ อนุมัติแล้ว → บันทึกรายจ่ายอัตโนมัติ
+        ✨ อนุมัติแล้ว → บันทึกรายจ่ายอัตโนมัติทันที
       </div>
-      ${cards}`;
-  } catch(e) {
-    document.getElementById('main-content').innerHTML = `<div class="empty">❌ ${e.message}</div>`;
-  }
+      <div id="reject-modal-area"></div>
+      ${cards}`);
+  } catch(e) { setHTML('main-content', `<div class="empty-el">❌ ${e.message}</div>`); }
 }
 
 async function doApprove(id) {
-  if (!confirm('ยืนยันการอนุมัติ?')) return;
+  const okBtn = el(`ok-${id}`);
+  const noBtn = el(`no-${id}`);
+  if (okBtn) { okBtn.disabled = true; okBtn.textContent = '⏳ กำลังอนุมัติ...'; }
+  if (noBtn) noBtn.disabled = true;
   try {
     await apiPost('approveRequest', { id });
-    showToast('อนุมัติสำเร็จ', 'success');
-    renderApprove();
-    loadPendingCount();
-  } catch(e) { showToast(e.message, 'error'); }
+    showToast('✓ อนุมัติสำเร็จ', 'success');
+    const card = el(`acard-${id}`);
+    if (card) {
+      card.style.opacity = '0.5';
+      card.querySelector('.aact').innerHTML = '<span class="badge bok">✓ อนุมัติแล้ว</span>';
+    }
+    loadPendingBadge();
+  } catch(e) {
+    showToast('❌ ' + e.message, 'error');
+    if (okBtn) { okBtn.disabled = false; okBtn.textContent = '✓ อนุมัติ'; }
+    if (noBtn) noBtn.disabled = false;
+  }
+}
+
+function showRejectModal(id, name) {
+  el('reject-modal-area').innerHTML = `
+    <div class="card" style="border:2px solid var(--r);margin-bottom:12px">
+      <div style="font-size:13px;font-weight:800;color:var(--r);margin-bottom:10px">✕ ไม่อนุมัติ — ${name}</div>
+      <div class="fgr">
+        <div class="flbl">เหตุผลที่ไม่อนุมัติ <span class="req">*</span></div>
+        <textarea class="fin" id="reject-reason" rows="3" placeholder="ระบุเหตุผลที่ไม่อนุมัติ..."></textarea>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="el('reject-modal-area').innerHTML=''">ยกเลิก</button>
+        <button class="btn btnr" id="rej-btn" onclick="doReject('${id}')">✕ ยืนยันไม่อนุมัติ</button>
+      </div>
+    </div>`;
+  el('reject-modal-area').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function doReject(id) {
-  const reason = prompt('เหตุผลที่ไม่อนุมัติ (ถ้ามี):');
-  if (reason === null) return;
+  const reason = val('reject-reason').trim();
+  if (!reason) { showToast('กรุณาระบุเหตุผล', 'error'); return; }
+  const btn = el('rej-btn');
+  btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
   try {
     await apiPost('rejectRequest', { id, reason });
     showToast('บันทึกการไม่อนุมัติแล้ว', 'success');
-    renderApprove();
-    loadPendingCount();
-  } catch(e) { showToast(e.message, 'error'); }
+    el('reject-modal-area').innerHTML = '';
+    const card = el(`acard-${id}`);
+    if (card) {
+      card.style.opacity = '0.5';
+      card.querySelector('.aact').innerHTML = '<span class="badge bno">✕ ไม่อนุมัติแล้ว</span>';
+    }
+    loadPendingBadge();
+  } catch(e) {
+    showToast('❌ ' + e.message, 'error');
+    btn.disabled = false; btn.textContent = '✕ ยืนยันไม่อนุมัติ';
+  }
 }
 
-// ===================================================
+// =========================================
 // REPORT
-// ===================================================
+// =========================================
 async function renderReport() {
-  document.getElementById('main-content').innerHTML = `
+  setHTML('main-content', `
     <div class="tab-row">
-      <div class="tab active" onclick="switchReportTab(this,'rgen')">รายงานทั่วไป</div>
-      <div class="tab" onclick="switchReportTab(this,'rcar')">รายงานทะเบียนรถ</div>
+      <div class="tab active" onclick="switchRpt(this,'rgen')">รายงานทั่วไป</div>
+      <div class="tab" onclick="switchRpt(this,'rcar')">รายงานทะเบียนรถ</div>
     </div>
     <div id="rgen">
       <div class="card">
         <div class="fg">
-          <div class="fgr"><div class="filter-lbl">สาขา</div><select class="fin" id="rpt-branch"><option value="all">ทุกสาขา</option><option>สาขา 1</option><option>สาขา 2</option></select></div>
-          <div class="fgr"><div class="filter-lbl">ประเภท</div><select class="fin" id="rpt-type"><option value="all">ทั้งหมด</option><option>เบิกเงิน</option><option>เบิกซื้อของ</option><option>เบิกของ</option><option>ค่าน้ำมัน</option><option>ซ่อมรถ</option><option>ค่าทางด่วน</option></select></div>
+          <div class="fgr"><div class="filter-lbl">สาขา</div><select class="fin" id="rpt-br"><option value="all">ทุกสาขา</option><option>สาขา 1</option><option>สาขา 2</option></select></div>
+          <div class="fgr"><div class="filter-lbl">ประเภท</div><select class="fin" id="rpt-tp"><option value="all">ทั้งหมด</option><option>เบิกเงิน</option><option>เบิกซื้อของ</option><option>เบิกของ</option><option>ค่าน้ำมัน</option><option>ซ่อมรถ</option><option>ค่าทางด่วน</option><option>รายจ่ายทั่วไป</option></select></div>
           <div class="fgr"><div class="filter-lbl">จากวันที่</div><input class="fin" id="rpt-from" type="date"/></div>
           <div class="fgr"><div class="filter-lbl">ถึงวันที่</div><input class="fin" id="rpt-to" type="date"/></div>
         </div>
         <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn btnp" onclick="loadReport()">🔍 ดูรายงาน</button>
+          <button class="btn btnp" onclick="loadRpt()">🔍 ดูรายงาน</button>
           <button class="btn btns" onclick="window.print()">🖨️ พิมพ์</button>
         </div>
       </div>
-      <div id="report-content"></div>
+      <div id="rpt-data"></div>
     </div>
     <div id="rcar" style="display:none">
       <div class="card">
         <div class="fg">
           <div class="fgr"><div class="filter-lbl">ทะเบียนรถ</div><input class="fin" id="rpt-plate" placeholder="เช่น กข-1234"/></div>
-          <div class="fgr"><div class="filter-lbl">ประเภท</div><select class="fin" id="rpt-vtype"><option value="all">ทั้งหมด</option><option>ค่าน้ำมัน</option><option>ซ่อมรถ</option><option>ค่าทางด่วน</option></select></div>
+          <div class="fgr"><div class="filter-lbl">ประเภท</div><select class="fin" id="rpt-vtp"><option value="all">ทั้งหมด</option><option>ค่าน้ำมัน</option><option>ซ่อมรถ</option><option>ค่าทางด่วน</option></select></div>
           <div class="fgr"><div class="filter-lbl">จากวันที่</div><input class="fin" id="rpt-vfrom" type="date"/></div>
           <div class="fgr"><div class="filter-lbl">ถึงวันที่</div><input class="fin" id="rpt-vto" type="date"/></div>
         </div>
         <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn btnp" onclick="loadVehicleReport()">🔍 ดูรายงาน</button>
+          <button class="btn btnp" onclick="loadVRpt()">🔍 ดูรายงาน</button>
           <button class="btn btns" onclick="window.print()">🖨️ พิมพ์</button>
         </div>
       </div>
-      <div id="vehicle-report-content"></div>
+      <div id="vrpt-data"></div>
     </div>
-    <div class="hint">🔒 รายงานแสดงเฉพาะสาขาที่คุณมีสิทธิ์ · Admin เห็นได้ทุกสาขา</div>`;
+    <div class="hint">🔒 รายงานแสดงเฉพาะสาขาที่คุณมีสิทธิ์ · Admin เห็นได้ทุกสาขา</div>`);
 }
 
-function switchReportTab(el, id) {
-  document.querySelectorAll('.tab-row .tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('rgen').style.display = id==='rgen'?'':'none';
-  document.getElementById('rcar').style.display = id==='rcar'?'':'none';
+function switchRpt(e, id) {
+  document.querySelectorAll('.tab-row .tab').forEach(t => t.classList.remove('active'));
+  e.classList.add('active');
+  el('rgen').style.display = id==='rgen'?'':'none';
+  el('rcar').style.display = id==='rcar'?'':'none';
 }
 
-async function loadReport() {
-  const branch = document.getElementById('rpt-branch')?.value;
-  const type = document.getElementById('rpt-type')?.value;
+async function loadRpt() {
   const user = getUser();
+  loading('rpt-data');
   try {
-    const r = await apiGet('getLedger', { branch, type });
-    const data = r.data;
+    const r = await apiGet('getLedger', { branch: val('rpt-br'), type: val('rpt-tp') });
+    const data = r?.data || [];
     const total = data.reduce((s,i)=>s+(+i.amount||0),0);
-    const rows = data.map((i,idx)=>`<tr><td>${idx+1}</td><td>${i.date||'-'}</td><td>${i.type||'-'}</td><td>${i.purpose||'-'}</td><td>${i.vehiclePlate||'-'}</td><td>฿${(+i.amount||0).toLocaleString()}</td></tr>`).join('');
-    document.getElementById('report-content').innerHTML = `
-      <div class="rp">
-        <div class="rp-head">
-          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px">
-            <svg width="28" height="26" viewBox="0 0 110 100"><polygon points="55,4 100,54 10,54" fill="#4CAF3E"/><polygon points="55,16 88,54 22,54" fill="#3A9430"/><text x="55" y="92" text-anchor="middle" font-size="28" font-weight="900" fill="#CC1A1A" font-family="Arial Black,Arial,sans-serif">S.S.T</text></svg>
-            <div style="font-size:13px;font-weight:800">บริษัท ศรีสุธา จำกัด</div>
-          </div>
-          <div style="font-size:13px;font-weight:800;color:var(--tx)">รายงานค่าใช้จ่าย — ${branch==='all'?'ทุกสาขา':branch}</div>
-          <div style="font-size:11px;color:var(--tx2);font-weight:600">พิมพ์วันที่ ${thaiDateNow()}</div>
+    setHTML('rpt-data', `<div class="rp">
+      <div class="rp-head">
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px">
+          <img src="IMG_0012.JPG" style="width:30px;height:30px;object-fit:contain" onerror="this.style.display='none'"/>
+          <div style="font-size:13px;font-weight:800">บริษัท ศรีสุธา จำกัด</div>
         </div>
-        <table class="tbl">
-          <tr><th>#</th><th>วันที่</th><th>หมวด</th><th>รายละเอียด</th><th>ทะเบียน</th><th>จำนวน</th></tr>
-          ${rows || '<tr><td colspan="6" class="empty">ไม่พบข้อมูล</td></tr>'}
-        </table>
-        <div style="text-align:right;font-size:13px;font-weight:800;color:var(--tx);margin-top:8px;padding-top:6px;border-top:1.5px solid var(--bd)">ยอดรวม ฿${total.toLocaleString()}</div>
-        <div class="sig-row" style="margin-top:12px">
-          <div class="sig-box"><div class="sig-lbl">ผู้รับผิดชอบ</div><div class="sig-name">${user?.name||'-'}</div><div class="sig-date">${thaiDateNow()}</div></div>
-          <div class="sig-box"><div class="sig-lbl">ผู้อนุมัติ</div><div class="sig-name" style="color:var(--tx3);font-style:italic">.....................</div><div class="sig-date">—</div></div>
-        </div>
-      </div>`;
-  } catch(e) { showToast(e.message, 'error'); }
+        <div style="font-size:13px;font-weight:800;color:var(--tx)">รายงานค่าใช้จ่าย</div>
+        <div style="font-size:11px;color:var(--tx2);font-weight:600">พิมพ์วันที่ ${thaiNow()}</div>
+      </div>
+      <table class="tbl">
+        <tr><th>#</th><th>วันที่</th><th>หมวด</th><th>รายละเอียด</th><th>ทะเบียน</th><th>จำนวน</th></tr>
+        ${data.map((i,n)=>`<tr><td>${n+1}</td><td>${i.date||'-'}</td><td>${i.type||'-'}</td><td>${i.purpose||'-'}</td><td>${i.vehiclePlate||'-'}</td><td style="font-weight:800">฿${(+i.amount||0).toLocaleString()}</td></tr>`).join('')||'<tr><td colspan="6" class="empty-el">ไม่พบข้อมูล</td></tr>'}
+      </table>
+      <div style="text-align:right;font-size:13px;font-weight:800;margin-top:8px;padding-top:6px;border-top:1.5px solid var(--bd)">ยอดรวม ฿${total.toLocaleString()}</div>
+      <div class="sig-row" style="margin-top:12px">
+        <div class="sig-box"><div class="sig-lbl">ผู้รับผิดชอบ</div><div class="sig-name">${user?.name||'-'}</div><div class="sig-date">${thaiNow()}</div></div>
+        <div class="sig-box"><div class="sig-lbl">ผู้อนุมัติ</div><div class="sig-name" style="color:var(--tx3);font-style:italic">.....................</div><div class="sig-date">—</div></div>
+      </div>
+    </div>`);
+  } catch(e) { setHTML('rpt-data', `<div class="empty-el">❌ ${e.message}</div>`); }
 }
 
-async function loadVehicleReport() {
-  const type = document.getElementById('rpt-vtype')?.value;
-  const plate = document.getElementById('rpt-plate')?.value;
+async function loadVRpt() {
+  const user = getUser();
+  loading('vrpt-data');
   try {
-    const r = await apiGet('getLedger', { type });
-    let data = r.data;
+    const plate = val('rpt-plate');
+    const r = await apiGet('getLedger', { type: val('rpt-vtp') });
+    let data = (r?.data||[]).filter(i => ['ค่าน้ำมัน','ซ่อมรถ','ค่าทางด่วน'].includes(i.type));
     if (plate) data = data.filter(i => i.vehiclePlate === plate);
     const total = data.reduce((s,i)=>s+(+i.amount||0),0);
-    const rows = data.map((i,idx)=>`<tr><td>${idx+1}</td><td>${i.date||'-'}</td><td>${i.type||'-'}</td><td>${i.purpose||'-'}</td><td>${i.vehiclePlate||'-'}</td><td>฿${(+i.amount||0).toLocaleString()}</td></tr>`).join('');
-    document.getElementById('vehicle-report-content').innerHTML = `
-      <div class="rp">
-        <div class="rp-head">
-          <div style="font-size:13px;font-weight:800;color:var(--tx)">รายงานค่าใช้จ่ายรถ${plate?' — ทะเบียน '+plate:''}</div>
-          <div style="font-size:11px;color:var(--tx2);font-weight:600">พิมพ์วันที่ ${thaiDateNow()}</div>
-        </div>
-        <table class="tbl">
-          <tr><th>#</th><th>วันที่</th><th>ประเภท</th><th>รายละเอียด</th><th>ทะเบียน</th><th>จำนวน</th></tr>
-          ${rows||'<tr><td colspan="6" class="empty">ไม่พบข้อมูล</td></tr>'}
-        </table>
-        <div style="text-align:right;font-size:13px;font-weight:800;margin-top:8px;padding-top:6px;border-top:1.5px solid var(--bd)">ยอดรวม ฿${total.toLocaleString()}</div>
-      </div>`;
-  } catch(e) { showToast(e.message, 'error'); }
+    setHTML('vrpt-data', `<div class="rp">
+      <div class="rp-head">
+        <div style="font-size:13px;font-weight:800;color:var(--tx)">รายงานค่าใช้จ่ายรถ${plate?' — '+plate:''}</div>
+        <div style="font-size:11px;color:var(--tx2);font-weight:600">พิมพ์วันที่ ${thaiNow()}</div>
+      </div>
+      <table class="tbl">
+        <tr><th>#</th><th>วันที่</th><th>ประเภท</th><th>รายละเอียด</th><th>ทะเบียน</th><th>จำนวน</th></tr>
+        ${data.map((i,n)=>`<tr><td>${n+1}</td><td>${i.date||'-'}</td><td>${i.type||'-'}</td><td>${i.purpose||'-'}</td><td>${i.vehiclePlate||'-'}</td><td style="font-weight:800">฿${(+i.amount||0).toLocaleString()}</td></tr>`).join('')||'<tr><td colspan="6" class="empty-el">ไม่พบข้อมูล</td></tr>'}
+      </table>
+      <div style="text-align:right;font-size:13px;font-weight:800;margin-top:8px;padding-top:6px;border-top:1.5px solid var(--bd)">ยอดรวม ฿${total.toLocaleString()}</div>
+    </div>`);
+  } catch(e) { setHTML('vrpt-data', `<div class="empty-el">❌ ${e.message}</div>`); }
 }
 
-// ===================================================
+// =========================================
 // USERS
-// ===================================================
+// =========================================
 async function renderUsers() {
-  if (!isAdmin()) { document.getElementById('main-content').innerHTML = '<div class="empty">ไม่มีสิทธิ์เข้าถึง</div>'; return; }
-
+  if (!isAdmin()) { setHTML('main-content', '<div class="empty-el">ไม่มีสิทธิ์เข้าถึง</div>'); return; }
   const ALL_TABS = ['dashboard','request','ledger','mylist','photos','vehicles','calendar','approve','report','users'];
-  const TAB_LABELS = { dashboard:'ภาพรวม', request:'ขอเบิก', ledger:'บันทึกรายจ่าย', mylist:'รายการของฉัน', photos:'หลักฐานรูปภาพ', vehicles:'ระบบรถ', calendar:'แจ้งเตือน/ปฏิทิน', approve:'อนุมัติ (Admin)', report:'รายงาน (Admin)', users:'จัดการผู้ใช้ (Admin)' };
-
-  document.getElementById('main-content').innerHTML = `
+  const TAB_LBL = { dashboard:'📊 ภาพรวม',request:'📋 ขอเบิก',ledger:'📒 บันทึกรายจ่าย',mylist:'📝 รายการของฉัน',photos:'🖼️ หลักฐานรูปภาพ',vehicles:'🚗 ระบบรถ',calendar:'🔔 แจ้งเตือน',approve:'✅ อนุมัติ (Admin)',report:'🖨️ รายงาน (Admin)',users:'👥 จัดการผู้ใช้ (Admin)' };
+  setHTML('main-content', `
     <div class="tab-row">
-      <div class="tab active" onclick="switchUserTab(this,'ut-list')">👥 ผู้ใช้ทั้งหมด</div>
-      <div class="tab" onclick="switchUserTab(this,'ut-add')">➕ สร้างผู้ใช้ใหม่</div>
+      <div class="tab active" onclick="switchUtab(this,'ut-list')">👥 ผู้ใช้ทั้งหมด</div>
+      <div class="tab" onclick="switchUtab(this,'ut-add')">➕ สร้างผู้ใช้ใหม่</div>
     </div>
-
-    <!-- รายชื่อ -->
-    <div id="ut-list">
-      <div id="user-list-content"><div class="loading">⏳ กำลังโหลด...</div></div>
-    </div>
-
-    <!-- สร้างใหม่ -->
+    <div id="ut-list"><div class="loading-el">⏳ กำลังโหลด...</div></div>
     <div id="ut-add" style="display:none">
       <div class="card">
         <div class="ch"><span class="ct">➕ สร้างผู้ใช้ใหม่</span></div>
         <div class="fg">
-          <div class="fgr"><div class="flbl">ชื่อ-นามสกุล <span>*</span></div><input class="fin" id="nu-name" placeholder="เช่น สมชาย ใจดี"/></div>
-          <div class="fgr"><div class="flbl">ชื่อผู้ใช้ (username) <span>*</span></div><input class="fin" id="nu-user" placeholder="ภาษาอังกฤษ ไม่มีเว้นวรรค"/></div>
-          <div class="fgr"><div class="flbl">รหัสผ่าน <span>*</span></div><input class="fin" id="nu-pass" type="password" placeholder="อย่างน้อย 6 ตัวอักษร"/></div>
-          <div class="fgr"><div class="flbl">ยืนยันรหัสผ่าน <span>*</span></div><input class="fin" id="nu-pass2" type="password" placeholder="กรอกรหัสผ่านอีกครั้ง"/></div>
-          <div class="fgr"><div class="flbl">สาขา <span>*</span></div><select class="fin" id="nu-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
-          <div class="fgr"><div class="flbl">สิทธิ์ <span>*</span></div><select class="fin" id="nu-role"><option value="employee">พนักงาน</option><option value="admin">Admin</option></select></div>
+          <div class="fgr"><div class="flbl">ชื่อ-นามสกุล <span class="req">*</span></div><input class="fin" id="nu-name" placeholder="เช่น สมชาย ใจดี"/></div>
+          <div class="fgr"><div class="flbl">Username <span class="req">*</span></div><input class="fin" id="nu-user" placeholder="ภาษาอังกฤษ ไม่มีเว้นวรรค"/></div>
+          <div class="fgr"><div class="flbl">รหัสผ่าน <span class="req">*</span></div><input class="fin" id="nu-pass" type="password" placeholder="อย่างน้อย 6 ตัว"/></div>
+          <div class="fgr"><div class="flbl">ยืนยันรหัสผ่าน <span class="req">*</span></div><input class="fin" id="nu-pass2" type="password" placeholder="กรอกซ้ำ"/></div>
+          <div class="fgr"><div class="flbl">สาขา <span class="req">*</span></div><select class="fin" id="nu-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
+          <div class="fgr"><div class="flbl">สิทธิ์ <span class="req">*</span></div><select class="fin" id="nu-role"><option value="employee">พนักงาน</option><option value="admin">Admin</option></select></div>
         </div>
         <div style="margin-top:12px">
-          <div class="flbl" style="margin-bottom:8px">สิทธิ์การเข้าถึงหน้าต่างๆ</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="nu-tabs">
-            ${ALL_TABS.map(t => `
+          <div class="flbl" style="margin-bottom:8px">หน้าที่เข้าถึงได้</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            ${ALL_TABS.map(t=>`
               <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;font-weight:700;padding:5px 8px;background:var(--gl);border-radius:7px">
                 <input type="checkbox" id="nut-${t}" value="${t}" ${['dashboard','request','ledger','mylist','photos'].includes(t)?'checked':''}>
-                ${TAB_LABELS[t]}
+                ${TAB_LBL[t]}
               </label>`).join('')}
           </div>
         </div>
         <div id="nu-err" style="color:var(--r);font-size:12px;margin-top:8px;font-weight:700;min-height:18px"></div>
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
           <button class="btn" onclick="clearNewUser()">ล้างข้อมูล</button>
-          <button class="btn btnp" onclick="submitNewUser()">💾 สร้างผู้ใช้</button>
+          <button class="btn btnp" id="nu-btn" onclick="submitNewUser()">💾 สร้างผู้ใช้</button>
         </div>
       </div>
-    </div>`;
-
+    </div>`);
   loadUserList();
 }
 
-function switchUserTab(el, id) {
+function switchUtab(e, id) {
   document.querySelectorAll('.tab-row .tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('ut-list').style.display = id === 'ut-list' ? '' : 'none';
-  document.getElementById('ut-add').style.display = id === 'ut-add' ? '' : 'none';
+  e.classList.add('active');
+  el('ut-list').style.display = id==='ut-list'?'':'none';
+  el('ut-add').style.display = id==='ut-add'?'':'none';
 }
 
 async function loadUserList() {
-  const el = document.getElementById('user-list-content');
-  if (!el) return;
+  loading('ut-list');
   try {
-    const r = await apiGet('getUsers');
-    if (!r) return;
-    const rows = r.data.map(u => `
+    const r = await apiGet('getUsers', {}, true);
+    const rows = (r?.data||[]).map(u => `
       <tr>
         <td><div style="font-weight:800">${u.name||'-'}</div><div style="font-size:10px;color:var(--tx2);font-weight:600">${u.username||'-'}</div></td>
         <td style="font-weight:700">${u.branch||'-'}</td>
         <td><span class="badge ${u.role==='admin'?'bok':'brec'}">${u.role==='admin'?'Admin':'พนักงาน'}</span></td>
         <td style="font-size:11px;font-weight:600">${(u.tabs||'').split(',').length} หน้า</td>
-        <td><span style="color:${u.tabs?.includes('vehicles')?'var(--g)':'var(--tx3)'};font-weight:700">${u.tabs?.includes('vehicles')?'✓':'—'}</span></td>
         <td><span class="badge ${u.status==='active'?'bok':'bno'}">${u.status==='active'?'ใช้งาน':'ระงับ'}</span></td>
         <td>
-          <button class="btn" style="font-size:10px;padding:3px 8px" onclick="resetPassword('${u.id}','${u.name}')">🔑 Reset</button>
-          <button class="btn ${u.status==='active'?'btnr':''}" style="font-size:10px;padding:3px 8px;margin-left:3px" onclick="toggleUserStatus('${u.id}','${u.status}')">
+          <button class="btn" style="font-size:10px;padding:3px 8px" onclick="doResetPass('${u.id}','${u.name}')">🔑 Reset</button>
+          <button class="btn ${u.status==='active'?'btnr':''}" style="font-size:10px;padding:3px 8px;margin-left:3px" onclick="doToggleUser('${u.id}','${u.status}')">
             ${u.status==='active'?'🚫 ระงับ':'✅ เปิด'}
           </button>
         </td>
-      </tr>`).join('') || '<tr><td colspan="7" class="empty">ไม่พบผู้ใช้</td></tr>';
-
-    el.innerHTML = `
+      </tr>`).join('') || '<tr><td colspan="6" class="empty-el">ไม่พบผู้ใช้</td></tr>';
+    setHTML('ut-list', `
       <div class="card">
-        <div class="ch"><span class="ct">👥 ผู้ใช้งานทั้งหมด (${r.data.length} คน)</span>
-          <button class="btn btns" style="font-size:11px" onclick="loadUserList()">🔄 รีเฟรช</button>
-        </div>
+        <div class="ch"><span class="ct">👥 ผู้ใช้งานทั้งหมด</span><button class="btn btns" style="font-size:11px" onclick="loadUserList()">🔄 รีเฟรช</button></div>
         <table class="tbl">
-          <tr><th>ชื่อ</th><th>สาขา</th><th>สิทธิ์</th><th>หน้าที่เข้าได้</th><th>ระบบรถ</th><th>สถานะ</th><th>จัดการ</th></tr>
+          <tr><th>ชื่อ</th><th>สาขา</th><th>สิทธิ์</th><th>หน้าที่เข้าได้</th><th>สถานะ</th><th>จัดการ</th></tr>
           ${rows}
         </table>
-      </div>`;
-  } catch(e) {
-    if (el) el.innerHTML = `<div class="empty">❌ ${e.message}</div>`;
-  }
+      </div>`);
+  } catch(e) { setHTML('ut-list', `<div class="empty-el">❌ ${e.message}</div>`); }
 }
 
 async function submitNewUser() {
-  const name = document.getElementById('nu-name')?.value.trim();
-  const username = document.getElementById('nu-user')?.value.trim();
-  const pass = document.getElementById('nu-pass')?.value;
-  const pass2 = document.getElementById('nu-pass2')?.value;
-  const branch = document.getElementById('nu-branch')?.value;
-  const role = document.getElementById('nu-role')?.value;
-  const errEl = document.getElementById('nu-err');
-
-  if (!name || !username || !pass) { errEl.textContent = 'กรุณากรอกข้อมูลให้ครบ'; return; }
-  if (pass.length < 6) { errEl.textContent = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'; return; }
+  const name = val('nu-name').trim();
+  const username = val('nu-user').trim();
+  const pass = val('nu-pass');
+  const pass2 = val('nu-pass2');
+  const errEl = el('nu-err');
+  const btn = el('nu-btn');
+  if (!name||!username||!pass) { errEl.textContent = 'กรุณากรอกข้อมูลให้ครบ'; return; }
+  if (pass.length < 6) { errEl.textContent = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัว'; return; }
   if (pass !== pass2) { errEl.textContent = 'รหัสผ่านไม่ตรงกัน'; return; }
-  if (!/^[a-zA-Z0-9_]+$/.test(username)) { errEl.textContent = 'ชื่อผู้ใช้ต้องเป็นภาษาอังกฤษหรือตัวเลขเท่านั้น'; return; }
-
-  const tabs = Array.from(document.querySelectorAll('#nu-tabs input:checked')).map(i => i.value).join(',');
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) { errEl.textContent = 'Username ต้องเป็นภาษาอังกฤษหรือตัวเลข'; return; }
+  const tabs = Array.from(document.querySelectorAll('[id^="nut-"]:checked')).map(i=>i.value).join(',');
   errEl.textContent = '';
-
+  btn.disabled = true; btn.textContent = 'กำลังสร้าง...';
   try {
-    showToast('กำลังสร้างผู้ใช้...', 'loading');
-    await apiPost('createUser', { name, username, password: pass, branch, role, tabs });
-    showToast(`สร้างผู้ใช้ ${name} สำเร็จ`, 'success');
+    await apiPost('createUser', { name, username, password: pass, branch: val('nu-branch'), role: val('nu-role'), tabs });
+    showToast(`✓ สร้างผู้ใช้ ${name} สำเร็จ`, 'success');
     clearNewUser();
-    switchUserTab(document.querySelector('.tab-row .tab'), 'ut-list');
+    switchUtab(document.querySelector('.tab-row .tab'), 'ut-list');
     loadUserList();
-  } catch(e) {
-    errEl.textContent = e.message;
-    showToast(e.message, 'error');
-  }
+  } catch(e) { errEl.textContent = e.message; }
+  btn.disabled = false; btn.textContent = '💾 สร้างผู้ใช้';
 }
 
 function clearNewUser() {
-  ['nu-name','nu-user','nu-pass','nu-pass2'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  document.getElementById('nu-err').textContent = '';
+  ['nu-name','nu-user','nu-pass','nu-pass2'].forEach(id => { const e = el(id); if (e) e.value = ''; });
+  el('nu-err').textContent = '';
 }
 
-async function resetPassword(userId, userName) {
-  const newPass = prompt(`รหัสผ่านใหม่สำหรับ ${userName}:`);
-  if (!newPass) return;
-  if (newPass.length < 6) { showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', 'error'); return; }
-  try {
-    await apiPost('resetPassword', { userId, newPassword: newPass });
-    showToast(`Reset รหัสผ่าน ${userName} สำเร็จ`, 'success');
-  } catch(e) { showToast(e.message, 'error'); }
+async function doResetPass(uid, uname) {
+  const np = prompt(`รหัสผ่านใหม่สำหรับ ${uname}:`);
+  if (!np) return;
+  if (np.length < 6) { showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัว', 'error'); return; }
+  try { await apiPost('resetPassword', { userId: uid, newPassword: np }); showToast('✓ Reset รหัสผ่านสำเร็จ', 'success'); }
+  catch(e) { showToast('❌ ' + e.message, 'error'); }
 }
 
-async function toggleUserStatus(userId, currentStatus) {
-  const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-  const action = newStatus === 'active' ? 'เปิดใช้งาน' : 'ระงับ';
-  if (!confirm(`ต้องการ${action}ผู้ใช้นี้?`)) return;
-  try {
-    await apiPost('updateUserStatus', { userId, status: newStatus });
-    showToast(`${action}ผู้ใช้สำเร็จ`, 'success');
-    loadUserList();
-  } catch(e) { showToast(e.message, 'error'); }
+async function doToggleUser(uid, cur) {
+  const ns = cur==='active'?'inactive':'active';
+  if (!confirm(`ต้องการ${ns==='active'?'เปิดใช้งาน':'ระงับ'}ผู้ใช้นี้?`)) return;
+  try { await apiPost('updateUserStatus', { userId: uid, status: ns }); showToast('✓ อัปเดตสถานะสำเร็จ', 'success'); loadUserList(); }
+  catch(e) { showToast('❌ ' + e.message, 'error'); }
 }
 
-// ===================================================
-// STARTUP — ตรวจสอบ login เดิม
-// ===================================================
+// =========================================
+// STARTUP
+// =========================================
 window.addEventListener('load', () => {
   const user = getUser();
-  const token = localStorage.getItem('sst_token');
-  if (user && token) {
-    initApp(user);
-  }
-  // โหลด vehicles สำหรับฟอร์มน้ำมัน ตอน tab เปิด
-  document.addEventListener('click', e => {
-    if (e.target.textContent?.includes('รถ/เดินทาง')) {
-      setTimeout(() => loadVehicleCards(), 300);
-    }
-  });
+  const token = getToken();
+  if (user && token) initApp(user);
 });
 </script>
 </body>
