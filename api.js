@@ -25,10 +25,18 @@ function cacheClear(...keys) {
 
 // ===================================================
 // FETCH with timeout + retry
+// NOTE: reduced timeout (25s -> 12s) and retries (3 -> 1) on purpose.
+// Google Apps Script Web Apps are inherently slow (often 1-5s+ per call,
+// worse on cold start / heavy Sheet reads) — that base latency can't be
+// fixed from the frontend. What the old settings did was make a single
+// slow/failed call balloon into a 25s+25s+25s+2s+4s+6s ≈ 87s worst case
+// before the user saw ANYTHING (even stale cached data). Now it gives up
+// on a truly stuck request faster and falls back to cached data sooner,
+// which is what most of the "stuck loading forever" feeling came from.
 // ===================================================
 async function _fetch(url, opts = {}, retry = 0) {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 25000);
+  const t = setTimeout(() => ctrl.abort(), 12000);
   try {
     const r = await fetch(url, { ...opts, signal: ctrl.signal });
     clearTimeout(t);
@@ -36,8 +44,8 @@ async function _fetch(url, opts = {}, retry = 0) {
     try { return JSON.parse(txt); } catch { throw new Error('ข้อมูลไม่ถูกต้อง'); }
   } catch(e) {
     clearTimeout(t);
-    if (retry < 3 && navigator.onLine) {
-      await new Promise(r => setTimeout(r, 2000 * (retry + 1)));
+    if (retry < 1 && navigator.onLine) {
+      await new Promise(r => setTimeout(r, 1200));
       return _fetch(url, opts, retry + 1);
     }
     throw e.name === 'AbortError' ? new Error('เชื่อมต่อช้า กำลังลองใหม่...') : e;
@@ -97,12 +105,21 @@ async function apiPost(action, payload = {}) {
 
 // ===================================================
 // QUEUE
+// FIX: the old version permanently threw away a submission the moment
+// apiPost threw ANY error (not just an offline error) — e.g. one slow
+// timeout from Apps Script was enough to silently delete a person's
+// submitted expense with only a 3.5s toast as evidence. That is almost
+// certainly why "รายการที่บันทึกมันหายไปไม่โชว์เลย" — it wasn't hidden,
+// it was actually never saved. Now a failed item is retried automatically
+// (up to 3 tries total) before being given up on, and if it does finally
+// fail, it's kept in a visible "failed submissions" list (sst_failed)
+// instead of vanishing, with a toast that stays up long enough to notice.
 // ===================================================
 const _q = [];
 let _sending = false;
 function enqueue(action, payload, onOk, onErr) {
   const id = Date.now() + '-' + Math.random().toString(36).slice(2);
-  _q.push({ action, payload: { ...payload, clientId: id }, onOk, onErr, id });
+  _q.push({ action, payload: { ...payload, clientId: id }, onOk, onErr, id, attempts: 0 });
   _saveQ();
   _runQ();
 }
@@ -115,22 +132,64 @@ async function _runQ() {
     const r = await apiPost(item.action, item.payload);
     _q.shift(); _saveQ(); t?.remove();
     showToast('✓ บันทึกสำเร็จ', 'success');
+    // give the backend a moment to make the write visible before any
+    // immediate re-fetch the onOk callback triggers (e.g. switching to
+    // "รายการของฉัน" right after submitting) — avoids showing a
+    // still-stale list that looks like the new item never saved.
+    if (['submitRequest','approveRequest','rejectRequest','addLedger','addVehicle','updateAlert'].includes(item.action)) {
+      await new Promise(res => setTimeout(res, 700));
+    }
     item.onOk?.(r);
   } catch(e) {
     t?.remove();
-    if (!navigator.onLine) { showToast('จะบันทึกเมื่อมีอินเทอร์เน็ต', 'warn'); }
-    else { _q.shift(); _saveQ(); showToast('❌ ' + e.message, 'error'); item.onErr?.(e); }
+    if (!navigator.onLine) {
+      showToast('จะบันทึกเมื่อมีอินเทอร์เน็ต', 'warn');
+    } else {
+      item.attempts = (item.attempts || 0) + 1;
+      if (item.attempts < 3) {
+        showToast(`ลองบันทึกใหม่ (${item.attempts}/3)...`, 'warn');
+        _saveQ();
+        _sending = false;
+        setTimeout(_runQ, 1500 * item.attempts);
+        return;
+      }
+      // gave up after 3 tries — don't just erase it, keep a record
+      _q.shift(); _saveQ();
+      _saveFailed(item, e.message);
+      showToast('❌ บันทึกไม่สำเร็จหลังลอง 3 ครั้ง: ' + e.message, 'error', 8000);
+      item.onErr?.(e);
+    }
   }
   _sending = false;
   if (_q.length) setTimeout(_runQ, 800);
 }
-function _saveQ() { try { localStorage.setItem('sst_q', JSON.stringify(_q.map(q => ({ action: q.action, payload: q.payload, id: q.id })))); } catch(_) {} }
+function _saveQ() { try { localStorage.setItem('sst_q', JSON.stringify(_q.map(q => ({ action: q.action, payload: q.payload, id: q.id, attempts: q.attempts })))); } catch(_) {} }
 function loadQueue() {
   try {
     const saved = JSON.parse(localStorage.getItem('sst_q') || '[]');
-    saved.forEach(i => { if (!_q.find(q => q.id === i.id)) _q.push({ ...i, onOk: null, onErr: null }); });
+    saved.forEach(i => { if (!_q.find(q => q.id === i.id)) _q.push({ ...i, onOk: null, onErr: null, attempts: i.attempts || 0 }); });
     if (_q.length) _runQ();
   } catch(_) {}
+}
+function _saveFailed(item, errMsg) {
+  try {
+    const list = JSON.parse(localStorage.getItem('sst_failed') || '[]');
+    list.push({ action: item.action, payload: item.payload, error: errMsg, at: new Date().toISOString() });
+    localStorage.setItem('sst_failed', JSON.stringify(list));
+  } catch(_) {}
+}
+// call this from the console, or wire a button to it, to see/retry
+// submissions that failed 3 times and were not saved to the server
+function getFailedSubmissions() {
+  try { return JSON.parse(localStorage.getItem('sst_failed') || '[]'); } catch(_) { return []; }
+}
+function retryFailedSubmission(index, onOk, onErr) {
+  const list = getFailedSubmissions();
+  const item = list[index];
+  if (!item) return;
+  list.splice(index, 1);
+  localStorage.setItem('sst_failed', JSON.stringify(list));
+  enqueue(item.action, item.payload, onOk, onErr);
 }
 window.addEventListener('online', () => { showToast('กลับมาออนไลน์', 'success'); _runQ(); });
 
@@ -207,7 +266,7 @@ function hasTab(t) { return getUser()?.tabs?.includes(t) ?? false; }
 // ===================================================
 // TOAST
 // ===================================================
-function showToast(msg, type = 'info') {
+function showToast(msg, type = 'info', duration = 3500) {
   let c = document.getElementById('_toasts');
   if (!c) {
     c = document.createElement('div');
@@ -220,7 +279,7 @@ function showToast(msg, type = 'info') {
   el.style.cssText = `background:${colors[type]||colors.info};color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Sarabun',sans-serif;animation:_si .2s ease;box-shadow:0 4px 12px rgba(0,0,0,.2)`;
   el.textContent = msg;
   c.appendChild(el);
-  if (type !== 'loading') setTimeout(() => el.remove(), 3500);
+  if (type !== 'loading') setTimeout(() => el.remove(), duration);
   return el;
 }
 
