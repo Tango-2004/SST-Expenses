@@ -175,9 +175,9 @@ body{background:var(--bg);min-height:100vh}
     <div class="ltitle">ศรีสุธา</div>
     <div class="lsub">ระบบเบิกจ่ายและอนุมัติค่าใช้จ่าย</div>
     <label class="llbl">ชื่อผู้ใช้</label>
-    <input class="lin" id="inp-user" placeholder="username"/>
+    <input class="lin" id="inp-user" placeholder="username" onkeydown="if(event.key==='Enter'){event.preventDefault();el('inp-pass').focus();}"/>
     <label class="llbl">รหัสผ่าน</label>
-    <input class="lin" id="inp-pass" type="password" placeholder="password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <input class="lin" id="inp-pass" type="password" placeholder="password" onkeydown="if(event.key==='Enter'){event.preventDefault();doLogin();}"/>
     <button class="lbtn" id="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
     <div class="lerr" id="login-err"></div>
   </div>
@@ -326,7 +326,14 @@ async function loadAlertBadge() {
   } catch(_) {}
 }
 
-function refreshPanel() { showPanel(curPanel); }
+// Panels where the user is actively filling in a form — skip auto-refresh
+// here so background polling doesn't wipe out what they're typing
+// (this was the cause of "can't change the name field" / typing feeling broken)
+const NO_AUTOREFRESH_PANELS = ['request'];
+function refreshPanel() {
+  if (NO_AUTOREFRESH_PANELS.includes(curPanel)) return;
+  showPanel(curPanel);
+}
 
 // =========================================
 // PANEL ROUTER
@@ -545,6 +552,7 @@ async function submitMoney() {
 
 // --- เบิกซื้อของ (2 Step) ---
 function formBuy() {
+  const user = getUser();
   return `
     <div class="step2-notice">
       <div class="title">🛒 เบิกซื้อของ — 2 ขั้นตอน</div>
@@ -555,6 +563,8 @@ function formBuy() {
       <div class="fg" style="margin-bottom:10px">
         <div class="fgr"><div class="flbl">วันที่</div><input class="fin" id="buy-date" value="${thaiNow()}" readonly/></div>
         <div class="fgr"><div class="flbl">สาขา</div><select class="fin" id="buy-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
+        <div class="fgr"><div class="flbl">ผู้ขอเบิก <span class="req">*</span></div><input class="fin" id="buy-requester" value="${user?.name||''}"/></div>
+        <div class="fgr"><div class="flbl">ผู้รับเงิน <span class="req">*</span></div><input class="fin" id="buy-receiver" value="${user?.name||''}" placeholder="ชื่อผู้รับเงิน"/></div>
         <div class="fgr full"><div class="flbl">วัตถุประสงค์</div><input class="fin" id="buy-purpose" placeholder="เช่น จัดซื้ออุปกรณ์สำนักงาน"/></div>
       </div>
       <div class="flbl" style="margin-bottom:5px">รายการสินค้า <span class="req">*</span></div>
@@ -603,18 +613,23 @@ async function submitBuy() {
     type: 'เบิกซื้อของ', step: '1',
     purpose: val('buy-purpose') || 'เบิกซื้อของ',
     branch: val('buy-branch') || user?.branch,
+    requester: val('buy-requester') || user?.name,
+    receiver: val('buy-receiver') || user?.name,
     items: JSON.stringify(items),
   }, () => { showPanel('mylist'); }, () => { btn.disabled = false; btn.textContent = '📤 ส่ง Step 1'; });
 }
 
 // --- เบิกของ ---
 function formItem() {
+  const user = getUser();
   return `
     <div class="card">
       <div class="ch"><span class="ct">📦 เบิกของ</span><span style="font-size:11px;color:var(--tx3);background:var(--gl);padding:3px 8px;border-radius:6px;font-weight:700">ไม่มียอดเงิน</span></div>
       <div class="fg" style="margin-bottom:10px">
         <div class="fgr"><div class="flbl">วันที่</div><input class="fin" id="item-date" value="${thaiNow()}" readonly/></div>
         <div class="fgr"><div class="flbl">สาขา</div><select class="fin" id="item-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
+        <div class="fgr"><div class="flbl">ผู้ขอเบิก <span class="req">*</span></div><input class="fin" id="item-requester" value="${user?.name||''}"/></div>
+        <div class="fgr"><div class="flbl">ผู้รับของ</div><input class="fin" id="item-receiver" value="${user?.name||''}" placeholder="ชื่อผู้รับของ"/></div>
         <div class="fgr full"><div class="flbl">วัตถุประสงค์</div><input class="fin" id="item-purpose" placeholder="เช่น เบิกอุปกรณ์สำนักงาน"/></div>
       </div>
       <div class="flbl" style="margin-bottom:5px">รายการของที่ขอเบิก <span class="req">*</span></div>
@@ -624,7 +639,7 @@ function formItem() {
       </table>
       <div class="add-row-btn" onclick="addRow('item-tbl')">+ เพิ่มรายการ</div>
       <div class="sig-row">
-        <div class="sig-box"><div class="sig-lbl">ผู้ขอเบิก</div><div class="sig-name">${getUser()?.name||'-'}</div><div class="sig-date">${thaiNow()}</div></div>
+        <div class="sig-box"><div class="sig-lbl">ผู้ขอเบิก</div><div class="sig-name">${user?.name||'-'}</div><div class="sig-date">${thaiNow()}</div></div>
         <div class="sig-box"><div class="sig-lbl">ผู้อนุมัติ</div><div class="sig-name" style="color:var(--tx3);font-style:italic">รอการอนุมัติ</div><div class="sig-date">—</div></div>
       </div>
       <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
@@ -643,6 +658,8 @@ async function submitItem() {
   enqueue('submitRequest', {
     type: 'เบิกของ', purpose: val('item-purpose') || 'เบิกของ',
     branch: val('item-branch') || user?.branch,
+    requester: val('item-requester') || user?.name,
+    receiver: val('item-receiver') || user?.name,
     items: JSON.stringify(items),
   }, () => { showPanel('mylist'); }, () => { btn.disabled = false; btn.textContent = '📤 ส่งขอเบิกของ'; });
 }
@@ -686,10 +703,13 @@ async function loadFuelForm() {
 }
 
 function fuelFormContent(type) {
+  const user = getUser();
   if (type === 'f') return `
     <div class="fg">
       <div class="fgr"><div class="flbl">วันที่</div><input class="fin" id="fu-date" value="${thaiNow()}" readonly/></div>
       <div class="fgr"><div class="flbl">จำนวนเงิน <span class="req">*</span></div><input class="fin" id="fu-amount" type="number" placeholder="0.00"/></div>
+      <div class="fgr"><div class="flbl">ผู้ขอเบิก <span class="req">*</span></div><input class="fin" id="fu-requester" value="${user?.name||''}"/></div>
+      <div class="fgr"><div class="flbl">ผู้รับเงิน <span class="req">*</span></div><input class="fin" id="fu-receiver" value="${user?.name||''}" placeholder="ชื่อผู้รับเงิน"/></div>
       <div class="fgr full"><div class="flbl">สถานีน้ำมัน / รายละเอียด</div><input class="fin" id="fu-detail" placeholder="เช่น เติมน้ำมัน ปตท."/></div>
       <div class="fgr full"><div class="ubox" onclick="el('fu-files').click()">📎 แนบรูปใบเสร็จน้ำมัน</div>
         <input type="file" id="fu-files" multiple accept="image/*" style="display:none" onchange="previewFiles('fu-files','fu-prev')"/>
@@ -699,6 +719,8 @@ function fuelFormContent(type) {
     <div class="fg">
       <div class="fgr"><div class="flbl">วันที่</div><input class="fin" id="re-date" value="${thaiNow()}" readonly/></div>
       <div class="fgr"><div class="flbl">จำนวนเงิน <span class="req">*</span></div><input class="fin" id="re-amount" type="number" placeholder="0.00"/></div>
+      <div class="fgr"><div class="flbl">ผู้ขอเบิก <span class="req">*</span></div><input class="fin" id="re-requester" value="${user?.name||''}"/></div>
+      <div class="fgr"><div class="flbl">ผู้รับเงิน <span class="req">*</span></div><input class="fin" id="re-receiver" value="${user?.name||''}" placeholder="ชื่อผู้รับเงิน"/></div>
       <div class="fgr full"><div class="flbl">รายการซ่อม <span class="req">*</span></div><input class="fin" id="re-detail" placeholder="เช่น เปลี่ยนยาง เปลี่ยนน้ำมันเครื่อง"/></div>
       <div class="fgr full"><div class="flbl">อู่ / ศูนย์บริการ</div><input class="fin" id="re-shop" placeholder="เช่น อู่ช่างสมชาย"/></div>
       <div class="fgr full"><div class="ubox" onclick="el('re-files').click()">📎 แนบรูปใบเสร็จซ่อม</div>
@@ -709,6 +731,8 @@ function fuelFormContent(type) {
     <div class="fg">
       <div class="fgr"><div class="flbl">วันที่</div><input class="fin" id="tl-date" value="${thaiNow()}" readonly/></div>
       <div class="fgr"><div class="flbl">จำนวนเงิน <span class="req">*</span></div><input class="fin" id="tl-amount" type="number" placeholder="0.00"/></div>
+      <div class="fgr"><div class="flbl">ผู้ขอเบิก <span class="req">*</span></div><input class="fin" id="tl-requester" value="${user?.name||''}"/></div>
+      <div class="fgr"><div class="flbl">ผู้รับเงิน <span class="req">*</span></div><input class="fin" id="tl-receiver" value="${user?.name||''}" placeholder="ชื่อผู้รับเงิน"/></div>
       <div class="fgr full"><div class="flbl">เส้นทาง / ชื่อทางด่วน <span class="req">*</span></div><input class="fin" id="tl-route" placeholder="เช่น ทางด่วนโทลล์เวย์ พระราม9-ดอนเมือง"/></div>
       <div class="fgr full"><div class="flbl">วัตถุประสงค์การเดินทาง</div><input class="fin" id="tl-purpose" placeholder="เช่น ไปพบลูกค้า"/></div>
       <div class="fgr full"><div class="ubox" onclick="el('tl-files').click()">📎 แนบสลิปทางด่วน (ถ้ามี)</div>
@@ -736,10 +760,10 @@ async function submitFuel() {
   const btn = el('fuel-btn');
   const fActive = el('ff-f')?.style.display !== 'none';
   const rActive = el('ff-r')?.style.display !== 'none';
-  let type, amount, purpose, filesEl, prevEl;
-  if (fActive) { type='ค่าน้ำมัน'; amount=val('fu-amount'); purpose=val('fu-detail')||'เติมน้ำมัน'; filesEl='fu-files'; prevEl='fu-prev'; }
-  else if (rActive) { type='ซ่อมรถ'; amount=val('re-amount'); purpose=val('re-detail')||'ซ่อมรถ'; filesEl='re-files'; prevEl='re-prev'; }
-  else { type='ค่าทางด่วน'; amount=val('tl-amount'); purpose=val('tl-route')||'ค่าทางด่วน'; filesEl='tl-files'; prevEl='tl-prev'; }
+  let type, amount, purpose, filesEl, prevEl, requester, receiver;
+  if (fActive) { type='ค่าน้ำมัน'; amount=val('fu-amount'); purpose=val('fu-detail')||'เติมน้ำมัน'; filesEl='fu-files'; prevEl='fu-prev'; requester=val('fu-requester'); receiver=val('fu-receiver'); }
+  else if (rActive) { type='ซ่อมรถ'; amount=val('re-amount'); purpose=val('re-detail')||'ซ่อมรถ'; filesEl='re-files'; prevEl='re-prev'; requester=val('re-requester'); receiver=val('re-receiver'); }
+  else { type='ค่าทางด่วน'; amount=val('tl-amount'); purpose=val('tl-route')||'ค่าทางด่วน'; filesEl='tl-files'; prevEl='tl-prev'; requester=val('tl-requester'); receiver=val('tl-receiver'); }
   if (!amount) { showToast('กรุณากรอกจำนวนเงิน', 'error'); return; }
   btn.disabled = true; btn.textContent = 'กำลังส่ง...';
   let imageUrls = '';
@@ -748,7 +772,7 @@ async function submitFuel() {
     const urls = await uploadImages(Array.from(files), type, user.branch);
     imageUrls = urls.join(',');
   }
-  enqueue('submitRequest', { type, amount, purpose, vehiclePlate: selPlate, branch: user?.branch, imageUrls },
+  enqueue('submitRequest', { type, amount, purpose, vehiclePlate: selPlate, branch: user?.branch, requester: requester || user?.name, receiver: receiver || user?.name, imageUrls },
     () => { showPanel('mylist'); },
     () => { btn.disabled = false; btn.textContent = '📤 ส่งขอเบิก'; });
 }
