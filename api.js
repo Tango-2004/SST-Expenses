@@ -1,253 +1,164 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbzwl1HXOIIyIrBmW1-d1fNIR8q4tz-9l8B9Y1zP34784qW_a9GNOLoU_6ItLH7QpssB1A/exec';
 
 // ===================================================
-// CACHE — เก็บข้อมูลไว้ใน memory + localStorage
+// CACHE
 // ===================================================
-const cache = {};
-const CACHE_TTL = 60000; // 60 วิ
-
-function cacheSet(key, data) {
-  cache[key] = { data, ts: Date.now() };
-  try {
-    localStorage.setItem('sst_cache_' + key, JSON.stringify(cache[key]));
-  } catch(_) {}
+const _cache = {};
+function cacheSet(k, d) {
+  _cache[k] = { d, t: Date.now() };
+  try { localStorage.setItem('c_' + k, JSON.stringify(_cache[k])); } catch(_) {}
 }
-
-function cacheGet(key, maxAge = CACHE_TTL) {
-  // ลอง memory ก่อน
-  if (cache[key] && Date.now() - cache[key].ts < maxAge) return cache[key].data;
-  // ลอง localStorage
+function cacheGet(k, ttl = 60000) {
+  if (_cache[k] && Date.now() - _cache[k].t < ttl) return _cache[k].d;
   try {
-    const raw = localStorage.getItem('sst_cache_' + key);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Date.now() - parsed.ts < maxAge * 5) { // localStorage อยู่ได้นาน 5x
-        cache[key] = parsed;
-        return parsed.data;
-      }
-    }
+    const s = localStorage.getItem('c_' + k);
+    if (s) { const p = JSON.parse(s); if (Date.now() - p.t < ttl * 10) { _cache[k] = p; return p.d; } }
   } catch(_) {}
   return null;
 }
+function cacheClear(...keys) {
+  keys.forEach(k => {
+    Object.keys(_cache).forEach(ck => { if (ck.startsWith(k)) delete _cache[ck]; });
+    Object.keys(localStorage).forEach(lk => { if (lk.startsWith('c_' + k)) localStorage.removeItem(lk); });
+  });
+}
 
 // ===================================================
-// CORE FETCH — timeout + retry เงียบๆ
+// FETCH with timeout + retry
 // ===================================================
-async function apiFetch(url, options = {}, retry = 0) {
-  const MAX_RETRY = 3;
-  const TIMEOUT = 20000;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT);
+async function _fetch(url, opts = {}, retry = 0) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 25000);
   try {
-    const res = await fetch(url, { ...options, signal: controller.signal });
-    clearTimeout(timer);
-    const text = await res.text();
-    try { return JSON.parse(text); }
-    catch { throw new Error('parse_error'); }
-  } catch(err) {
-    clearTimeout(timer);
-    if (retry < MAX_RETRY) {
-      await sleep(1500 * (retry + 1));
-      return apiFetch(url, options, retry + 1);
+    const r = await fetch(url, { ...opts, signal: ctrl.signal });
+    clearTimeout(t);
+    const txt = await r.text();
+    try { return JSON.parse(txt); } catch { throw new Error('ข้อมูลไม่ถูกต้อง'); }
+  } catch(e) {
+    clearTimeout(t);
+    if (retry < 3 && navigator.onLine) {
+      await new Promise(r => setTimeout(r, 2000 * (retry + 1)));
+      return _fetch(url, opts, retry + 1);
     }
-    throw err;
+    throw e.name === 'AbortError' ? new Error('เชื่อมต่อช้า กำลังลองใหม่...') : e;
   }
 }
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
 // ===================================================
-// API GET — ดึงข้อมูลพร้อม cache
+// API GET — cache first
 // ===================================================
-async function apiGet(action, params = {}, opts = {}) {
-  const { noCache = false, silent = false } = opts;
-  const cacheKey = action + JSON.stringify(params);
-
-  // คืน cache ทันที ถ้ามี
-  const cached = noCache ? null : cacheGet(cacheKey);
+async function apiGet(action, params = {}, noCache = false) {
+  const key = action + JSON.stringify(params);
+  const cached = noCache ? null : cacheGet(key);
   if (cached) {
-    // background refresh เงียบๆ
-    refreshInBackground(action, params, cacheKey);
+    // refresh เงียบๆ
+    _fetch(buildUrl(action, params)).then(d => { if (d?.ok) cacheSet(key, d); }).catch(() => {});
     return cached;
   }
-
-  // ถ้าไม่มี cache และ offline — คืน stale cache แทน error
   if (!navigator.onLine) {
-    const stale = cacheGet(cacheKey, Infinity);
+    const stale = cacheGet(key, Infinity);
     if (stale) return stale;
     throw new Error('ไม่มีอินเทอร์เน็ต');
   }
-
-  if (!silent) showLoadingBar();
-  const token = getToken();
-  const url = buildUrl(action, params, token);
-
+  bar(1);
   try {
-    const data = await apiFetch(url);
-    if (data?.ok) {
-      cacheSet(cacheKey, data);
-      hideLoadingBar();
-      return data;
-    }
-    throw new Error(data?.error || 'เกิดข้อผิดพลาด');
-  } catch(err) {
-    hideLoadingBar();
-    // ถ้า error แต่มี stale cache — คืน cache แทน crash
-    const stale = cacheGet(cacheKey, Infinity);
-    if (stale && !silent) {
-      showToast('แสดงข้อมูลล่าสุดที่บันทึกไว้', 'warn');
-      return stale;
-    }
-    throw err;
+    const d = await _fetch(buildUrl(action, params));
+    bar(0);
+    if (!d?.ok) throw new Error(d?.error || 'เกิดข้อผิดพลาด');
+    cacheSet(key, d);
+    return d;
+  } catch(e) {
+    bar(0);
+    const stale = cacheGet(key, Infinity);
+    if (stale) { showToast('แสดงข้อมูลเก่า (ไม่มีสัญญาณ)', 'warn'); return stale; }
+    throw e;
   }
 }
 
-// background refresh ไม่ block UI
-async function refreshInBackground(action, params, cacheKey) {
-  if (!navigator.onLine) return;
-  try {
-    const token = getToken();
-    const url = buildUrl(action, params, token);
-    const data = await apiFetch(url);
-    if (data?.ok) cacheSet(cacheKey, data);
-  } catch(_) {}
-}
-
 // ===================================================
-// API POST — ส่งข้อมูล พร้อม queue
+// API POST
 // ===================================================
 async function apiPost(action, payload = {}) {
-  const token = getToken();
-  const data = await apiFetch(API_URL, {
+  const d = await _fetch(API_URL, {
     method: 'POST',
-    body: JSON.stringify({ action, payload, token }),
+    body: JSON.stringify({ action, payload, token: getToken() }),
     headers: { 'Content-Type': 'text/plain' },
   });
-  if (!data?.ok) throw new Error(data?.error || 'เกิดข้อผิดพลาด');
-  // clear cache ที่เกี่ยวข้อง
-  clearRelatedCache(action);
-  return data;
-}
-
-function clearRelatedCache(action) {
+  if (!d?.ok) throw new Error(d?.error || 'เกิดข้อผิดพลาด');
   const clearMap = {
-    submitRequest: ['getRequests', 'getLedger'],
-    approveRequest: ['getRequests', 'getLedger'],
-    rejectRequest: ['getRequests'],
-    addLedger: ['getLedger'],
-    addVehicle: ['getVehicles', 'getAlerts'],
-    updateAlert: ['getAlerts', 'getVehicles'],
-    createUser: ['getUsers'],
-    resetPassword: ['getUsers'],
-    updateUserStatus: ['getUsers'],
+    submitRequest: ['getRequests'], approveRequest: ['getRequests','getLedger'],
+    rejectRequest: ['getRequests'], addLedger: ['getLedger'],
+    addVehicle: ['getVehicles','getAlerts'], updateAlert: ['getAlerts','getVehicles'],
+    createUser: ['getUsers'], resetPassword: ['getUsers'], updateUserStatus: ['getUsers'],
   };
-  const keys = clearMap[action] || [];
-  keys.forEach(k => {
-    Object.keys(cache).forEach(ck => { if (ck.startsWith(k)) delete cache[ck]; });
-    Object.keys(localStorage).forEach(lk => { if (lk.startsWith('sst_cache_' + k)) localStorage.removeItem(lk); });
-  });
+  if (clearMap[action]) cacheClear(...clearMap[action]);
+  return d;
 }
 
 // ===================================================
-// QUEUE — บันทึกหลายรายการ ไม่หลุด
+// QUEUE
 // ===================================================
-const queue = [];
-let isSending = false;
-
-function enqueue(action, payload, onSuccess, onError) {
-  const clientId = Date.now() + '-' + Math.random().toString(36).slice(2);
-  queue.push({ action, payload: { ...payload, clientId }, onSuccess, onError, clientId });
-  saveQueue();
-  processQueue();
+const _q = [];
+let _sending = false;
+function enqueue(action, payload, onOk, onErr) {
+  const id = Date.now() + '-' + Math.random().toString(36).slice(2);
+  _q.push({ action, payload: { ...payload, clientId: id }, onOk, onErr, id });
+  _saveQ();
+  _runQ();
 }
-
-async function processQueue() {
-  if (isSending || !queue.length) return;
-  isSending = true;
-  const item = queue[0];
-  const toast = showToast('กำลังบันทึก...', 'loading');
+async function _runQ() {
+  if (_sending || !_q.length) return;
+  _sending = true;
+  const item = _q[0];
+  const t = showToast('กำลังบันทึก...', 'loading');
   try {
-    const result = await apiPost(item.action, item.payload);
-    queue.shift(); saveQueue();
-    toast?.remove();
-    showToast('บันทึกสำเร็จ ✓', 'success');
-    if (item.onSuccess) item.onSuccess(result);
-  } catch(err) {
-    toast?.remove();
-    if (!navigator.onLine) {
-      showToast('จะบันทึกอัตโนมัติเมื่อมีอินเทอร์เน็ต', 'warn');
-    } else {
-      showToast('บันทึกไม่สำเร็จ: ' + err.message, 'error');
-      if (item.onError) item.onError(err);
-      queue.shift(); saveQueue();
-    }
+    const r = await apiPost(item.action, item.payload);
+    _q.shift(); _saveQ(); t?.remove();
+    showToast('✓ บันทึกสำเร็จ', 'success');
+    item.onOk?.(r);
+  } catch(e) {
+    t?.remove();
+    if (!navigator.onLine) { showToast('จะบันทึกเมื่อมีอินเทอร์เน็ต', 'warn'); }
+    else { _q.shift(); _saveQ(); showToast('❌ ' + e.message, 'error'); item.onErr?.(e); }
   }
-  isSending = false;
-  if (queue.length) setTimeout(processQueue, 800);
+  _sending = false;
+  if (_q.length) setTimeout(_runQ, 800);
 }
-
-function saveQueue() {
-  try { localStorage.setItem('sst_queue', JSON.stringify(queue.map(q => ({ action: q.action, payload: q.payload, clientId: q.clientId })))); }
-  catch(_) {}
-}
-
+function _saveQ() { try { localStorage.setItem('sst_q', JSON.stringify(_q.map(q => ({ action: q.action, payload: q.payload, id: q.id })))); } catch(_) {} }
 function loadQueue() {
   try {
-    const saved = JSON.parse(localStorage.getItem('sst_queue') || '[]');
-    saved.forEach(item => {
-      if (!queue.find(q => q.clientId === item.clientId)) queue.push({ ...item, onSuccess: null, onError: null });
-    });
-    if (queue.length) processQueue();
+    const saved = JSON.parse(localStorage.getItem('sst_q') || '[]');
+    saved.forEach(i => { if (!_q.find(q => q.id === i.id)) _q.push({ ...i, onOk: null, onErr: null }); });
+    if (_q.length) _runQ();
   } catch(_) {}
 }
-
-window.addEventListener('online', () => {
-  showToast('กลับมาออนไลน์แล้ว', 'success');
-  processQueue();
-});
+window.addEventListener('online', () => { showToast('กลับมาออนไลน์', 'success'); _runQ(); });
 
 // ===================================================
-// POLLING — sync ทุก 60 วิ เงียบๆ
+// POLLING — เงียบๆ ทุก 60 วิ
 // ===================================================
-let pollTimer = null;
-
-function startPolling(onUpdate) {
+let _poll = null;
+function startPolling(cb) {
   stopPolling();
-  pollTimer = setInterval(async () => {
-    if (!navigator.onLine) return;
-    try {
-      const data = await apiFetch(buildUrl('ping', {}, getToken()));
-      if (data?.ok && onUpdate) onUpdate();
-    } catch(_) {}
-  }, 60000);
+  _poll = setInterval(() => { if (navigator.onLine && cb) cb(); }, 60000);
 }
-
-function stopPolling() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-}
+function stopPolling() { if (_poll) { clearInterval(_poll); _poll = null; } }
 
 // ===================================================
-// LOADING BAR — แถบด้านบนบอกว่ากำลังโหลด
+// LOADING BAR
 // ===================================================
-let loadingCount = 0;
-function showLoadingBar() {
-  loadingCount++;
-  let bar = document.getElementById('loading-bar');
-  if (!bar) {
-    bar = document.createElement('div');
-    bar.id = 'loading-bar';
-    bar.style.cssText = 'position:fixed;top:0;left:0;height:3px;background:var(--g,#5BA85A);z-index:99999;transition:width .3s;width:0';
-    document.body.appendChild(bar);
+let _barCount = 0;
+function bar(show) {
+  _barCount = Math.max(0, _barCount + (show ? 1 : -1));
+  let el = document.getElementById('_bar');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_bar';
+    el.style.cssText = 'position:fixed;top:0;left:0;height:3px;background:#5BA85A;z-index:99999;transition:width .4s,opacity .3s;width:0;opacity:0';
+    document.body.appendChild(el);
   }
-  bar.style.width = '70%';
-  bar.style.opacity = '1';
-}
-
-function hideLoadingBar() {
-  loadingCount = Math.max(0, loadingCount - 1);
-  if (loadingCount > 0) return;
-  const bar = document.getElementById('loading-bar');
-  if (bar) { bar.style.width = '100%'; setTimeout(() => { bar.style.opacity = '0'; bar.style.width = '0'; }, 300); }
+  if (_barCount > 0) { el.style.opacity = '1'; el.style.width = '70%'; }
+  else { el.style.width = '100%'; setTimeout(() => { el.style.opacity = '0'; el.style.width = '0'; }, 400); }
 }
 
 // ===================================================
@@ -260,73 +171,55 @@ async function uploadImages(files, category, branch) {
   const month = months[now.getMonth()];
   const urls = [];
   for (const file of files) {
-    const t = showToast(`กำลังอัปโหลด ${file.name}...`, 'loading');
+    const t = showToast(`อัปโหลด ${file.name}...`, 'loading');
     try {
       const base64 = await fileToBase64(file);
-      const filename = `${category}_${branch}_${now.getTime()}_${file.name}`;
-      const r = await apiPost('uploadImage', { base64, filename, category, branch, year, month });
-      urls.push(r.url);
-      t?.remove();
-      showToast(r.duplicate ? 'ไฟล์มีอยู่แล้ว' : `✓ อัปโหลดสำเร็จ`, 'success');
-    } catch(err) {
-      t?.remove();
-      showToast(`อัปโหลด ${file.name} ล้มเหลว`, 'error');
-    }
+      const r = await apiPost('uploadImage', { base64, filename: `${category}_${branch}_${Date.now()}_${file.name}`, category, branch, year, month });
+      urls.push(r.url); t?.remove(); showToast('✓ อัปโหลดสำเร็จ', 'success');
+    } catch(e) { t?.remove(); showToast('อัปโหลดล้มเหลว: ' + e.message, 'error'); }
   }
   return urls;
 }
-
 function fileToBase64(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = e => res(e.target.result);
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsDataURL(file); });
 }
 
 // ===================================================
 // AUTH
 // ===================================================
-async function login(username, password) {
-  const data = await apiFetch(buildUrl('login', { username, password }, ''));
-  if (!data?.ok) throw new Error(data?.error || 'เข้าสู่ระบบไม่สำเร็จ');
-  localStorage.setItem('sst_token', data.token);
-  localStorage.setItem('sst_user', JSON.stringify(data.user));
-  return data.user;
+async function login(user, pass) {
+  const d = await _fetch(buildUrl('login', { username: user, password: pass }));
+  if (!d?.ok) throw new Error(d?.error || 'เข้าสู่ระบบไม่สำเร็จ');
+  localStorage.setItem('sst_token', d.token);
+  localStorage.setItem('sst_user', JSON.stringify(d.user));
+  return d.user;
 }
-
 function logout() {
-  // เก็บ queue ไว้ อย่าลบ
-  localStorage.removeItem('sst_token');
-  localStorage.removeItem('sst_user');
-  // ล้าง cache
-  Object.keys(localStorage).forEach(k => { if (k.startsWith('sst_cache_')) localStorage.removeItem(k); });
-  stopPolling();
-  window.location.reload();
+  ['sst_token','sst_user'].forEach(k => localStorage.removeItem(k));
+  Object.keys(localStorage).forEach(k => { if (k.startsWith('c_')) localStorage.removeItem(k); });
+  stopPolling(); window.location.reload();
 }
-
 function getToken() { return localStorage.getItem('sst_token') || ''; }
 function getUser() { try { return JSON.parse(localStorage.getItem('sst_user')); } catch { return null; } }
 function isAdmin() { return getUser()?.role === 'admin'; }
-function hasTab(tab) { return getUser()?.tabs?.includes(tab) ?? false; }
+function hasTab(t) { return getUser()?.tabs?.includes(t) ?? false; }
 
 // ===================================================
 // TOAST
 // ===================================================
 function showToast(msg, type = 'info') {
-  let container = document.getElementById('toast-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'toast-container';
-    container.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:300px';
-    document.body.appendChild(container);
+  let c = document.getElementById('_toasts');
+  if (!c) {
+    c = document.createElement('div');
+    c.id = '_toasts';
+    c.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:300px';
+    document.body.appendChild(c);
   }
-  const colors = { success:'#4CAF50', error:'#E53935', warn:'#FB8C00', info:'#1976D2', loading:'#7B1FA2' };
+  const colors = { success:'#388E3C', error:'#D32F2F', warn:'#F57C00', info:'#1565C0', loading:'#6A1B9A' };
   const el = document.createElement('div');
-  el.style.cssText = `background:${colors[type]||colors.info};color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Sarabun',sans-serif;animation:slideIn .2s ease;box-shadow:0 4px 12px rgba(0,0,0,.15)`;
+  el.style.cssText = `background:${colors[type]||colors.info};color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Sarabun',sans-serif;animation:_si .2s ease;box-shadow:0 4px 12px rgba(0,0,0,.2)`;
   el.textContent = msg;
-  container.appendChild(el);
+  c.appendChild(el);
   if (type !== 'loading') setTimeout(() => el.remove(), 3500);
   return el;
 }
@@ -334,20 +227,17 @@ function showToast(msg, type = 'info') {
 // ===================================================
 // HELPERS
 // ===================================================
-function buildUrl(action, params, token) {
-  const url = new URL(API_URL);
-  url.searchParams.set('action', action);
-  if (token) url.searchParams.set('token', token);
-  Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null) url.searchParams.set(k, String(v)); });
-  return url.toString();
+function buildUrl(action, params = {}) {
+  const u = new URL(API_URL);
+  u.searchParams.set('action', action);
+  u.searchParams.set('token', getToken());
+  Object.entries(params).forEach(([k, v]) => { if (v != null) u.searchParams.set(k, String(v)); });
+  return u.toString();
 }
 
-// ===================================================
-// INIT
-// ===================================================
 document.addEventListener('DOMContentLoaded', () => {
   loadQueue();
-  const style = document.createElement('style');
-  style.textContent = '@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}';
-  document.head.appendChild(style);
+  const s = document.createElement('style');
+  s.textContent = '@keyframes _si{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}';
+  document.head.appendChild(s);
 });
