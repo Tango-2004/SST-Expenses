@@ -962,11 +962,12 @@ async function submitReq() {
   if (res.ok) {
     errEl.textContent = '';
     const suc = document.getElementById('rf-success');
-    if (suc) suc.innerHTML = `<div class="success-banner" style="margin-top:14px">✅ ยื่นคำขอเรียบร้อยแล้ว!</div>`;
+    if (suc) suc.innerHTML = `<div class="success-banner" style="margin-top:14px">✅ ยื่นคำขอเรียบร้อยแล้ว! กำลังพาไปดูรายการ...</div>`;
     document.getElementById('req-type').value = '';
-    // redirect ทันที แล้วค่อย reload data ใน background
-    setTimeout(() => { document.getElementById('req-form-body').innerHTML = ''; gotoPage('mylist'); }, 800);
-    loadBatch(true); // non-blocking
+    // โหลดข้อมูลก่อน แล้วค่อยไปหน้า mylist
+    await loadBatch(true);
+    document.getElementById('req-form-body').innerHTML = '';
+    gotoPage('mylist');
   } else { errEl.style.color = 'var(--red)'; errEl.textContent = res.error; }
 }
 
@@ -1274,21 +1275,34 @@ function previewPrint() {
     ['วัตถุประสงค์ / รายละเอียด', purpose],
   ];
 
+  const docNum = 'SST-' + Date.now().toString().slice(-6);
   document.getElementById('print-preview-body').innerHTML = `
-    <div style="text-align:center;margin-bottom:18px;border-bottom:2px solid #333;padding-bottom:14px">
-      <div style="font-size:18px;font-weight:900;letter-spacing:.04em">บริษัท ศรีสุธา จำกัด</div>
-      <div style="font-size:15px;font-weight:700;margin-top:4px">แบบฟอร์มขอเบิกเงิน</div>
+    <!-- หัวกระดาษ -->
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #2d4a25;padding-bottom:14px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <img src="logo.png" alt="SST" style="width:58px;height:58px;object-fit:contain" onerror="this.style.display='none'"/>
+        <div>
+          <div style="font-size:17px;font-weight:900;color:#2d4a25;letter-spacing:.03em">บริษัท ศรีสุธา จำกัด</div>
+          <div style="font-size:11px;color:#555;margin-top:2px">ระบบเบิกจ่ายค่าใช้จ่าย · S.S.T Expense System</div>
+        </div>
+      </div>
+      <div style="text-align:right;font-size:12px;color:#444">
+        <div style="font-weight:700;font-size:14px">แบบฟอร์มขอเบิกเงิน</div>
+        <div style="margin-top:4px">เลขที่: <b>${docNum}</b></div>
+        <div>วันที่: ${today}</div>
+      </div>
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:13px">
-      ${rows.map(([k,v]) => `
+      ${rows.filter(([,v]) => v && v !== '-').map(([k,v]) => `
         <tr>
-          <td style="padding:8px 12px;border:1px solid #ccc;background:#f9f9f9;font-weight:700;width:40%;vertical-align:top">${k}</td>
+          <td style="padding:8px 12px;border:1px solid #ccc;background:#f9f9f9;font-weight:700;width:38%;vertical-align:top">${k}</td>
           <td style="padding:8px 12px;border:1px solid #ccc;white-space:pre-wrap">${v}</td>
         </tr>`).join('')}
     </table>
-    <div style="margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:30px;text-align:center;font-size:13px">
-      <div><div style="border-top:1px solid #333;padding-top:6px;margin-top:40px">ผู้ขอเบิก</div><div style="color:#666">(${requester})</div></div>
-      <div><div style="border-top:1px solid #333;padding-top:6px;margin-top:40px">ผู้อนุมัติ</div><div style="color:#666">&nbsp;</div></div>
+    <div style="margin-top:36px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;text-align:center;font-size:12px">
+      <div><div style="border-top:1px solid #333;padding-top:6px;margin-top:50px">ผู้ขอเบิก</div><div style="color:#666;margin-top:3px">(${requester})</div></div>
+      <div><div style="border-top:1px solid #333;padding-top:6px;margin-top:50px">ผู้ตรวจสอบ</div><div style="color:#666;margin-top:3px">&nbsp;</div></div>
+      <div><div style="border-top:1px solid #333;padding-top:6px;margin-top:50px">ผู้อนุมัติ</div><div style="color:#666;margin-top:3px">&nbsp;</div></div>
     </div>`;
   document.getElementById('ov-print').classList.add('open');
 }
@@ -1298,10 +1312,13 @@ function doPrint() {
   const win = window.open('', '_blank', 'width=700,height=600');
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
     <title>แบบฟอร์มขอเบิกเงิน</title>
-    <style>body{font-family:'Sarabun',sans-serif;padding:32px;font-size:14px}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700;800;900&display=swap"/>
+    <style>
+    body{font-family:'Sarabun',sans-serif;padding:32px;font-size:14px;color:#1e2a1a}
     @page{size:A4;margin:2cm}
     table{width:100%;border-collapse:collapse}
     td{padding:8px 12px;border:1px solid #ccc}
+    img{max-width:100%}
     </style></head><body>${content}</body></html>`);
   win.document.close();
   win.focus();
