@@ -688,8 +688,8 @@ function renderSupplyApprove() {
 
 // ── MYLIST ──
 function renderMylist() {
-  let data = CU.role === 'admin' ? _requests : _requests.filter(r => r.branch === CU.branch || r.requester === CU.name);
-  data = [...data].sort((a,b) => b.id.localeCompare(a.id));
+  // GAS กรอง branch ให้แล้ว สำหรับ non-admin → แสดงทุกรายการใน _requests
+  let data = [..._requests].sort((a,b) => (b.id||'').localeCompare(a.id||''));
   const el = document.getElementById('mylist-content');
   el.innerHTML = data.length ? data.map(r => reqCardHtml(r, false)).join('') : '<div class="empty">ยังไม่มีรายการ</div>';
 }
@@ -964,7 +964,8 @@ async function submitReq() {
     const suc = document.getElementById('rf-success');
     if (suc) suc.innerHTML = `<div class="success-banner" style="margin-top:14px">✅ ยื่นคำขอเรียบร้อยแล้ว! กำลังพาไปดูรายการ...</div>`;
     document.getElementById('req-type').value = '';
-    // โหลดข้อมูลก่อน แล้วค่อยไปหน้า mylist
+    // รอให้ GAS commit ข้อมูลลง Sheet ก่อน แล้วค่อย reload
+    await new Promise(r => setTimeout(r, 1500));
     await loadBatch(true);
     document.getElementById('req-form-body').innerHTML = '';
     gotoPage('mylist');
