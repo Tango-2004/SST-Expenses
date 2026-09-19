@@ -1,302 +1,182 @@
+// api.js — SST v4 (Batch + Cache-first + Queue + Warmup)
 const API_URL = 'https://script.google.com/macros/s/AKfycbzwl1HXOIIyIrBmW1-d1fNIR8q4tz-9l8B9Y1zP34784qW_a9GNOLoU_6ItLH7QpssB1A/exec';
+const RETRY = 3, TIMEOUT_MS = 25000;
 
-// ===================================================
-// CACHE
-// ===================================================
-const _cache = {};
-function cacheSet(k, d) {
-  _cache[k] = { d, t: Date.now() };
-  try { localStorage.setItem('c_' + k, JSON.stringify(_cache[k])); } catch(_) {}
+/* ── Memory + localStorage cache ── */
+const _mem = {};
+function cacheSet(k, v, ttl = 60) {
+  _mem[k] = { v, exp: Date.now() + ttl * 1000 };
+  try { localStorage.setItem('sst4_' + k, JSON.stringify({ v, exp: Date.now() + ttl * 10000 })); } catch (_) {}
 }
-function cacheGet(k, ttl = 60000) {
-  if (_cache[k] && Date.now() - _cache[k].t < ttl) return _cache[k].d;
+function cacheGet(k) {
+  if (_mem[k]?.exp > Date.now()) return _mem[k].v;
   try {
-    const s = localStorage.getItem('c_' + k);
-    if (s) { const p = JSON.parse(s); if (Date.now() - p.t < ttl * 10) { _cache[k] = p; return p.d; } }
-  } catch(_) {}
+    const s = localStorage.getItem('sst4_' + k);
+    if (s) { const p = JSON.parse(s); if (p.exp > Date.now()) { _mem[k] = p; return p.v; } }
+  } catch (_) {}
   return null;
 }
-function cacheClear(...keys) {
-  keys.forEach(k => {
-    Object.keys(_cache).forEach(ck => { if (ck.startsWith(k)) delete _cache[ck]; });
-    Object.keys(localStorage).forEach(lk => { if (lk.startsWith('c_' + k)) localStorage.removeItem(lk); });
-  });
+
+/* ── Loading bar ── */
+let _bar;
+function barShow() {
+  if (!_bar) {
+    _bar = document.createElement('div');
+    _bar.style.cssText = 'position:fixed;top:0;left:0;height:3px;background:#43a047;width:0;z-index:99999;transition:width .3s,opacity .4s';
+    document.body.appendChild(_bar);
+  }
+  _bar.style.width = '40%'; _bar.style.opacity = '1';
+}
+function barDone() {
+  if (_bar) { _bar.style.width = '100%'; setTimeout(() => { _bar.style.opacity = '0'; _bar.style.width = '0'; }, 350); }
 }
 
-// ===================================================
-// FETCH with timeout + retry
-// NOTE: reduced timeout (25s -> 12s) and retries (3 -> 1) on purpose.
-// Google Apps Script Web Apps are inherently slow (often 1-5s+ per call,
-// worse on cold start / heavy Sheet reads) — that base latency can't be
-// fixed from the frontend. What the old settings did was make a single
-// slow/failed call balloon into a 25s+25s+25s+2s+4s+6s ≈ 87s worst case
-// before the user saw ANYTHING (even stale cached data). Now it gives up
-// on a truly stuck request faster and falls back to cached data sooner,
-// which is what most of the "stuck loading forever" feeling came from.
-// ===================================================
-async function _fetch(url, opts = {}, retry = 0) {
+/* ── Core fetch with retry ── */
+async function _fetch(url, opts = {}, attempt = 0) {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 12000);
+  const tid = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
     const r = await fetch(url, { ...opts, signal: ctrl.signal });
-    clearTimeout(t);
-    const txt = await r.text();
-    try { return JSON.parse(txt); } catch { throw new Error('ข้อมูลไม่ถูกต้อง'); }
-  } catch(e) {
-    clearTimeout(t);
-    if (retry < 1 && navigator.onLine) {
-      await new Promise(r => setTimeout(r, 1200));
-      return _fetch(url, opts, retry + 1);
-    }
-    throw e.name === 'AbortError' ? new Error('เชื่อมต่อช้า กำลังลองใหม่...') : e;
+    clearTimeout(tid);
+    return JSON.parse(await r.text());
+  } catch (err) {
+    clearTimeout(tid);
+    if (attempt < RETRY - 1) { await new Promise(r => setTimeout(r, 2000)); return _fetch(url, opts, attempt + 1); }
+    throw err;
   }
 }
 
-// ===================================================
-// API GET — cache first
-// ===================================================
-async function apiGet(action, params = {}, noCache = false) {
+/* ── GET with cache-first ── */
+async function apiGet(action, params = {}, { bust = false, ttl = 60 } = {}) {
+  const token = localStorage.getItem('sst_token') || '';
   const key = action + JSON.stringify(params);
-  const cached = noCache ? null : cacheGet(key);
-  if (cached) {
-    // refresh เงียบๆ
-    _fetch(buildUrl(action, params)).then(d => { if (d?.ok) cacheSet(key, d); }).catch(() => {});
-    return cached;
+  if (!bust) {
+    const cached = cacheGet(key);
+    if (cached) { _bgRefresh(action, params, key, ttl, token); return cached; }
   }
-  if (!navigator.onLine) {
-    const stale = cacheGet(key, Infinity);
-    if (stale) return stale;
-    throw new Error('ไม่มีอินเทอร์เน็ต');
-  }
-  bar(1);
+  barShow();
   try {
-    const d = await _fetch(buildUrl(action, params));
-    bar(0);
-    if (!d?.ok) throw new Error(d?.error || 'เกิดข้อผิดพลาด');
-    cacheSet(key, d);
-    return d;
-  } catch(e) {
-    bar(0);
-    const stale = cacheGet(key, Infinity);
-    if (stale) { showToast('แสดงข้อมูลเก่า (ไม่มีสัญญาณ)', 'warn'); return stale; }
-    throw e;
+    const qs = new URLSearchParams({ action, token, ...params }).toString();
+    const data = await _fetch(API_URL + '?' + qs);
+    if (data.ok !== false) cacheSet(key, data, ttl);
+    barDone(); return data;
+  } catch (e) {
+    barDone();
+    const stale = cacheGet(key);
+    return stale || { ok: false, error: e.message };
   }
 }
 
-// ===================================================
-// API POST
-// ===================================================
-async function apiPost(action, payload = {}) {
-  const d = await _fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action, payload, token: getToken() }),
-    headers: { 'Content-Type': 'text/plain' },
-  });
-  if (!d?.ok) throw new Error(d?.error || 'เกิดข้อผิดพลาด');
-  const clearMap = {
-    submitRequest: ['getRequests'], approveRequest: ['getRequests','getLedger'],
-    rejectRequest: ['getRequests'], addLedger: ['getLedger'],
-    addVehicle: ['getVehicles','getAlerts'], updateAlert: ['getAlerts','getVehicles'],
-    createUser: ['getUsers'], resetPassword: ['getUsers'], updateUserStatus: ['getUsers'],
-  };
-  if (clearMap[action]) cacheClear(...clearMap[action]);
-  return d;
+function _bgRefresh(action, params, key, ttl, token) {
+  setTimeout(async () => {
+    try {
+      const qs = new URLSearchParams({ action, token: localStorage.getItem('sst_token') || '', ...params }).toString();
+      const data = await _fetch(API_URL + '?' + qs);
+      if (data.ok !== false) cacheSet(key, data, ttl);
+    } catch (_) {}
+  }, 200);
 }
 
-// ===================================================
-// QUEUE
-// FIX: the old version permanently threw away a submission the moment
-// apiPost threw ANY error (not just an offline error) — e.g. one slow
-// timeout from Apps Script was enough to silently delete a person's
-// submitted expense with only a 3.5s toast as evidence. That is almost
-// certainly why "รายการที่บันทึกมันหายไปไม่โชว์เลย" — it wasn't hidden,
-// it was actually never saved. Now a failed item is retried automatically
-// (up to 3 tries total) before being given up on, and if it does finally
-// fail, it's kept in a visible "failed submissions" list (sst_failed)
-// instead of vanishing, with a toast that stays up long enough to notice.
-// ===================================================
-const _q = [];
-let _sending = false;
-function enqueue(action, payload, onOk, onErr) {
-  const id = Date.now() + '-' + Math.random().toString(36).slice(2);
-  _q.push({ action, payload: { ...payload, clientId: id }, onOk, onErr, id, attempts: 0 });
-  _saveQ();
+/* ── BATCH GET ── */
+async function apiBatch(items = 'requests,vehicles,alerts', params = {}, { bust = false } = {}) {
+  const token = localStorage.getItem('sst_token') || '';
+  const key = 'batch_' + items + JSON.stringify(params);
+  if (!bust) {
+    const cached = cacheGet(key);
+    if (cached) { _bgBatch(items, params, key, token); return cached; }
+  }
+  barShow();
+  try {
+    const qs = new URLSearchParams({ action: 'batch', token, items, ...params }).toString();
+    const data = await _fetch(API_URL + '?' + qs);
+    if (data.ok !== false) cacheSet(key, data, 60);
+    barDone(); return data;
+  } catch (e) {
+    barDone();
+    return cacheGet(key) || { ok: false, error: e.message };
+  }
+}
+
+function _bgBatch(items, params, key, token) {
+  setTimeout(async () => {
+    try {
+      const qs = new URLSearchParams({ action: 'batch', token: localStorage.getItem('sst_token') || '', items, ...params }).toString();
+      const data = await _fetch(API_URL + '?' + qs);
+      if (data.ok !== false) cacheSet(key, data, 60);
+    } catch (_) {}
+  }, 200);
+}
+
+/* ── POST ── */
+async function apiPost(action, payload = {}) {
+  const token = localStorage.getItem('sst_token') || '';
+  barShow();
+  try {
+    const data = await _fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, token, payload }) });
+    barDone(); return data;
+  } catch (e) { barDone(); return { ok: false, error: e.message }; }
+}
+
+/* ── Queue (offline support) ── */
+const _queue = (() => { try { return JSON.parse(localStorage.getItem('sst_queue') || '[]'); } catch(_){return[];} })();
+let _qRunning = false;
+function enqueue(action, payload) {
+  const clientId = 'cid-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  _queue.push({ action, payload: { ...payload, clientId }, clientId });
+  try { localStorage.setItem('sst_queue', JSON.stringify(_queue)); } catch(_) {}
   _runQ();
+  return clientId;
 }
 async function _runQ() {
-  if (_sending || !_q.length) return;
-  _sending = true;
-  const item = _q[0];
-  const t = showToast('กำลังบันทึก...', 'loading');
-  try {
-    const r = await apiPost(item.action, item.payload);
-    _q.shift(); _saveQ(); t?.remove();
-    showToast('✓ บันทึกสำเร็จ', 'success');
-    // give the backend a moment to make the write visible before any
-    // immediate re-fetch the onOk callback triggers (e.g. switching to
-    // "รายการของฉัน" right after submitting) — avoids showing a
-    // still-stale list that looks like the new item never saved.
-    if (['submitRequest','approveRequest','rejectRequest','addLedger','addVehicle','updateAlert'].includes(item.action)) {
-      await new Promise(res => setTimeout(res, 700));
-    }
-    item.onOk?.(r);
-  } catch(e) {
-    t?.remove();
-    if (!navigator.onLine) {
-      showToast('จะบันทึกเมื่อมีอินเทอร์เน็ต', 'warn');
-    } else {
-      item.attempts = (item.attempts || 0) + 1;
-      if (item.attempts < 3) {
-        showToast(`ลองบันทึกใหม่ (${item.attempts}/3)...`, 'warn');
-        _saveQ();
-        _sending = false;
-        setTimeout(_runQ, 1500 * item.attempts);
-        return;
-      }
-      // gave up after 3 tries — don't just erase it, keep a record
-      _q.shift(); _saveQ();
-      _saveFailed(item, e.message);
-      showToast('❌ บันทึกไม่สำเร็จหลังลอง 3 ครั้ง: ' + e.message, 'error', 8000);
-      item.onErr?.(e);
-    }
-  }
-  _sending = false;
-  if (_q.length) setTimeout(_runQ, 800);
-}
-function _saveQ() { try { localStorage.setItem('sst_q', JSON.stringify(_q.map(q => ({ action: q.action, payload: q.payload, id: q.id, attempts: q.attempts })))); } catch(_) {} }
-function loadQueue() {
-  try {
-    const saved = JSON.parse(localStorage.getItem('sst_q') || '[]');
-    saved.forEach(i => { if (!_q.find(q => q.id === i.id)) _q.push({ ...i, onOk: null, onErr: null, attempts: i.attempts || 0 }); });
-    if (_q.length) _runQ();
-  } catch(_) {}
-}
-function _saveFailed(item, errMsg) {
-  try {
-    const list = JSON.parse(localStorage.getItem('sst_failed') || '[]');
-    list.push({ action: item.action, payload: item.payload, error: errMsg, at: new Date().toISOString() });
-    localStorage.setItem('sst_failed', JSON.stringify(list));
-  } catch(_) {}
-}
-// call this from the console, or wire a button to it, to see/retry
-// submissions that failed 3 times and were not saved to the server
-function getFailedSubmissions() {
-  try { return JSON.parse(localStorage.getItem('sst_failed') || '[]'); } catch(_) { return []; }
-}
-function retryFailedSubmission(index, onOk, onErr) {
-  const list = getFailedSubmissions();
-  const item = list[index];
-  if (!item) return;
-  list.splice(index, 1);
-  localStorage.setItem('sst_failed', JSON.stringify(list));
-  enqueue(item.action, item.payload, onOk, onErr);
-}
-window.addEventListener('online', () => { showToast('กลับมาออนไลน์', 'success'); _runQ(); });
-
-// ===================================================
-// POLLING — เงียบๆ ทุก 60 วิ
-// ===================================================
-let _poll = null;
-function startPolling(cb) {
-  stopPolling();
-  _poll = setInterval(() => { if (navigator.onLine && cb) cb(); }, 60000);
-}
-function stopPolling() { if (_poll) { clearInterval(_poll); _poll = null; } }
-
-// ===================================================
-// LOADING BAR
-// ===================================================
-let _barCount = 0;
-function bar(show) {
-  _barCount = Math.max(0, _barCount + (show ? 1 : -1));
-  let el = document.getElementById('_bar');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = '_bar';
-    el.style.cssText = 'position:fixed;top:0;left:0;height:3px;background:#5BA85A;z-index:99999;transition:width .4s,opacity .3s;width:0;opacity:0';
-    document.body.appendChild(el);
-  }
-  if (_barCount > 0) { el.style.opacity = '1'; el.style.width = '70%'; }
-  else { el.style.width = '100%'; setTimeout(() => { el.style.opacity = '0'; el.style.width = '0'; }, 400); }
-}
-
-// ===================================================
-// IMAGE UPLOAD
-// ===================================================
-async function uploadImages(files, category, branch) {
-  const now = new Date();
-  const year = String(now.getFullYear() + 543);
-  const months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-  const month = months[now.getMonth()];
-  const urls = [];
-  for (const file of files) {
-    const t = showToast(`อัปโหลด ${file.name}...`, 'loading');
+  if (_qRunning || !_queue.length) return;
+  _qRunning = true;
+  while (_queue.length) {
     try {
-      const base64 = await fileToBase64(file);
-      const r = await apiPost('uploadImage', { base64, filename: `${category}_${branch}_${Date.now()}_${file.name}`, category, branch, year, month });
-      urls.push(r.url); t?.remove(); showToast('✓ อัปโหลดสำเร็จ', 'success');
-    } catch(e) { t?.remove(); showToast('อัปโหลดล้มเหลว: ' + e.message, 'error'); }
+      const r = await apiPost(_queue[0].action, _queue[0].payload);
+      if (r.ok || r.duplicate) { _queue.shift(); try { localStorage.setItem('sst_queue', JSON.stringify(_queue)); } catch(_){} }
+      else break;
+    } catch (_) { break; }
   }
-  return urls;
+  _qRunning = false;
 }
-function fileToBase64(file) {
-  return new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsDataURL(file); });
-}
+window.addEventListener('online', _runQ);
 
-// ===================================================
-// AUTH
-// ===================================================
-async function login(user, pass) {
-  const d = await _fetch(buildUrl('login', { username: user, password: pass }));
-  if (!d?.ok) throw new Error(d?.error || 'เข้าสู่ระบบไม่สำเร็จ');
-  localStorage.setItem('sst_token', d.token);
-  localStorage.setItem('sst_user', JSON.stringify(d.user));
-  return d.user;
+/* ── Auth ── */
+async function login(username, password) {
+  const data = await _fetch(API_URL + '?action=login&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password));
+  if (data.ok) {
+    localStorage.setItem('sst_token', data.token);
+    localStorage.setItem('sst_user', JSON.stringify(data.user));
+  }
+  return data;
 }
 function logout() {
-  ['sst_token','sst_user'].forEach(k => localStorage.removeItem(k));
-  Object.keys(localStorage).forEach(k => { if (k.startsWith('c_')) localStorage.removeItem(k); });
-  stopPolling(); window.location.reload();
+  ['sst_token','sst_user','sst_queue'].forEach(k => localStorage.removeItem(k));
+  Object.keys(localStorage).filter(k => k.startsWith('sst4_')).forEach(k => localStorage.removeItem(k));
+  location.reload();
 }
-function getToken() { return localStorage.getItem('sst_token') || ''; }
-function getUser() { try { return JSON.parse(localStorage.getItem('sst_user')); } catch { return null; } }
-function isAdmin() { return getUser()?.role === 'admin'; }
-function hasTab(t) { return getUser()?.tabs?.includes(t) ?? false; }
+function getUser() { try { return JSON.parse(localStorage.getItem('sst_user')); } catch(_){ return null; } }
 
-// ===================================================
-// TOAST
-// ===================================================
-function showToast(msg, type = 'info', duration = 3500) {
-  let c = document.getElementById('_toasts');
-  if (!c) {
-    c = document.createElement('div');
-    c.id = '_toasts';
-    c.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:300px';
-    document.body.appendChild(c);
-  }
-  const colors = { success:'#388E3C', error:'#D32F2F', warn:'#F57C00', info:'#1565C0', loading:'#6A1B9A' };
-  const el = document.createElement('div');
-  el.style.cssText = `background:${colors[type]||colors.info};color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Sarabun',sans-serif;animation:_si .2s ease;box-shadow:0 4px 12px rgba(0,0,0,.2)`;
-  el.textContent = msg;
-  c.appendChild(el);
-  if (type !== 'loading') setTimeout(() => el.remove(), duration);
-  return el;
+/* ── Polling ── */
+let _pollTimer;
+function startPolling(cb, ms = 60000) { stopPolling(); _pollTimer = setInterval(cb, ms); }
+function stopPolling() { clearInterval(_pollTimer); }
+
+/* ── Helpers ── */
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
 }
-
-// ===================================================
-// HELPERS
-// ===================================================
-function buildUrl(action, params = {}) {
-  const u = new URL(API_URL);
-  u.searchParams.set('action', action);
-  u.searchParams.set('token', getToken());
-  Object.entries(params).forEach(([k, v]) => { if (v != null) u.searchParams.set(k, String(v)); });
-  return u.toString();
+function buddhistYear() { return String(new Date().getFullYear() + 543); }
+function thaiMonthName() {
+  return ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+          'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'][new Date().getMonth()];
 }
+function fmtMoney(n) { return Number(n||0).toLocaleString('th-TH', {minimumFractionDigits:0, maximumFractionDigits:2}); }
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadQueue();
-  const s = document.createElement('style');
-  s.textContent = '@keyframes _si{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}';
-  document.head.appendChild(s);
-});
+// Warmup ping ตอนโหลด
+setTimeout(async () => { try { await _fetch(API_URL + '?action=ping'); } catch(_){} }, 800);
