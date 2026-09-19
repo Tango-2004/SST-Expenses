@@ -70,7 +70,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 .nav-item .ic{font-size:17px;width:22px;text-align:center;flex-shrink:0}
 .nav-badge{background:#ef5350;color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;margin-left:auto;font-weight:700}
 .sb-footer{padding:12px 16px;border-top:1px solid var(--sb-border)}
-.content{margin-left:236px;height:100vh;overflow-y:auto;padding:24px 22px}
+.content{margin-left:236px;height:100vh;overflow-y:auto;padding:28px 36px}
+.form-wrap{max-width:560px}
 .page{display:none}.page.active{display:block}
 .page-hd{font-size:20px;font-weight:800;color:var(--g);margin-bottom:18px;display:flex;align-items:center;gap:8px}
 
@@ -234,28 +235,30 @@ tr:hover td{background:#f8fbf8}
     <!-- REQUEST (เบิกเงิน/ค่าต่างๆ) -->
     <div class="page" id="page-request">
       <div class="page-hd">📋 ยื่นคำขอเบิก</div>
-      <div class="card">
-        <div class="fg">
-          <label>ประเภทคำขอ</label>
-          <select id="req-type" onchange="buildReqForm()">
-            <option value="">-- เลือกประเภท --</option>
-            <option value="เบิกเงิน">💵 เบิกเงิน (ทดรองจ่าย)</option>
-            <option value="ค่าทางด่วน">🛣️ ค่าทางด่วน</option>
-            <option value="ค่าน้ำมัน">⛽ ค่าน้ำมัน</option>
-            <option value="อื่นๆ">📄 อื่นๆ</option>
-          </select>
+      <div class="form-wrap">
+        <div class="card">
+          <div class="fg">
+            <label>ประเภทคำขอ</label>
+            <select id="req-type" onchange="buildReqForm()">
+              <option value="">-- เลือกประเภท --</option>
+              <option value="เบิกเงิน">💵 เบิกเงิน</option>
+              <option value="ค่าทางด่วน">🛣️ ค่าทางด่วน</option>
+              <option value="ค่าน้ำมัน">⛽ ค่าน้ำมัน</option>
+              <option value="อื่นๆ">📄 อื่นๆ</option>
+            </select>
+          </div>
+          <div id="req-form-body"></div>
         </div>
-        <div id="req-form-body"></div>
       </div>
     </div>
 
     <!-- PURCHASE (เบิกซื้อของ — 4 step) -->
     <div class="page" id="page-purchase">
       <div class="page-hd">🛒 เบิกซื้อของ</div>
-      <div class="card">
+      <div class="form-wrap"><div class="card">
         <div class="sec-label">แบบฟอร์มขอเบิกซื้อของ</div>
         <div class="info-banner">📋 ยื่นคำขอพร้อมรายการสินค้า — แนบใบเสนอราคาได้เลย หรือจะส่งมาทีหลังก็ได้</div>
-        <div class="fg"><label>ผู้ขอเบิก</label><input id="pur-requester"/></div>
+        <div class="fg"><label>ผู้ขอเบิก</label><input id="pur-requester" data-next="pur-amount" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('pur-amount')?.focus()}"/></div>
         <div class="fg"><label>สาขา</label>
           <select id="pur-branch"><option>สาขา 1</option><option>สาขา 2</option></select>
         </div>
@@ -263,7 +266,7 @@ tr:hover td{background:#f8fbf8}
           <textarea id="pur-items" rows="4" placeholder="เช่น&#10;- กระดาษ A4 จำนวน 5 รีม&#10;- ปากกา 10 ด้าม&#10;- หมึกพิมพ์ 2 ชุด"></textarea>
         </div>
         <div class="grid2">
-          <div class="fg"><label>ราคาประมาณ (บาท)</label><input type="number" id="pur-amount" placeholder="0"/></div>
+          <div class="fg"><label>ราคาประมาณ (บาท)</label><input type="number" id="pur-amount" placeholder="0" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('pur-purpose')?.focus()}"/></div>
           <div class="fg"><label>วัตถุประสงค์</label><input id="pur-purpose" placeholder="เช่น ซื้อเพื่อใช้ในออฟฟิศ"/></div>
         </div>
         <div class="fg">
@@ -273,7 +276,7 @@ tr:hover td{background:#f8fbf8}
         </div>
         <p id="pur-err" class="err"></p>
         <button class="btn btn-primary btn-block" onclick="submitPurchase()" style="margin-top:8px">📤 ส่งคำขอเบิกซื้อของ</button>
-      </div>
+      </div></div>
     </div>
 
     <!-- SUPPLY (เบิกของจากคลัง) -->
@@ -876,34 +879,40 @@ function buildReqForm() {
 
   const commonFields = `
     <div class="grid2">
-      <div class="fg"><label>ผู้ขอเบิก</label><input id="rf-requester" value="${CU.name}"/></div>
-      <div class="fg"><label>ผู้รับเงิน</label><input id="rf-receiver" placeholder="ถ้าต่างจากผู้ขอ"/></div>
+      <div class="fg"><label>ผู้ขอเบิก</label><input id="rf-requester" value="${CU.name}" data-next="rf-receiver"/></div>
+      <div class="fg"><label>ผู้รับเงิน <span style="font-weight:400;color:var(--text3)">(ถ้าต่างจากผู้ขอ)</span></label><input id="rf-receiver" placeholder="ชื่อ" data-next="rf-amount"/></div>
     </div>
     <div class="fg"><label>สาขา</label><select id="rf-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
-    <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00"/></div>
+    <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" data-next="rf-purpose"/></div>
     <div class="fg"><label>วัตถุประสงค์ / รายละเอียด</label><textarea id="rf-purpose" rows="3" placeholder="ระบุรายละเอียด..."></textarea></div>
     <div class="fg"><label>เอกสารประกอบ (ถ้ามี)</label><input type="file" id="rf-file" accept="image/*" multiple/></div>`;
 
   if (type === 'ค่าทางด่วน') {
     el.innerHTML = `
       <hr class="divider"/>
-      <div class="fg"><label>ผู้ขอเบิก</label><input id="rf-requester" value="${CU.name}"/></div>
+      <div class="fg"><label>ผู้ขอเบิก</label><input id="rf-requester" value="${CU.name}" data-next="rf-plate"/></div>
       <div class="fg"><label>สาขา</label><select id="rf-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
       <div class="grid2">
-        <div class="fg"><label>ทะเบียนรถ</label><input id="rf-plate" placeholder="กข-1234"/></div>
-        <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00"/></div>
+        <div class="fg"><label>ทะเบียนรถ</label><input id="rf-plate" placeholder="กข-1234" data-next="rf-amount"/></div>
+        <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" data-next="rf-purpose"/></div>
       </div>
       <div class="fg"><label>เส้นทาง</label><input id="rf-purpose" placeholder="เช่น บางนา → ชลบุรี"/></div>
       <div class="fg"><label>เอกสารประกอบ (ถ้ามี)</label><input type="file" id="rf-file" accept="image/*"/></div>
       <button class="btn btn-primary btn-block" style="margin-top:8px" onclick="submitReq()">📤 ยื่นคำขอ</button>
-      <p id="rf-err" class="err"></p>`;
+      <p id="rf-err" class="err"></p><div id="rf-success"></div>`;
   } else {
     el.innerHTML = `<hr class="divider"/>${commonFields}
       <button class="btn btn-primary btn-block" style="margin-top:8px" onclick="submitReq()">📤 ยื่นคำขอ</button>
-      <p id="rf-err" class="err"></p>`;
+      <p id="rf-err" class="err"></p><div id="rf-success"></div>`;
   }
   const b = document.getElementById('rf-branch');
   if (b) b.value = CU.branch;
+  // Enter key → ข้ามไปช่องถัดไป
+  el.querySelectorAll('input[data-next]').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); document.getElementById(inp.dataset.next)?.focus(); }
+    });
+  });
 }
 
 async function submitReq() {
@@ -932,11 +941,12 @@ async function submitReq() {
     imageUrls, step: '1',
   });
   if (res.ok) {
-    errEl.style.color = 'var(--g)'; errEl.textContent = '✅ ยื่นคำขอเรียบร้อย';
+    errEl.textContent = '';
+    const suc = document.getElementById('rf-success');
+    if (suc) suc.innerHTML = `<div class="success-banner" style="margin-top:14px">✅ ยื่นคำขอเรียบร้อยแล้ว! กำลังพาไปดูรายการของฉัน...</div>`;
     document.getElementById('req-type').value = '';
-    document.getElementById('req-form-body').innerHTML = '';
     await loadBatch(true);
-    setTimeout(() => gotoPage('mylist'), 1200);
+    setTimeout(() => { document.getElementById('req-form-body').innerHTML = ''; gotoPage('mylist'); }, 1800);
   } else { errEl.style.color = 'var(--red)'; errEl.textContent = res.error; }
 }
 
@@ -967,11 +977,12 @@ async function submitPurchase() {
     step: '1',
   });
   if (res.ok) {
-    errEl.style.color = 'var(--g)'; errEl.textContent = '✅ ส่งคำขอเรียบร้อย';
+    errEl.textContent = '';
+    errEl.insertAdjacentHTML('afterend', `<div class="success-banner" style="margin-top:14px">✅ ส่งคำขอเรียบร้อยแล้ว! กำลังพาไปดูรายการของฉัน...</div>`);
     ['pur-items','pur-amount','pur-purpose'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     if (document.getElementById('pur-file')) document.getElementById('pur-file').value = '';
     await loadBatch(true);
-    setTimeout(() => gotoPage('mylist'), 1200);
+    setTimeout(() => gotoPage('mylist'), 1800);
   } else { errEl.style.color = 'var(--red)'; errEl.textContent = res.error; }
 }
 
