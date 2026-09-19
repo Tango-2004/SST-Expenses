@@ -163,6 +163,12 @@ tr:hover td{background:#f8fbf8}
 .exp-warn{background:var(--gold2);color:var(--gold)}
 .exp-urgent{background:var(--red2);color:var(--red)}
 
+/* ── TAB TOGGLE CHIP ── */
+.tab-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;user-select:none;transition:all .15s;background:var(--surface);color:var(--text2)}
+.tab-chip.on{background:var(--g3);border-color:var(--g2);color:var(--g)}
+.tab-chip .chip-dot{width:10px;height:10px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background .15s}
+.tab-chip.on .chip-dot{background:var(--g2)}
+
 /* ── MODAL ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:16px}
 .overlay.open{display:flex}
@@ -478,7 +484,11 @@ tr:hover td{background:#f8fbf8}
       <div class="fg"><label>สาขา</label><select id="cu-branch"><option>สาขา 1</option><option>สาขา 2</option></select></div>
       <div class="fg"><label>บทบาท</label><select id="cu-role"><option value="employee">พนักงาน</option><option value="admin">Admin</option></select></div>
     </div>
-    <div class="fg"><label>แท็บที่เข้าถึงได้</label><input id="cu-tabs" value="dashboard,request,purchase,supply,mylist,ledger,vehicles"/><div class="hint">คั่นด้วย comma เช่น dashboard,request,mylist</div></div>
+    <div class="fg">
+      <label>แท็บที่เข้าถึงได้</label>
+      <div id="cu-tabs-toggles" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px"></div>
+      <input type="hidden" id="cu-tabs" value="dashboard,request,purchase,supply,mylist,ledger,vehicles"/>
+    </div>
     <p id="cu-err" class="err"></p>
     <div class="modal-actions">
       <button class="btn btn-primary btn-block" onclick="doCreateUser()">สร้าง</button>
@@ -1200,7 +1210,41 @@ async function loadUsers() {
 function showCreateUserModal() {
   ['cu-name','cu-username','cu-pass'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('cu-err').textContent = '';
+  buildTabToggles('dashboard,request,purchase,supply,mylist,ledger,vehicles');
   document.getElementById('ov-user').classList.add('open');
+}
+
+const ALL_TABS = [
+  { id:'dashboard', label:'หน้าแรก',        ic:'🏠' },
+  { id:'request',   label:'เบิกเงิน',       ic:'💵' },
+  { id:'purchase',  label:'เบิกซื้อของ',    ic:'🛒' },
+  { id:'supply',    label:'เบิกของ',        ic:'📦' },
+  { id:'mylist',    label:'รายการของฉัน',   ic:'📂' },
+  { id:'approve',   label:'อนุมัติ',        ic:'✅' },
+  { id:'ledger',    label:'บัญชี',          ic:'📒' },
+  { id:'inventory', label:'คลังอุปกรณ์',    ic:'🗄️' },
+  { id:'vehicles',  label:'ยานพาหนะ',       ic:'🚗' },
+];
+
+function buildTabToggles(defaultVal = 'dashboard,request,purchase,supply,mylist,ledger,vehicles') {
+  const on = new Set(defaultVal.split(',').map(s => s.trim()).filter(Boolean));
+  const wrap = document.getElementById('cu-tabs-toggles');
+  if (!wrap) return;
+  wrap.innerHTML = ALL_TABS.map(t => `
+    <div class="tab-chip ${on.has(t.id) ? 'on' : ''}" data-tab="${t.id}" onclick="toggleTabChip(this)">
+      <span class="chip-dot"></span>${t.ic} ${t.label}
+    </div>`).join('');
+  syncTabsHidden();
+}
+
+function toggleTabChip(el) {
+  el.classList.toggle('on');
+  syncTabsHidden();
+}
+
+function syncTabsHidden() {
+  const vals = [...document.querySelectorAll('#cu-tabs-toggles .tab-chip.on')].map(el => el.dataset.tab);
+  document.getElementById('cu-tabs').value = vals.join(',');
 }
 
 async function doCreateUser() {
