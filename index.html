@@ -53,8 +53,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 .btn-block{width:100%;justify-content:center}
 
 /* ── LAYOUT ── */
-#app{display:none;height:100vh;overflow:hidden}
-.sidebar{width:236px;background:var(--sb-bg);color:var(--sb-text);display:flex;flex-direction:column;height:100vh;position:fixed;left:0;top:0;z-index:200;border-right:1px solid var(--sb-border);box-shadow:2px 0 16px rgba(40,80,60,.06);border-top:3px solid var(--accent)}
+#app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:236px;min-width:236px;background:var(--sb-bg);color:var(--sb-text);display:flex;flex-direction:column;height:100vh;flex-shrink:0;border-right:1px solid var(--sb-border);box-shadow:2px 0 12px rgba(40,80,60,.06);border-top:3px solid var(--accent)}
 .sb-logo{padding:20px 16px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--sb-border)}
 .sb-logo img{width:46px;height:46px;object-fit:contain;border-radius:12px;padding:0;box-shadow:0 2px 10px rgba(40,80,60,.14)}
 .sb-logo-text{display:flex;flex-direction:column}
@@ -70,8 +70,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 .nav-item .ic{font-size:17px;width:22px;text-align:center;flex-shrink:0}
 .nav-badge{background:#ef5350;color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;margin-left:auto;font-weight:700}
 .sb-footer{padding:12px 16px;border-top:1px solid var(--sb-border)}
-.content{margin-left:236px;height:100vh;overflow-y:auto;padding:28px 36px}
-.form-wrap{max-width:560px}
+.content{flex:1;min-width:0;height:100vh;overflow-y:auto;padding:28px 36px}
+.form-wrap{max-width:580px}
 .page{display:none}.page.active{display:block}
 .page-hd{font-size:20px;font-weight:800;color:var(--g);margin-bottom:18px;display:flex;align-items:center;gap:8px}
 
@@ -139,8 +139,8 @@ tr:last-child td{border-bottom:none}
 tr:hover td{background:#f8fbf8}
 
 /* ── STATS ── */
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
-.stat-tile{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:16px 14px;text-align:center}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-tile{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:18px 14px;text-align:center}
 .stat-num{font-size:28px;font-weight:800;color:var(--g);font-variant-numeric:tabular-nums}
 .stat-lbl{font-size:12px;color:var(--text3);margin-top:4px;font-weight:600}
 
@@ -178,9 +178,10 @@ tr:hover td{background:#f8fbf8}
 .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:12px}
 .photo-thumb{background:var(--g3);border-radius:9px;overflow:hidden;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;text-decoration:none;color:var(--text3)}
 
-@media(max-width:600px){
-  .sidebar{width:100%;height:auto;position:relative}
-  .content{margin-left:0}
+@media(max-width:700px){
+  #app{flex-direction:column}
+  .sidebar{width:100%;min-width:unset;height:auto;flex-shrink:0}
+  .content{height:auto;flex:1}
   .grid2{grid-template-columns:1fr}
   .stat-grid{grid-template-columns:1fr 1fr}
 }
@@ -369,6 +370,18 @@ tr:hover td{background:#f8fbf8}
       <div id="report-content"></div>
     </div>
 
+  </div>
+</div>
+
+<!-- MODAL: Print Preview -->
+<div class="overlay" id="ov-print">
+  <div class="modal" style="width:600px;max-width:96vw">
+    <div class="modal-title">🖨️ ตัวอย่างแบบฟอร์มขอเบิกเงิน</div>
+    <div id="print-preview-body" style="border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:16px;background:#fff;font-size:14px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="doPrint()">🖨️ พิมพ์</button>
+      <button class="btn btn-ghost" onclick="closeModal('ov-print')">ปิด</button>
+    </div>
   </div>
 </div>
 
@@ -898,11 +911,17 @@ function buildReqForm() {
       </div>
       <div class="fg"><label>เส้นทาง</label><input id="rf-purpose" placeholder="เช่น บางนา → ชลบุรี"/></div>
       <div class="fg"><label>เอกสารประกอบ (ถ้ามี)</label><input type="file" id="rf-file" accept="image/*"/></div>
-      <button class="btn btn-primary btn-block" style="margin-top:8px" onclick="submitReq()">📤 ยื่นคำขอ</button>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="submitReq()">📤 ยื่นคำขอ</button>
+        <button class="btn btn-outline" onclick="previewPrint()">🖨️ ดูตัวอย่าง/พิมพ์</button>
+      </div>
       <p id="rf-err" class="err"></p><div id="rf-success"></div>`;
   } else {
     el.innerHTML = `<hr class="divider"/>${commonFields}
-      <button class="btn btn-primary btn-block" style="margin-top:8px" onclick="submitReq()">📤 ยื่นคำขอ</button>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="submitReq()">📤 ยื่นคำขอ</button>
+        <button class="btn btn-outline" onclick="previewPrint()">🖨️ ดูตัวอย่าง/พิมพ์</button>
+      </div>
       <p id="rf-err" class="err"></p><div id="rf-success"></div>`;
   }
   const b = document.getElementById('rf-branch');
@@ -943,10 +962,11 @@ async function submitReq() {
   if (res.ok) {
     errEl.textContent = '';
     const suc = document.getElementById('rf-success');
-    if (suc) suc.innerHTML = `<div class="success-banner" style="margin-top:14px">✅ ยื่นคำขอเรียบร้อยแล้ว! กำลังพาไปดูรายการของฉัน...</div>`;
+    if (suc) suc.innerHTML = `<div class="success-banner" style="margin-top:14px">✅ ยื่นคำขอเรียบร้อยแล้ว!</div>`;
     document.getElementById('req-type').value = '';
-    await loadBatch(true);
-    setTimeout(() => { document.getElementById('req-form-body').innerHTML = ''; gotoPage('mylist'); }, 1800);
+    // redirect ทันที แล้วค่อย reload data ใน background
+    setTimeout(() => { document.getElementById('req-form-body').innerHTML = ''; gotoPage('mylist'); }, 800);
+    loadBatch(true); // non-blocking
   } else { errEl.style.color = 'var(--red)'; errEl.textContent = res.error; }
 }
 
@@ -1230,6 +1250,62 @@ async function doLogin() {
   const res = await login(un, pw);
   if (res.ok) { CU = res.user; initApp(); }
   else { errEl.textContent = res.error || 'เข้าสู่ระบบไม่สำเร็จ'; }
+}
+
+// ── PRINT PREVIEW ──
+function previewPrint() {
+  const type    = document.getElementById('req-type')?.value || '';
+  const requester = document.getElementById('rf-requester')?.value || CU.name;
+  const receiver  = document.getElementById('rf-receiver')?.value || '-';
+  const branch    = document.getElementById('rf-branch')?.value || CU.branch;
+  const amount    = document.getElementById('rf-amount')?.value || '0';
+  const purpose   = document.getElementById('rf-purpose')?.value || '-';
+  const plate     = document.getElementById('rf-plate')?.value || '';
+  const today = new Date().toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' });
+
+  const rows = [
+    ['ประเภทคำขอ', type || '-'],
+    ['วันที่', today],
+    ['สาขา', branch],
+    ['ผู้ขอเบิก', requester],
+    ['ผู้รับเงิน', receiver],
+    ...(plate ? [['ทะเบียนรถ', plate]] : []),
+    ['จำนวนเงิน', '฿' + Number(amount).toLocaleString('th-TH', {minimumFractionDigits:2})],
+    ['วัตถุประสงค์ / รายละเอียด', purpose],
+  ];
+
+  document.getElementById('print-preview-body').innerHTML = `
+    <div style="text-align:center;margin-bottom:18px;border-bottom:2px solid #333;padding-bottom:14px">
+      <div style="font-size:18px;font-weight:900;letter-spacing:.04em">บริษัท ศรีสุธา จำกัด</div>
+      <div style="font-size:15px;font-weight:700;margin-top:4px">แบบฟอร์มขอเบิกเงิน</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      ${rows.map(([k,v]) => `
+        <tr>
+          <td style="padding:8px 12px;border:1px solid #ccc;background:#f9f9f9;font-weight:700;width:40%;vertical-align:top">${k}</td>
+          <td style="padding:8px 12px;border:1px solid #ccc;white-space:pre-wrap">${v}</td>
+        </tr>`).join('')}
+    </table>
+    <div style="margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:30px;text-align:center;font-size:13px">
+      <div><div style="border-top:1px solid #333;padding-top:6px;margin-top:40px">ผู้ขอเบิก</div><div style="color:#666">(${requester})</div></div>
+      <div><div style="border-top:1px solid #333;padding-top:6px;margin-top:40px">ผู้อนุมัติ</div><div style="color:#666">&nbsp;</div></div>
+    </div>`;
+  document.getElementById('ov-print').classList.add('open');
+}
+
+function doPrint() {
+  const content = document.getElementById('print-preview-body').innerHTML;
+  const win = window.open('', '_blank', 'width=700,height=600');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>แบบฟอร์มขอเบิกเงิน</title>
+    <style>body{font-family:'Sarabun',sans-serif;padding:32px;font-size:14px}
+    @page{size:A4;margin:2cm}
+    table{width:100%;border-collapse:collapse}
+    td{padding:8px 12px;border:1px solid #ccc}
+    </style></head><body>${content}</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 400);
 }
 
 // ── UTILS ──
