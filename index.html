@@ -605,6 +605,7 @@ function gotoPage(id) {
 async function loadBatch(bust = false, { silent = false } = {}) {
   const items = 'requests,vehicles,alerts,inventory,supply_requests';
   const res = await apiBatch(items, {}, { bust });
+  console.log('[loadBatch] res:', JSON.stringify(res).slice(0,300));
   if (res.ok && res.data) {
     if (res.data.requests?.data)        _requests   = res.data.requests.data;
     if (res.data.inventory?.data)       _inventory  = res.data.inventory.data;
@@ -701,7 +702,9 @@ function renderMylist() {
   // GAS กรอง branch ให้แล้ว สำหรับ non-admin → แสดงทุกรายการใน _requests
   let data = [..._requests].sort((a,b) => (b.id||'').localeCompare(a.id||''));
   const el = document.getElementById('mylist-content');
-  el.innerHTML = data.length ? data.map(r => reqCardHtml(r, false)).join('') : '<div class="empty">ยังไม่มีรายการ</div>';
+  // debug: แสดงจำนวนรายการและ branch ของ user
+  const debugInfo = `<div style="font-size:11px;color:#aaa;margin-bottom:8px">debug: ${data.length} รายการ | branch: ${CU.branch} | user: ${CU.name}</div>`;
+  el.innerHTML = debugInfo + (data.length ? data.map(r => reqCardHtml(r, false)).join('') : '<div class="empty">ยังไม่มีรายการ</div>');
 }
 
 // ── REQUEST CARD ──
