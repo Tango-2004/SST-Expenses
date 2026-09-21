@@ -602,10 +602,8 @@ function gotoPage(id) {
 }
 
 // ── BATCH LOAD ──
-async function loadBatch(bust = false) {
-  const items = CU.role === 'admin'
-    ? 'requests,vehicles,alerts,inventory,supply_requests'
-    : 'requests,vehicles,alerts,inventory,supply_requests';
+async function loadBatch(bust = false, { silent = false } = {}) {
+  const items = 'requests,vehicles,alerts,inventory,supply_requests';
   const res = await apiBatch(items, {}, { bust });
   if (res.ok && res.data) {
     if (res.data.requests?.data)        _requests   = res.data.requests.data;
@@ -616,9 +614,11 @@ async function loadBatch(bust = false) {
   // ledger separate (heavier)
   const lr = await apiGet('getLedger', {}, { bust, ttl: 120 });
   if (lr.ok) _ledger = lr.data || [];
-  // refresh current page
-  const active = document.querySelector('.page.active')?.id?.replace('page-','');
-  if (active) gotoPage(active);
+  // refresh current page — ข้ามถ้า silent (เช่น หลัง submit ก่อน redirect)
+  if (!silent) {
+    const active = document.querySelector('.page.active')?.id?.replace('page-','');
+    if (active) gotoPage(active);
+  }
 }
 
 // ── DASHBOARD ──
@@ -974,9 +974,9 @@ async function submitReq() {
     const suc = document.getElementById('rf-success');
     if (suc) suc.innerHTML = `<div class="success-banner" style="margin-top:14px">✅ ยื่นคำขอเรียบร้อยแล้ว! กำลังพาไปดูรายการ...</div>`;
     document.getElementById('req-type').value = '';
-    // รอให้ GAS commit ข้อมูลลง Sheet ก่อน แล้วค่อย reload
-    await new Promise(r => setTimeout(r, 1500));
-    await loadBatch(true);
+    // รอให้ GAS commit ลง Sheet แล้ว reload แบบ silent (ไม่ re-render หน้าปัจจุบัน)
+    await new Promise(r => setTimeout(r, 2000));
+    await loadBatch(true, { silent: true });
     document.getElementById('req-form-body').innerHTML = '';
     gotoPage('mylist');
   } else { errEl.style.color = 'var(--red)'; errEl.textContent = res.error; }
@@ -1013,8 +1013,9 @@ async function submitPurchase() {
     errEl.insertAdjacentHTML('afterend', `<div class="success-banner" style="margin-top:14px">✅ ส่งคำขอเรียบร้อยแล้ว! กำลังพาไปดูรายการของฉัน...</div>`);
     ['pur-items','pur-amount','pur-purpose'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     if (document.getElementById('pur-file')) document.getElementById('pur-file').value = '';
-    await loadBatch(true);
-    setTimeout(() => gotoPage('mylist'), 1800);
+    await new Promise(r => setTimeout(r, 2000));
+    await loadBatch(true, { silent: true });
+    gotoPage('mylist');
   } else { errEl.style.color = 'var(--red)'; errEl.textContent = res.error; }
 }
 
