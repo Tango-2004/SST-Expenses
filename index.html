@@ -112,6 +112,21 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 
 /* DIVIDER */
 hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* USER TABLE */
+.user-table{width:100%;border-collapse:collapse;font-size:13px}
+.user-table th{background:var(--g3);color:var(--g4);font-weight:700;padding:9px 12px;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap}
+.user-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.user-table tr:hover td{background:var(--g3)}
+.role-badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700}
+.role-admin{background:#fdecea;color:var(--red)}
+.role-user{background:var(--g3);color:var(--g4)}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.status-active{background:#2e7d32}.status-inactive{background:#aaa}
+
+/* TAB CHIPS */
+.tab-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);user-select:none;transition:all .15s}
+.tab-chip.on{background:var(--g);color:#fff;border-color:var(--g)}
 </style>
 </head>
 <body>
@@ -187,6 +202,64 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
       <div class="page-hd">✅ อนุมัติคำขอ</div>
       <div id="approve-content"></div>
     </div>
+
+    <!-- USERS -->
+    <div class="page" id="page-users">
+      <div class="page-hd" style="justify-content:space-between">
+        <span>👤 จัดการผู้ใช้</span>
+        <button class="btn btn-primary btn-sm" onclick="openCreateUser()">+ เพิ่มผู้ใช้</button>
+      </div>
+      <div id="users-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Create User -->
+<div class="overlay" id="ov-create-user">
+  <div class="modal">
+    <div class="modal-title">👤 เพิ่มผู้ใช้ใหม่</div>
+    <div class="grid2">
+      <div class="fg"><label>ชื่อ-นามสกุล</label><input id="cu-name" placeholder="ชื่อจริง"/></div>
+      <div class="fg"><label>Username</label><input id="cu-username" placeholder="ชื่อเข้าระบบ"/></div>
+    </div>
+    <div class="grid2">
+      <div class="fg"><label>Password</label><input type="password" id="cu-password" placeholder="รหัสผ่าน"/></div>
+      <div class="fg"><label>สาขา</label>
+        <select id="cu-branch">
+          <option value="สาขา 1">สาขา 1</option>
+          <option value="สาขา 2">สาขา 2</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label>บทบาท</label>
+      <select id="cu-role">
+        <option value="user">พนักงาน</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label style="margin-bottom:8px">สิทธิ์เข้าถึงหน้า</label>
+      <div id="cu-tabs-wrap" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <p id="cu-err" class="err"></p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="doCreateUser()">✅ บันทึก</button>
+      <button class="btn btn-ghost" onclick="closeModal('ov-create-user')">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Reset Password -->
+<div class="overlay" id="ov-reset-pw">
+  <div class="modal">
+    <div class="modal-title">🔑 รีเซ็ตรหัสผ่าน</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:12px" id="reset-pw-name"></div>
+    <div class="fg"><label>รหัสผ่านใหม่</label><input type="password" id="reset-pw-val" placeholder="รหัสผ่านใหม่"/></div>
+    <p id="reset-pw-err" class="err"></p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="doResetPw()">🔑 รีเซ็ต</button>
+      <button class="btn btn-ghost" onclick="closeModal('ov-reset-pw')">ยกเลิก</button>
+    </div>
   </div>
 </div>
 
@@ -229,6 +302,7 @@ const NAV = [
   { id:'request',   label:'ยื่นคำขอ',      ic:'💵' },
   { id:'mylist',    label:'รายการของฉัน',  ic:'📂' },
   { id:'approve',   label:'อนุมัติ',       ic:'✅', adminOnly:true },
+  { id:'users',     label:'จัดการผู้ใช้',  ic:'👤', adminOnly:true },
 ];
 
 // ════ PROGRESS BAR ════
@@ -299,6 +373,7 @@ function gotoPage(id) {
     case 'dashboard': loadDashboard(); break;
     case 'mylist':    loadMylist(); break;
     case 'approve':   loadApprove(); break;
+    case 'users':     loadUsers(); break;
   }
 }
 
@@ -569,6 +644,144 @@ async function doReject() {
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ════ USERS PAGE ════
+const TAB_OPTIONS = [
+  { id:'dashboard', label:'🏠 ภาพรวม' },
+  { id:'request',   label:'💵 ยื่นคำขอ' },
+  { id:'mylist',    label:'📂 รายการของฉัน' },
+];
+
+async function loadUsers() {
+  const el = document.getElementById('users-content');
+  el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
+  pbShow();
+  const res = await apiGet('getUsers', {});
+  pbDone();
+  if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
+  const users = res.data || [];
+  if (!users.length) { el.innerHTML = '<div class="empty">ยังไม่มีผู้ใช้</div>'; return; }
+  el.innerHTML = `
+    <div style="overflow-x:auto">
+    <table class="user-table">
+      <thead><tr>
+        <th>ชื่อ</th><th>Username</th><th>สาขา</th><th>บทบาท</th>
+        <th>สิทธิ์หน้า</th><th>สถานะ</th><th style="text-align:center">จัดการ</th>
+      </tr></thead>
+      <tbody>
+        ${users.map(u => `
+          <tr>
+            <td><b>${u.name || '-'}</b></td>
+            <td style="color:var(--text3)">${u.username || '-'}</td>
+            <td>${u.branch || '-'}</td>
+            <td><span class="role-badge ${u.role==='admin'?'role-admin':'role-user'}">${u.role==='admin'?'Admin':'พนักงาน'}</span></td>
+            <td style="max-width:180px;font-size:11px;color:var(--text2)">${formatTabs(u.tabs)}</td>
+            <td><span class="status-dot status-${u.status==='active'?'active':'inactive'}"></span>${u.status==='active'?'ใช้งาน':'ระงับ'}</td>
+            <td>
+              <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+                <button class="btn btn-ghost btn-sm" onclick="openResetPw('${u.id}','${u.name}')">🔑 รหัส</button>
+                ${u.status==='active'
+                  ? `<button class="btn btn-sm" style="background:#fff3e0;color:#e65100;border:1.5px solid #ffccbc" onclick="toggleUserStatus('${u.id}','inactive')">🚫 ระงับ</button>`
+                  : `<button class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;border:1.5px solid #c8e6c9" onclick="toggleUserStatus('${u.id}','active')">✅ เปิดใช้</button>`
+                }
+              </div>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>`;
+}
+
+function formatTabs(tabs) {
+  if (!tabs) return '-';
+  const t = typeof tabs === 'string' ? tabs.split(',') : tabs;
+  const map = { dashboard:'ภาพรวม', request:'ยื่นคำขอ', mylist:'รายการ', approve:'อนุมัติ' };
+  return t.filter(x => x).map(x => map[x] || x).join(', ') || '-';
+}
+
+// ────── CREATE USER ──────
+let _cuTabs = ['dashboard','request','mylist'];
+
+function openCreateUser() {
+  document.getElementById('cu-name').value = '';
+  document.getElementById('cu-username').value = '';
+  document.getElementById('cu-password').value = '';
+  document.getElementById('cu-role').value = 'user';
+  document.getElementById('cu-err').textContent = '';
+  _cuTabs = ['dashboard','request','mylist'];
+  buildTabChips();
+  document.getElementById('ov-create-user').classList.add('open');
+}
+
+function buildTabChips() {
+  const wrap = document.getElementById('cu-tabs-wrap');
+  wrap.innerHTML = '';
+  TAB_OPTIONS.forEach(t => {
+    const chip = document.createElement('div');
+    chip.className = 'tab-chip' + (_cuTabs.includes(t.id) ? ' on' : '');
+    chip.textContent = t.label;
+    chip.onclick = () => {
+      if (_cuTabs.includes(t.id)) _cuTabs = _cuTabs.filter(x => x !== t.id);
+      else _cuTabs.push(t.id);
+      buildTabChips();
+    };
+    wrap.appendChild(chip);
+  });
+}
+
+async function doCreateUser() {
+  const name     = document.getElementById('cu-name').value.trim();
+  const username = document.getElementById('cu-username').value.trim();
+  const password = document.getElementById('cu-password').value;
+  const branch   = document.getElementById('cu-branch').value;
+  const role     = document.getElementById('cu-role').value;
+  const errEl    = document.getElementById('cu-err');
+  errEl.textContent = '';
+  if (!name || !username || !password) { errEl.textContent = 'กรุณากรอกข้อมูลให้ครบ'; return; }
+  pbShow();
+  const tabs = role === 'admin'
+    ? 'dashboard,request,mylist,approve,users'
+    : (_cuTabs.length ? _cuTabs.join(',') : 'dashboard,request,mylist');
+  const res = await apiPost('createUser', { name, username, password, branch, role, tabs });
+  pbDone();
+  if (res.ok) {
+    closeModal('ov-create-user');
+    loadUsers();
+  } else { errEl.textContent = res.error || 'เกิดข้อผิดพลาด'; }
+}
+
+// ────── RESET PASSWORD ──────
+let _resetUserId = null;
+
+function openResetPw(id, name) {
+  _resetUserId = id;
+  document.getElementById('reset-pw-name').textContent = `ผู้ใช้: ${name}`;
+  document.getElementById('reset-pw-val').value = '';
+  document.getElementById('reset-pw-err').textContent = '';
+  document.getElementById('ov-reset-pw').classList.add('open');
+}
+
+async function doResetPw() {
+  const newPassword = document.getElementById('reset-pw-val').value;
+  const errEl = document.getElementById('reset-pw-err');
+  errEl.textContent = '';
+  if (!newPassword || newPassword.length < 4) { errEl.textContent = 'รหัสผ่านต้องมีอย่างน้อย 4 ตัว'; return; }
+  pbShow();
+  const res = await apiPost('resetPassword', { userId: _resetUserId, newPassword });
+  pbDone();
+  if (res.ok) { closeModal('ov-reset-pw'); }
+  else { errEl.textContent = res.error || 'เกิดข้อผิดพลาด'; }
+}
+
+// ────── TOGGLE STATUS ──────
+async function toggleUserStatus(userId, status) {
+  if (!confirm(status === 'inactive' ? 'ระงับผู้ใช้นี้?' : 'เปิดใช้งานผู้ใช้นี้?')) return;
+  pbShow();
+  const res = await apiPost('updateUserStatus', { userId, status });
+  pbDone();
+  if (res.ok) loadUsers();
+  else alert(res.error || 'เกิดข้อผิดพลาด');
+}
 
 // ════ AUTO LOGIN ════
 (function() {
