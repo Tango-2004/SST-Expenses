@@ -166,6 +166,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
             <select id="req-type" onchange="buildReqForm()">
               <option value="">— เลือกประเภท —</option>
               <option value="เบิกเงิน">💵 เบิกเงิน</option>
+              <option value="เบิกน้ำมัน">⛽ เบิกน้ำมัน</option>
               <option value="เบิกซื้อของ">🛒 เบิกซื้อของ</option>
               <option value="อื่นๆ">📋 อื่นๆ</option>
             </select>
@@ -373,6 +374,8 @@ function reqCardHtml(r, showActions) {
         </div>
         <div class="req-amount">${amt}</div>
         <div class="req-purpose">${r.purpose || ''}</div>
+        ${r.vehiclePlate ? `<div style="font-size:12px;color:var(--text2);margin-bottom:4px">🚗 ทะเบียน: <b>${r.vehiclePlate}</b></div>` : ''}
+        ${r.noReceipt === 'true' ? `<div style="font-size:11px;color:var(--warn);margin-bottom:4px">⚠️ ไม่มีใบเสร็จ${r.noReceiptReason ? ': '+r.noReceiptReason : ''}</div>` : ''}
         <div style="font-size:12px;color:var(--text3);margin-bottom:${adminBtns ? '10px':'0'}">ผู้ขอ: <b>${r.requester || '-'}</b>${r.receiver ? ' → ผู้รับ: <b>'+r.receiver+'</b>' : ''}</div>
         ${adminBtns ? `<div class="req-actions">${adminBtns}</div>` : ''}
         ${r.rejectReason ? `<div style="font-size:12px;color:var(--red);margin-top:6px">เหตุผลปฏิเสธ: ${r.rejectReason}</div>` : ''}
@@ -385,7 +388,9 @@ function buildReqForm() {
   const type = document.getElementById('req-type').value;
   const el = document.getElementById('req-form-body');
   if (!type) { el.innerHTML = ''; return; }
-  el.innerHTML = `
+
+  // ส่วนกลาง: ผู้ขอ, ผู้รับ, สาขา
+  const commonFields = `
     <hr class="div"/>
     <div class="grid2">
       <div class="fg"><label>ผู้ขอเบิก</label><input id="rf-requester" value="${CU.name}"/></div>
@@ -393,25 +398,74 @@ function buildReqForm() {
     </div>
     <div class="fg"><label>สาขา</label>
       <select id="rf-branch">
-        <option ${CU.branch==='สาขา 1'?'selected':''}>สาขา 1</option>
-        <option ${CU.branch==='สาขา 2'?'selected':''}>สาขา 2</option>
+        <option ${CU.branch==='สาขา 1'?'selected':''} value="สาขา 1">สาขา 1</option>
+        <option ${CU.branch==='สาขา 2'?'selected':''} value="สาขา 2">สาขา 2</option>
       </select>
-    </div>
-    <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" min="0"/></div>
-    <div class="fg"><label>วัตถุประสงค์ / รายละเอียด</label><textarea id="rf-purpose" rows="3" placeholder="ระบุรายละเอียด..."></textarea></div>
-    <div class="fg"><label>เอกสารประกอบ (ถ้ามี)</label><input type="file" id="rf-file" accept="image/*" multiple/></div>
-    <button class="btn btn-primary btn-block" style="margin-top:6px" id="rf-btn" onclick="submitReq()">📤 ยื่นคำขอ</button>
+    </div>`;
+
+  let extraFields = '';
+
+  if (type === 'เบิกน้ำมัน') {
+    extraFields = `
+      <div class="grid2">
+        <div class="fg"><label>ทะเบียนรถ</label><input id="rf-plate" placeholder="เช่น กข-1234"/></div>
+        <div class="fg"><label>จำนวนลิตร</label><input type="number" id="rf-liters" placeholder="0" min="0" step="0.1"/></div>
+      </div>
+      <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" min="0"/></div>
+      <div class="fg"><label>วัตถุประสงค์ / เส้นทาง</label><textarea id="rf-purpose" rows="2" placeholder="เช่น ส่งสินค้าไปคลังสาขา 2..."></textarea></div>`;
+  } else if (type === 'เบิกซื้อของ') {
+    extraFields = `
+      <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" min="0"/></div>
+      <div class="fg"><label>รายการสินค้า / รายละเอียด</label><textarea id="rf-purpose" rows="4" placeholder="ระบุรายการสิ่งของที่ต้องการจัดซื้อ..."></textarea></div>
+      <div class="fg no-receipt-wrap">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2)">
+          <input type="checkbox" id="rf-noreceipt" onchange="toggleNoReceipt()" style="width:16px;height:16px;accent-color:var(--red)"/>
+          ไม่มีใบเสร็จ
+        </label>
+      </div>
+      <div class="fg" id="rf-noreason-wrap" style="display:none">
+        <label>เหตุผลที่ไม่มีใบเสร็จ</label>
+        <input id="rf-noreason" placeholder="ระบุเหตุผล..."/>
+      </div>`;
+  } else {
+    // เบิกเงิน / อื่นๆ
+    extraFields = `
+      <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" min="0"/></div>
+      <div class="fg"><label>วัตถุประสงค์ / รายละเอียด</label><textarea id="rf-purpose" rows="3" placeholder="ระบุรายละเอียด..."></textarea></div>
+      <div class="fg no-receipt-wrap">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2)">
+          <input type="checkbox" id="rf-noreceipt" onchange="toggleNoReceipt()" style="width:16px;height:16px;accent-color:var(--red)"/>
+          ไม่มีใบเสร็จ
+        </label>
+      </div>
+      <div class="fg" id="rf-noreason-wrap" style="display:none">
+        <label>เหตุผลที่ไม่มีใบเสร็จ</label>
+        <input id="rf-noreason" placeholder="ระบุเหตุผล..."/>
+      </div>`;
+  }
+
+  el.innerHTML = commonFields + extraFields + `
+    <div class="fg"><label>เอกสารประกอบ / รูปใบเสร็จ (ถ้ามี)</label><input type="file" id="rf-file" accept="image/*,application/pdf" multiple/></div>
+    <button class="btn btn-primary btn-block" style="margin-top:8px" id="rf-btn" onclick="submitReq()">📤 ยื่นคำขอ</button>
     <p id="rf-err" class="err"></p>
     <div id="rf-success"></div>`;
+}
+
+function toggleNoReceipt() {
+  const checked = document.getElementById('rf-noreceipt')?.checked;
+  const wrap = document.getElementById('rf-noreason-wrap');
+  if (wrap) wrap.style.display = checked ? 'block' : 'none';
 }
 
 async function submitReq() {
   const type    = document.getElementById('req-type').value;
   const amount  = document.getElementById('rf-amount').value;
-  const purpose = document.getElementById('rf-purpose').value.trim();
+  const purpose = (document.getElementById('rf-purpose')?.value || '').trim();
   const errEl   = document.getElementById('rf-err');
   errEl.textContent = '';
-  if (!amount || !purpose) { errEl.textContent = 'กรุณากรอกจำนวนเงินและวัตถุประสงค์'; return; }
+  if (!type) { errEl.textContent = 'กรุณาเลือกประเภท'; return; }
+  if (!amount) { errEl.textContent = 'กรุณากรอกจำนวนเงิน'; return; }
+  if (!purpose) { errEl.textContent = 'กรุณากรอกวัตถุประสงค์'; return; }
 
   const btn = document.getElementById('rf-btn');
   btn.disabled = true; btn.textContent = '⏳ กำลังส่ง...';
@@ -421,17 +475,35 @@ async function submitReq() {
   const fileInput = document.getElementById('rf-file');
   if (fileInput?.files.length) {
     for (const f of fileInput.files) {
-      const b64 = await toBase64(f);
-      const up = await apiPost('uploadImage', { base64: b64, filename: f.name });
-      if (up.ok) imageUrls += (imageUrls ? ',' : '') + up.url;
+      try {
+        const b64 = await toBase64(f);
+        const up = await apiPost('uploadImage', { base64: b64, filename: f.name });
+        if (up.ok) imageUrls += (imageUrls ? ',' : '') + up.url;
+      } catch(e) { console.warn('upload failed', e); }
     }
   }
 
+  // extra fields
+  const noReceipt = document.getElementById('rf-noreceipt')?.checked ? 'true' : '';
+  const noReceiptReason = document.getElementById('rf-noreason')?.value || '';
+  const vehiclePlate = document.getElementById('rf-plate')?.value || '';
+
+  // build purpose with plate for fuel
+  let finalPurpose = purpose;
+  if (type === 'เบิกน้ำมัน' && vehiclePlate) {
+    const liters = document.getElementById('rf-liters')?.value || '';
+    finalPurpose = `[ทะเบียน: ${vehiclePlate}${liters ? ' / '+liters+' ล.' : ''}] ${purpose}`;
+  }
+
   const res = await apiPost('submitRequest', {
-    type, amount, purpose,
-    requester: document.getElementById('rf-requester').value || CU.name,
-    receiver:  document.getElementById('rf-receiver').value || '',
-    branch:    document.getElementById('rf-branch').value || CU.branch,
+    type, amount,
+    purpose: finalPurpose,
+    requester:       document.getElementById('rf-requester')?.value || CU.name,
+    receiver:        document.getElementById('rf-receiver')?.value || '',
+    branch:          document.getElementById('rf-branch')?.value || CU.branch,
+    vehiclePlate,
+    noReceipt,
+    noReceiptReason,
     imageUrls,
   });
 
@@ -441,7 +513,6 @@ async function submitReq() {
     document.getElementById('rf-success').innerHTML = '<div class="success-msg">✅ ยื่นคำขอเรียบร้อยแล้ว!</div>';
     document.getElementById('req-type').value = '';
     document.getElementById('req-form-body').innerHTML = '';
-    // ไปหน้า mylist
     setTimeout(() => gotoPage('mylist'), 1200);
   } else {
     errEl.textContent = res.error || 'เกิดข้อผิดพลาด';
