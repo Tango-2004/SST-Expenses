@@ -104,6 +104,12 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 /* PROGRESS BAR */
 #progress-bar{position:fixed;top:0;left:0;width:0;height:3px;background:var(--g2);z-index:9999;transition:width .3s}
 
+/* LOADING OVERLAY */
+#loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.7);z-index:8888;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+#loading-overlay.show{display:flex}
+.spin{width:36px;height:36px;border:4px solid var(--border);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 /* STAT */
 .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
 .stat-tile{background:var(--surface);border-radius:10px;padding:16px;box-shadow:var(--shadow)}
@@ -132,6 +138,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
 <body>
 
 <div id="progress-bar"></div>
+<div id="loading-overlay"><div class="spin"></div><div style="font-size:14px;color:var(--text2);font-weight:600">กำลังโหลด...</div></div>
 
 <!-- ════ LOGIN ════ -->
 <div id="login-screen">
@@ -139,8 +146,8 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
     <img src="logo.png" class="login-logo" alt="SST" onerror="this.style.display='none'"/>
     <div class="login-title">S.S.T</div>
     <div class="login-sub">ศรีสุธา · ระบบเบิกจ่าย</div>
-    <div class="fg" style="text-align:left"><label>Username</label><input id="l-user" autocomplete="username"/></div>
-    <div class="fg" style="text-align:left"><label>Password</label><input id="l-pass" type="password" autocomplete="current-password"/></div>
+    <div class="fg" style="text-align:left"><label>Username</label><input id="l-user" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('l-pass').focus()"/></div>
+    <div class="fg" style="text-align:left"><label>Password</label><input id="l-pass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <p id="l-err" class="err"></p>
     <button class="btn btn-primary btn-block" style="margin-top:6px" onclick="doLogin()">เข้าสู่ระบบ</button>
   </div>
@@ -219,11 +226,11 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
   <div class="modal">
     <div class="modal-title">👤 เพิ่มผู้ใช้ใหม่</div>
     <div class="grid2">
-      <div class="fg"><label>ชื่อ-นามสกุล</label><input id="cu-name" placeholder="ชื่อจริง"/></div>
-      <div class="fg"><label>Username</label><input id="cu-username" placeholder="ชื่อเข้าระบบ"/></div>
+      <div class="fg"><label>ชื่อ-นามสกุล</label><input id="cu-name" placeholder="ชื่อจริง" onkeydown="if(event.key==='Enter')document.getElementById('cu-username').focus()"/></div>
+      <div class="fg"><label>Username</label><input id="cu-username" placeholder="ชื่อเข้าระบบ" onkeydown="if(event.key==='Enter')document.getElementById('cu-password').focus()"/></div>
     </div>
     <div class="grid2">
-      <div class="fg"><label>Password</label><input type="password" id="cu-password" placeholder="รหัสผ่าน"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="cu-password" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doCreateUser()"/></div>
       <div class="fg"><label>สาขา</label>
         <select id="cu-branch">
           <option value="สาขา 1">สาขา 1</option>
@@ -254,7 +261,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
   <div class="modal">
     <div class="modal-title">🔑 รีเซ็ตรหัสผ่าน</div>
     <div style="font-size:14px;color:var(--text2);margin-bottom:12px" id="reset-pw-name"></div>
-    <div class="fg"><label>รหัสผ่านใหม่</label><input type="password" id="reset-pw-val" placeholder="รหัสผ่านใหม่"/></div>
+    <div class="fg"><label>รหัสผ่านใหม่</label><input type="password" id="reset-pw-val" placeholder="รหัสผ่านใหม่" onkeydown="if(event.key==='Enter')doResetPw()"/></div>
     <p id="reset-pw-err" class="err"></p>
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="doResetPw()">🔑 รีเซ็ต</button>
@@ -305,9 +312,20 @@ const NAV = [
   { id:'users',     label:'จัดการผู้ใช้',  ic:'👤', adminOnly:true },
 ];
 
-// ════ PROGRESS BAR ════
-function pbShow(){ document.getElementById('progress-bar').style.width='60%' }
-function pbDone(){ const b=document.getElementById('progress-bar'); b.style.width='100%'; setTimeout(()=>{ b.style.transition='none'; b.style.width='0'; setTimeout(()=>b.style.transition='width .3s',50) },300) }
+// ════ PROGRESS BAR + LOADING ════
+let _loadCount = 0;
+function pbShow(withOverlay=false){
+  document.getElementById('progress-bar').style.width='60%';
+  if (withOverlay) { _loadCount++; document.getElementById('loading-overlay').classList.add('show'); }
+}
+function pbDone(){
+  const b=document.getElementById('progress-bar');
+  b.style.width='100%';
+  setTimeout(()=>{ b.style.transition='none'; b.style.width='0'; setTimeout(()=>b.style.transition='width .3s',50) },300);
+  _loadCount = Math.max(0, _loadCount-1);
+  if (_loadCount === 0) document.getElementById('loading-overlay').classList.remove('show');
+}
+function pbShowFull(){ pbShow(true); }
 
 // ════ LOGIN ════
 document.getElementById('l-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
@@ -316,11 +334,14 @@ async function doLogin() {
   const u = document.getElementById('l-user').value.trim();
   const p = document.getElementById('l-pass').value;
   const errEl = document.getElementById('l-err');
+  const btn = document.querySelector('#login-screen .btn-primary');
   errEl.textContent = '';
   if (!u || !p) { errEl.textContent = 'กรุณากรอก Username และ Password'; return; }
+  btn.disabled = true; btn.textContent = '⏳ กำลังเข้าสู่ระบบ...';
   pbShow();
   const res = await login(u, p);
   pbDone();
+  btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
   if (!res.ok) { errEl.textContent = res.error || 'เข้าสู่ระบบไม่ได้'; return; }
   CU = res.user;
   localStorage.setItem('sst_token', res.token);
@@ -381,7 +402,7 @@ function gotoPage(id) {
 async function loadDashboard() {
   document.getElementById('dash-stats').innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
   document.getElementById('dash-pending').innerHTML = '';
-  pbShow();
+  pbShowFull();
   const res = await apiGet('getRequests', {});
   pbDone();
   if (!res.ok) { document.getElementById('dash-stats').innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
@@ -407,7 +428,7 @@ async function loadDashboard() {
 async function loadMylist() {
   const el = document.getElementById('mylist-content');
   el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
-  pbShow();
+  pbShowFull();
   const res = await apiGet('getRequests', {});
   pbDone();
   if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
@@ -419,7 +440,7 @@ async function loadMylist() {
 async function loadApprove() {
   const el = document.getElementById('approve-content');
   el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
-  pbShow();
+  pbShowFull();
   const res = await apiGet('getRequests', { status: 'pending' });
   pbDone();
   if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
@@ -655,7 +676,7 @@ const TAB_OPTIONS = [
 async function loadUsers() {
   const el = document.getElementById('users-content');
   el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
-  pbShow();
+  pbShowFull();
   const res = await apiGet('getUsers', {});
   pbDone();
   if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
@@ -769,7 +790,16 @@ async function doResetPw() {
   pbShow();
   const res = await apiPost('resetPassword', { userId: _resetUserId, newPassword });
   pbDone();
-  if (res.ok) { closeModal('ov-reset-pw'); }
+  if (res.ok) {
+    closeModal('ov-reset-pw');
+    // ถ้ารีเซ็ตรหัสตัวเอง ให้ logout ใหม่
+    if (CU && _resetUserId === CU.id) {
+      alert('รีเซ็ตรหัสผ่านสำเร็จ กรุณา Login ใหม่ด้วยรหัสผ่านใหม่');
+      logout();
+    } else {
+      alert('รีเซ็ตรหัสผ่านสำเร็จ');
+    }
+  }
   else { errEl.textContent = res.error || 'เกิดข้อผิดพลาด'; }
 }
 
