@@ -143,7 +143,7 @@ window.addEventListener('online', _runQ);
 
 /* ── Auth ── */
 async function login(username, password) {
-  const data = await _fetch(API_URL + '?action=login&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password));
+  const data = await _fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', payload: { username, password } }) });
   if (data.ok) {
     localStorage.setItem('sst_token', data.token);
     localStorage.setItem('sst_user', JSON.stringify(data.user));
@@ -153,6 +153,7 @@ async function login(username, password) {
 function logout() {
   ['sst_token','sst_user','sst_queue'].forEach(k => localStorage.removeItem(k));
   Object.keys(localStorage).filter(k => k.startsWith('sst4_')).forEach(k => localStorage.removeItem(k));
+  Object.keys(_mem).forEach(k => delete _mem[k]);
   location.reload();
 }
 function getUser() { try { return JSON.parse(localStorage.getItem('sst_user')); } catch(_){ return null; } }
