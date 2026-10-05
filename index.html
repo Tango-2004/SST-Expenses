@@ -58,7 +58,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 .fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--g2);box-shadow:0 0 0 3px rgba(107,170,85,.15)}
 .fg textarea{resize:vertical;min-height:70px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form-wrap{max-width:560px}
+.form-wrap{max-width:580px}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s;white-space:nowrap}
@@ -68,6 +68,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 .btn-success{background:#1a7340;color:#fff}.btn-success:hover{opacity:.85}
 .btn-outline{background:var(--surface);border:1.5px solid var(--g);color:var(--g)}.btn-outline:hover{background:var(--g3)}
 .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text2)}.btn-ghost:hover{border-color:var(--g2);color:var(--g)}
+.btn-warn{background:var(--warn);color:#fff}.btn-warn:hover{opacity:.85}
 .btn-sm{padding:6px 13px;font-size:12px;border-radius:7px}
 .btn-block{width:100%;justify-content:center}
 
@@ -97,7 +98,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 /* OVERLAY */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:16px}
 .overlay.open{display:flex}
-.modal{background:var(--surface);border-radius:14px;width:460px;max-width:100%;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 16px 48px rgba(0,0,0,.22)}
+.modal{background:var(--surface);border-radius:14px;width:480px;max-width:100%;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 16px 48px rgba(0,0,0,.22)}
 .modal-title{font-size:17px;font-weight:800;color:var(--g);margin-bottom:16px}
 .modal-actions{display:flex;gap:10px;margin-top:16px}
 
@@ -119,11 +120,11 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 /* DIVIDER */
 hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
 
-/* USER TABLE */
-.user-table{width:100%;border-collapse:collapse;font-size:13px}
-.user-table th{background:var(--g3);color:var(--g4);font-weight:700;padding:9px 12px;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap}
-.user-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
-.user-table tr:hover td{background:var(--g3)}
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{background:var(--g3);color:var(--g4);font-weight:700;padding:9px 12px;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.data-table tr:hover td{background:var(--g3)}
 .role-badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700}
 .role-admin{background:#fdecea;color:var(--red)}
 .role-user{background:var(--g3);color:var(--g4)}
@@ -133,6 +134,22 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
 /* TAB CHIPS */
 .tab-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);user-select:none;transition:all .15s}
 .tab-chip.on{background:var(--g);color:#fff;border-color:var(--g)}
+
+/* VEHICLE CARD */
+.veh-card{background:var(--surface);border-radius:10px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:10px}
+.veh-plate{font-size:18px;font-weight:900;color:var(--g);letter-spacing:.05em}
+.veh-meta{font-size:12px;color:var(--text3);margin-top:2px}
+.date-chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-right:6px;margin-top:6px}
+.date-ok{background:#e8f5e9;color:#2e7d32}
+.date-warn{background:var(--warn2);color:var(--warn)}
+.date-urgent{background:var(--red2);color:var(--red)}
+
+/* PRINT FORM */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: fixed; inset: 0; background: #fff; padding: 20mm; font-family: 'Sarabun', sans-serif; }
+}
 </style>
 </head>
 <body>
@@ -149,7 +166,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
     <div class="fg" style="text-align:left"><label>Username</label><input id="l-user" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('l-pass').focus()"/></div>
     <div class="fg" style="text-align:left"><label>Password</label><input id="l-pass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <p id="l-err" class="err"></p>
-    <button class="btn btn-primary btn-block" style="margin-top:6px" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <button class="btn btn-primary btn-block" style="margin-top:6px" id="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
   </div>
 </div>
 
@@ -166,7 +183,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
     </div>
     <div class="sb-nav" id="sb-nav"></div>
     <div class="sb-footer">
-      <button class="btn btn-ghost btn-sm btn-block" onclick="logout()">🚪 ออกจากระบบ</button>
+      <button class="btn btn-ghost btn-sm btn-block" onclick="doLogout()">🚪 ออกจากระบบ</button>
     </div>
   </div>
 
@@ -175,16 +192,17 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
     <div class="page" id="page-dashboard">
       <div class="page-hd">🏠 ภาพรวม</div>
       <div class="stat-grid" id="dash-stats"></div>
+      <div id="dash-alerts"></div>
       <div id="dash-pending"></div>
     </div>
 
     <!-- REQUEST -->
     <div class="page" id="page-request">
-      <div class="page-hd">💵 ยื่นคำขอเบิกเงิน</div>
+      <div class="page-hd">💵 ยื่นคำขอ</div>
       <div class="form-wrap">
         <div class="card">
           <div class="fg">
-            <label>ประเภท</label>
+            <label>ประเภทคำขอ</label>
             <select id="req-type" onchange="buildReqForm()">
               <option value="">— เลือกประเภท —</option>
               <option value="เบิกเงิน">💵 เบิกเงิน</option>
@@ -201,6 +219,14 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
     <!-- MY LIST -->
     <div class="page" id="page-mylist">
       <div class="page-hd">📂 รายการของฉัน</div>
+      <div id="mylist-filters" style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <select id="ml-status" onchange="loadMylist()" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text);background:var(--surface)">
+          <option value="">ทุกสถานะ</option>
+          <option value="pending">รออนุมัติ</option>
+          <option value="approved">อนุมัติแล้ว</option>
+          <option value="rejected">ไม่อนุมัติ</option>
+        </select>
+      </div>
       <div id="mylist-content"></div>
     </div>
 
@@ -208,6 +234,16 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
     <div class="page" id="page-approve">
       <div class="page-hd">✅ อนุมัติคำขอ</div>
       <div id="approve-content"></div>
+    </div>
+
+    <!-- VEHICLES -->
+    <div class="page" id="page-vehicles">
+      <div class="page-hd" style="justify-content:space-between">
+        <span>🚗 ทะเบียนรถ / น้ำมัน</span>
+        <button class="btn btn-primary btn-sm" onclick="openAddVehicle()">+ เพิ่มรถ</button>
+      </div>
+      <div id="veh-alerts-wrap"></div>
+      <div id="vehicles-content"></div>
     </div>
 
     <!-- USERS -->
@@ -220,6 +256,9 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
     </div>
   </div>
 </div>
+
+<!-- PRINT AREA (ใบเบิกเงิน) -->
+<div id="print-area" style="display:none"></div>
 
 <!-- MODAL: Create User -->
 <div class="overlay" id="ov-create-user">
@@ -297,11 +336,47 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
   </div>
 </div>
 
+<!-- MODAL: Add Vehicle -->
+<div class="overlay" id="ov-add-vehicle">
+  <div class="modal">
+    <div class="modal-title">🚗 เพิ่มรถ</div>
+    <div class="grid2">
+      <div class="fg"><label>ทะเบียน</label><input id="veh-plate" placeholder="กข-1234"/></div>
+      <div class="fg"><label>ประเภท</label>
+        <select id="veh-type">
+          <option value="รถยนต์">รถยนต์</option>
+          <option value="รถกระบะ">รถกระบะ</option>
+          <option value="รถบรรทุก">รถบรรทุก</option>
+          <option value="รถมอเตอร์ไซค์">รถมอเตอร์ไซค์</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label>สาขา</label>
+      <select id="veh-branch">
+        <option value="สาขา 1">สาขา 1</option>
+        <option value="สาขา 2">สาขา 2</option>
+      </select>
+    </div>
+    <div class="grid2">
+      <div class="fg"><label>วันหมดอายุ พ.ร.บ.</label><input type="date" id="veh-prb"/></div>
+      <div class="fg"><label>วันหมดอายุประกัน</label><input type="date" id="veh-insur"/></div>
+    </div>
+    <div class="fg"><label>วันหมดอายุภาษี</label><input type="date" id="veh-tax"/></div>
+    <p id="veh-err" class="err"></p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="doAddVehicle()">✅ บันทึก</button>
+      <button class="btn btn-ghost" onclick="closeModal('ov-add-vehicle')">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
 <script src="api.js"></script>
 <script>
 // ════ STATE ════
-let CU = null; // current user
+let CU = null;
 let _pendingId = null;
+let _resetUserId = null;
+let _resetIsOwnPw = false;
 
 // ════ NAV ════
 const NAV = [
@@ -309,6 +384,7 @@ const NAV = [
   { id:'request',   label:'ยื่นคำขอ',      ic:'💵' },
   { id:'mylist',    label:'รายการของฉัน',  ic:'📂' },
   { id:'approve',   label:'อนุมัติ',       ic:'✅', adminOnly:true },
+  { id:'vehicles',  label:'รถ / น้ำมัน',   ic:'🚗' },
   { id:'users',     label:'จัดการผู้ใช้',  ic:'👤', adminOnly:true },
 ];
 
@@ -328,13 +404,11 @@ function pbDone(){
 function pbShowFull(){ pbShow(true); }
 
 // ════ LOGIN ════
-document.getElementById('l-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-
 async function doLogin() {
   const u = document.getElementById('l-user').value.trim();
   const p = document.getElementById('l-pass').value;
   const errEl = document.getElementById('l-err');
-  const btn = document.querySelector('#login-screen .btn-primary');
+  const btn = document.getElementById('login-btn');
   errEl.textContent = '';
   if (!u || !p) { errEl.textContent = 'กรุณากรอก Username และ Password'; return; }
   btn.disabled = true; btn.textContent = '⏳ กำลังเข้าสู่ระบบ...';
@@ -344,17 +418,12 @@ async function doLogin() {
   btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
   if (!res.ok) { errEl.textContent = res.error || 'เข้าสู่ระบบไม่ได้'; return; }
   CU = res.user;
-  localStorage.setItem('sst_token', res.token);
-  localStorage.setItem('sst_user', JSON.stringify(CU));
   startApp();
 }
 
-function logout() {
-  localStorage.removeItem('sst_token');
-  localStorage.removeItem('sst_user');
+function doLogout() {
   CU = null;
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
+  logout(); // จาก api.js — ล้าง localStorage + cache + reload
 }
 
 // ════ APP START ════
@@ -370,14 +439,14 @@ function startApp() {
 function buildNav() {
   const el = document.getElementById('sb-nav');
   el.innerHTML = '';
-  const tabs = CU.tabs || [];
+  const tabs = Array.isArray(CU.tabs) ? CU.tabs : (CU.tabs||'').split(',').filter(Boolean);
   NAV.forEach(t => {
     if (t.adminOnly && CU.role !== 'admin') return;
     if (CU.role !== 'admin' && tabs.length && !tabs.includes(t.id)) return;
     const d = document.createElement('div');
     d.className = 'nav-item';
     d.id = 'nav-' + t.id;
-    d.innerHTML = `<span>${t.ic}</span>${t.label}`;
+    d.innerHTML = `<span>${t.ic}</span>${t.label}<span id="badge-${t.id}" class="nav-badge" style="display:none"></span>`;
     d.onclick = () => gotoPage(t.id);
     el.appendChild(d);
   });
@@ -394,6 +463,7 @@ function gotoPage(id) {
     case 'dashboard': loadDashboard(); break;
     case 'mylist':    loadMylist(); break;
     case 'approve':   loadApprove(); break;
+    case 'vehicles':  loadVehicles(); break;
     case 'users':     loadUsers(); break;
   }
 }
@@ -402,61 +472,81 @@ function gotoPage(id) {
 async function loadDashboard() {
   document.getElementById('dash-stats').innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
   document.getElementById('dash-pending').innerHTML = '';
+  document.getElementById('dash-alerts').innerHTML = '';
   pbShowFull();
-  const res = await apiGet('getRequests', {});
+  const res = await apiGet('getRequests', {}, {bust:true});
   pbDone();
   if (!res.ok) { document.getElementById('dash-stats').innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
   const all = res.data || [];
-  const mine = all.filter(r => r.requester === CU.name || r.branch === CU.branch);
+  const myItems = CU.role === 'admin' ? all : all.filter(r => r.branch === CU.branch);
   const pending = all.filter(r => r.status === 'pending');
   const approved = all.filter(r => r.status === 'approved');
   const totalAmt = approved.reduce((s,r) => s + (+r.amount||0), 0);
 
+  // badge
+  setBadge('approve', pending.length);
+
   document.getElementById('dash-stats').innerHTML = `
-    <div class="stat-tile"><div class="stat-num">${all.length}</div><div class="stat-label">คำขอทั้งหมด</div></div>
+    <div class="stat-tile"><div class="stat-num">${myItems.length}</div><div class="stat-label">คำขอของฉัน</div></div>
     <div class="stat-tile"><div class="stat-num" style="color:var(--warn)">${pending.length}</div><div class="stat-label">รออนุมัติ</div></div>
     <div class="stat-tile"><div class="stat-num">฿${totalAmt.toLocaleString('th-TH',{minimumFractionDigits:0})}</div><div class="stat-label">อนุมัติแล้ว (รวม)</div></div>`;
 
   if (CU.role === 'admin' && pending.length > 0) {
     document.getElementById('dash-pending').innerHTML = `
       <div class="card"><div class="card-title">⏳ รออนุมัติ (${pending.length} รายการ)</div>
-      ${pending.map(r => reqCardHtml(r, true)).join('')}</div>`;
+      ${pending.slice(0,5).map(r => reqCardHtml(r, true)).join('')}
+      ${pending.length>5 ? `<div style="text-align:center;padding:10px"><button class="btn btn-outline btn-sm" onclick="gotoPage('approve')">ดูทั้งหมด (${pending.length})</button></div>` : ''}
+      </div>`;
   }
 }
 
-// ════ MYLIST ════
+function setBadge(id, count) {
+  const b = document.getElementById('badge-'+id);
+  if (!b) return;
+  if (count > 0) { b.textContent = count; b.style.display = ''; }
+  else { b.style.display = 'none'; }
+}
+
+// ════ MYLIST — เฉพาะรายการของตัวเอง ════
 async function loadMylist() {
   const el = document.getElementById('mylist-content');
   el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
   pbShowFull();
-  const res = await apiGet('getRequests', {});
+  const statusFilter = document.getElementById('ml-status')?.value || '';
+  const res = await apiGet('getRequests', {}, {bust:true});
   pbDone();
   if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
-  const data = (res.data || []).sort((a,b) => (b.id||'').localeCompare(a.id||''));
-  el.innerHTML = data.length ? data.map(r => reqCardHtml(r, false)).join('') : '<div class="empty">ยังไม่มีรายการ</div>';
+  // Admin เห็นทุกรายการ, พนักงานเห็นเฉพาะสาขาตัวเอง
+  let data = CU.role === 'admin' ? (res.data || []) : (res.data || []).filter(r => r.branch === CU.branch);
+  if (statusFilter) data = data.filter(r => r.status === statusFilter);
+  data.sort((a,b) => (b.id||'').localeCompare(a.id||''));
+  el.innerHTML = data.length ? data.map(r => reqCardHtml(r, false, true)).join('') : '<div class="empty">ยังไม่มีรายการ</div>';
 }
 
-// ════ APPROVE ════
+// ════ APPROVE — เฉพาะ pending, admin only ════
 async function loadApprove() {
+  if (CU.role !== 'admin') { document.getElementById('approve-content').innerHTML = '<div class="empty">ไม่มีสิทธิ์เข้าถึง</div>'; return; }
   const el = document.getElementById('approve-content');
   el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
   pbShowFull();
-  const res = await apiGet('getRequests', { status: 'pending' });
+  const res = await apiGet('getRequests', {status:'pending'}, {bust:true});
   pbDone();
   if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
   const data = (res.data || []).sort((a,b) => (b.id||'').localeCompare(a.id||''));
-  el.innerHTML = data.length ? data.map(r => reqCardHtml(r, true)).join('') : '<div class="empty">ไม่มีรายการรออนุมัติ</div>';
+  setBadge('approve', data.length);
+  el.innerHTML = data.length ? data.map(r => reqCardHtml(r, true)).join('') : '<div class="empty">ไม่มีรายการรออนุมัติ ✅</div>';
 }
 
 // ════ REQUEST CARD ════
-function reqCardHtml(r, showActions) {
+function reqCardHtml(r, showActions, showPrint=false) {
   const st = r.status || 'pending';
   const badgeClass = { pending:'badge-pending', approved:'badge-approved', rejected:'badge-rejected' }[st] || 'badge-pending';
   const stTh = { pending:'รออนุมัติ', approved:'อนุมัติแล้ว', rejected:'ไม่อนุมัติ' }[st] || st;
   const amt = r.amount ? '฿' + Number(r.amount).toLocaleString('th-TH',{minimumFractionDigits:2}) : '-';
   const adminBtns = showActions && CU.role === 'admin' && st === 'pending' ? `
-    <button class="btn btn-success btn-sm" onclick="openApprove('${r.id}')">✅ อนุมัติ</button>
-    <button class="btn btn-danger btn-sm" onclick="openReject('${r.id}')">❌ ปฏิเสธ</button>` : '';
+    <button class="btn btn-success btn-sm" onclick="openApprove('${r.id}','${(r.requester||'').replace(/'/g,"\\'")}','${amt}')">✅ อนุมัติ</button>
+    <button class="btn btn-danger btn-sm" onclick="openReject('${r.id}','${(r.requester||'').replace(/'/g,"\\'")}')">❌ ปฏิเสธ</button>` : '';
+  const printBtn = showPrint && r.type === 'เบิกเงิน' ? `<button class="btn btn-warn btn-sm" onclick="printRequest(${JSON.stringify(r).replace(/"/g,'&quot;')})">🖨️ พิมพ์ใบเบิก</button>` : '';
   return `
     <div class="req-card">
       <div class="req-stripe ${st}"></div>
@@ -470,13 +560,118 @@ function reqCardHtml(r, showActions) {
         </div>
         <div class="req-amount">${amt}</div>
         <div class="req-purpose">${r.purpose || ''}</div>
-        ${r.vehiclePlate ? `<div style="font-size:12px;color:var(--text2);margin-bottom:4px">🚗 ทะเบียน: <b>${r.vehiclePlate}</b></div>` : ''}
         ${r.noReceipt === 'true' ? `<div style="font-size:11px;color:var(--warn);margin-bottom:4px">⚠️ ไม่มีใบเสร็จ${r.noReceiptReason ? ': '+r.noReceiptReason : ''}</div>` : ''}
-        <div style="font-size:12px;color:var(--text3);margin-bottom:${adminBtns ? '10px':'0'}">ผู้ขอ: <b>${r.requester || '-'}</b>${r.receiver ? ' → ผู้รับ: <b>'+r.receiver+'</b>' : ''}</div>
-        ${adminBtns ? `<div class="req-actions">${adminBtns}</div>` : ''}
+        <div style="font-size:12px;color:var(--text3);margin-bottom:${(adminBtns||printBtn) ? '10px':'0'}">ผู้ขอ: <b>${r.requester || '-'}</b>${r.receiver ? ' → ผู้รับ: <b>'+r.receiver+'</b>' : ''}${r.approvedBy ? ' · อนุมัติโดย: <b>'+r.approvedBy+'</b>' : ''}</div>
+        ${(adminBtns||printBtn) ? `<div class="req-actions">${adminBtns}${printBtn}</div>` : ''}
         ${r.rejectReason ? `<div style="font-size:12px;color:var(--red);margin-top:6px">เหตุผลปฏิเสธ: ${r.rejectReason}</div>` : ''}
       </div>
     </div>`;
+}
+
+// ════ PRINT ฟอร์มเบิกเงิน ════
+function printRequest(r) {
+  const amt = Number(r.amount||0);
+  const amtTh = numberToThai(amt);
+  const printEl = document.getElementById('print-area');
+  printEl.innerHTML = `
+    <div style="font-family:'Sarabun',sans-serif;max-width:700px;margin:0 auto;padding:20px;background:#fff">
+      <!-- หัว -->
+      <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #000;padding-bottom:12px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:14px">
+          <img src="logo.png" alt="SST" style="width:70px;height:70px;object-fit:contain" onerror="this.style.display='none'"/>
+          <div>
+            <div style="font-size:20px;font-weight:900;color:#2c5e1a">บริษัท ศรีสุธา จำกัด</div>
+            <div style="font-size:13px;color:#555">SST · ระบบเบิกจ่ายเงิน</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:18px;font-weight:900;border:2px solid #000;padding:6px 16px;border-radius:6px">ใบเบิกเงิน</div>
+          <div style="font-size:12px;color:#555;margin-top:6px">เลขที่: <b>${r.id}</b></div>
+          <div style="font-size:12px;color:#555">วันที่: <b>${r.date||'-'}</b></div>
+        </div>
+      </div>
+
+      <!-- ข้อมูล -->
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+        <tr>
+          <td style="width:50%;padding:6px 0">
+            <div style="font-size:12px;color:#777;font-weight:700">ผู้ยื่นเบิก</div>
+            <div style="font-size:15px;font-weight:700">${r.requester||'-'}</div>
+          </td>
+          <td style="width:50%;padding:6px 0">
+            <div style="font-size:12px;color:#777;font-weight:700">ผู้รับเงิน</div>
+            <div style="font-size:15px;font-weight:700">${r.receiver||r.requester||'-'}</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:6px 0">
+            <div style="font-size:12px;color:#777;font-weight:700">สาขา</div>
+            <div style="font-size:15px;font-weight:700">${r.branch||'-'}</div>
+          </td>
+          <td style="padding:6px 0">
+            <div style="font-size:12px;color:#777;font-weight:700">ประเภท</div>
+            <div style="font-size:15px;font-weight:700">${r.type||'-'}</div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- วัตถุประสงค์ -->
+      <div style="border:1.5px solid #ccc;border-radius:8px;padding:12px 16px;margin-bottom:16px">
+        <div style="font-size:12px;color:#777;font-weight:700;margin-bottom:6px">วัตถุประสงค์ / รายละเอียด</div>
+        <div style="font-size:14px;line-height:1.8">${r.purpose||'-'}</div>
+      </div>
+
+      <!-- ยอดเงิน -->
+      <div style="border:2.5px solid #2c5e1a;border-radius:8px;padding:14px 20px;margin-bottom:20px;background:#f0fde8">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:12px;color:#555;font-weight:700">จำนวนเงิน (ตัวหนังสือ)</div>
+            <div style="font-size:16px;font-weight:800;margin-top:4px">${amtTh}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;color:#555;font-weight:700">จำนวนเงิน (ตัวเลข)</div>
+            <div style="font-size:26px;font-weight:900;color:#2c5e1a">฿${amt.toLocaleString('th-TH',{minimumFractionDigits:2})}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ลายเซ็น -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:30px">
+        ${['ผู้ยื่นเบิก','ผู้อนุมัติ','เจ้าหน้าที่การเงิน'].map(label => `
+          <div style="text-align:center">
+            <div style="border-bottom:1px solid #999;margin-bottom:8px;padding-bottom:40px"></div>
+            <div style="font-size:12px;color:#555">(..................................)</div>
+            <div style="font-size:12px;font-weight:700;margin-top:4px">${label}</div>
+            <div style="font-size:11px;color:#999">วันที่ ............/............/...........</div>
+          </div>`).join('')}
+      </div>
+
+      ${r.noReceipt === 'true' ? `<div style="margin-top:16px;padding:10px 14px;background:#fff3e0;border-left:4px solid #e65100;border-radius:4px;font-size:12px;color:#bf360c"><b>⚠️ หมายเหตุ:</b> ไม่มีใบเสร็จ${r.noReceiptReason ? ' — '+r.noReceiptReason : ''}</div>` : ''}
+    </div>`;
+  printEl.style.display = 'block';
+  window.print();
+  printEl.style.display = 'none';
+}
+
+// แปลงตัวเลขเป็นภาษาไทย
+function numberToThai(n) {
+  const ones = ['','หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด','แปด','เก้า'];
+  const tens = ['','สิบ','ยี่สิบ','สามสิบ','สี่สิบ','ห้าสิบ','หกสิบ','เจ็ดสิบ','แปดสิบ','เก้าสิบ'];
+  function convert(num) {
+    if (num === 0) return '';
+    if (num < 10) return ones[num];
+    if (num < 100) return tens[Math.floor(num/10)] + ones[num%10];
+    if (num < 1000) return ones[Math.floor(num/100)] + 'ร้อย' + convert(num%100);
+    if (num < 10000) return ones[Math.floor(num/1000)] + 'พัน' + convert(num%1000);
+    if (num < 100000) return ones[Math.floor(num/10000)] + 'หมื่น' + convert(num%10000);
+    if (num < 1000000) return ones[Math.floor(num/100000)] + 'แสน' + convert(num%100000);
+    return ones[Math.floor(num/1000000)] + 'ล้าน' + convert(num%1000000);
+  }
+  const intPart = Math.floor(n);
+  const decPart = Math.round((n - intPart) * 100);
+  let result = convert(intPart) + 'บาท';
+  result += decPart > 0 ? convert(decPart) + 'สตางค์' : 'ถ้วน';
+  return result || 'ศูนย์บาทถ้วน';
 }
 
 // ════ SUBMIT REQUEST ════
@@ -485,7 +680,6 @@ function buildReqForm() {
   const el = document.getElementById('req-form-body');
   if (!type) { el.innerHTML = ''; return; }
 
-  // ส่วนกลาง: ผู้ขอ, ผู้รับ, สาขา
   const commonFields = `
     <hr class="div"/>
     <div class="grid2">
@@ -500,7 +694,6 @@ function buildReqForm() {
     </div>`;
 
   let extraFields = '';
-
   if (type === 'เบิกน้ำมัน') {
     extraFields = `
       <div class="grid2">
@@ -513,35 +706,33 @@ function buildReqForm() {
     extraFields = `
       <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" min="0"/></div>
       <div class="fg"><label>รายการสินค้า / รายละเอียด</label><textarea id="rf-purpose" rows="4" placeholder="ระบุรายการสิ่งของที่ต้องการจัดซื้อ..."></textarea></div>
-      <div class="fg no-receipt-wrap">
+      <div class="fg">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2)">
           <input type="checkbox" id="rf-noreceipt" onchange="toggleNoReceipt()" style="width:16px;height:16px;accent-color:var(--red)"/>
           ไม่มีใบเสร็จ
         </label>
       </div>
       <div class="fg" id="rf-noreason-wrap" style="display:none">
-        <label>เหตุผลที่ไม่มีใบเสร็จ</label>
-        <input id="rf-noreason" placeholder="ระบุเหตุผล..."/>
+        <label>เหตุผลที่ไม่มีใบเสร็จ</label><input id="rf-noreason" placeholder="ระบุเหตุผล..."/>
       </div>`;
   } else {
     // เบิกเงิน / อื่นๆ
     extraFields = `
       <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" min="0"/></div>
       <div class="fg"><label>วัตถุประสงค์ / รายละเอียด</label><textarea id="rf-purpose" rows="3" placeholder="ระบุรายละเอียด..."></textarea></div>
-      <div class="fg no-receipt-wrap">
+      <div class="fg">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2)">
           <input type="checkbox" id="rf-noreceipt" onchange="toggleNoReceipt()" style="width:16px;height:16px;accent-color:var(--red)"/>
           ไม่มีใบเสร็จ
         </label>
       </div>
       <div class="fg" id="rf-noreason-wrap" style="display:none">
-        <label>เหตุผลที่ไม่มีใบเสร็จ</label>
-        <input id="rf-noreason" placeholder="ระบุเหตุผล..."/>
+        <label>เหตุผลที่ไม่มีใบเสร็จ</label><input id="rf-noreason" placeholder="ระบุเหตุผล..."/>
       </div>`;
   }
 
   el.innerHTML = commonFields + extraFields + `
-    <div class="fg"><label>เอกสารประกอบ / รูปใบเสร็จ (ถ้ามี)</label><input type="file" id="rf-file" accept="image/*,application/pdf" multiple/></div>
+    <div class="fg"><label>เอกสาร / รูปใบเสร็จ (ถ้ามี)</label><input type="file" id="rf-file" accept="image/*,application/pdf" multiple/></div>
     <button class="btn btn-primary btn-block" style="margin-top:8px" id="rf-btn" onclick="submitReq()">📤 ยื่นคำขอ</button>
     <p id="rf-err" class="err"></p>
     <div id="rf-success"></div>`;
@@ -555,18 +746,17 @@ function toggleNoReceipt() {
 
 async function submitReq() {
   const type    = document.getElementById('req-type').value;
-  const amount  = document.getElementById('rf-amount').value;
+  const amount  = document.getElementById('rf-amount')?.value;
   const purpose = (document.getElementById('rf-purpose')?.value || '').trim();
   const errEl   = document.getElementById('rf-err');
   errEl.textContent = '';
   if (!type) { errEl.textContent = 'กรุณาเลือกประเภท'; return; }
-  if (!amount) { errEl.textContent = 'กรุณากรอกจำนวนเงิน'; return; }
+  if (!amount || isNaN(amount)) { errEl.textContent = 'กรุณากรอกจำนวนเงิน'; return; }
   if (!purpose) { errEl.textContent = 'กรุณากรอกวัตถุประสงค์'; return; }
 
   const btn = document.getElementById('rf-btn');
   btn.disabled = true; btn.textContent = '⏳ กำลังส่ง...';
 
-  // upload files
   let imageUrls = '';
   const fileInput = document.getElementById('rf-file');
   if (fileInput?.files.length) {
@@ -579,12 +769,10 @@ async function submitReq() {
     }
   }
 
-  // extra fields
   const noReceipt = document.getElementById('rf-noreceipt')?.checked ? 'true' : '';
   const noReceiptReason = document.getElementById('rf-noreason')?.value || '';
   const vehiclePlate = document.getElementById('rf-plate')?.value || '';
 
-  // build purpose with plate for fuel
   let finalPurpose = purpose;
   if (type === 'เบิกน้ำมัน' && vehiclePlate) {
     const liters = document.getElementById('rf-liters')?.value || '';
@@ -592,15 +780,12 @@ async function submitReq() {
   }
 
   const res = await apiPost('submitRequest', {
-    type, amount,
+    type, amount: parseFloat(amount),
     purpose: finalPurpose,
-    requester:       document.getElementById('rf-requester')?.value || CU.name,
-    receiver:        document.getElementById('rf-receiver')?.value || '',
-    branch:          document.getElementById('rf-branch')?.value || CU.branch,
-    vehiclePlate,
-    noReceipt,
-    noReceiptReason,
-    imageUrls,
+    requester: document.getElementById('rf-requester')?.value || CU.name,
+    receiver:  document.getElementById('rf-receiver')?.value || '',
+    branch:    document.getElementById('rf-branch')?.value || CU.branch,
+    vehiclePlate, noReceipt, noReceiptReason, imageUrls,
   });
 
   btn.disabled = false; btn.textContent = '📤 ยื่นคำขอ';
@@ -625,8 +810,10 @@ function toBase64(file) {
 }
 
 // ════ APPROVE / REJECT ════
-function openApprove(id) {
+function openApprove(id, requester, amount) {
   _pendingId = id;
+  document.getElementById('approve-detail').innerHTML = `
+    <b>ผู้ขอ:</b> ${requester}<br><b>จำนวน:</b> ${amount}`;
   document.getElementById('approve-err').textContent = '';
   document.getElementById('ov-approve').classList.add('open');
 }
@@ -637,14 +824,13 @@ async function doApprove() {
   pbShow();
   const res = await apiPost('approveRequest', { id: _pendingId });
   pbDone();
-  if (res.ok) {
-    closeModal('ov-approve');
-    gotoPage('approve');
-  } else { errEl.textContent = res.error; }
+  if (res.ok) { closeModal('ov-approve'); loadApprove(); }
+  else { errEl.textContent = res.error; }
 }
 
-function openReject(id) {
+function openReject(id, requester) {
   _pendingId = id;
+  document.getElementById('reject-detail').innerHTML = `<b>ผู้ขอ:</b> ${requester}`;
   document.getElementById('reject-reason').value = '';
   document.getElementById('reject-err').textContent = '';
   document.getElementById('ov-reject').classList.add('open');
@@ -658,33 +844,153 @@ async function doReject() {
   pbShow();
   const res = await apiPost('rejectRequest', { id: _pendingId, reason });
   pbDone();
-  if (res.ok) {
-    closeModal('ov-reject');
-    gotoPage('approve');
-  } else { errEl.textContent = res.error; }
+  if (res.ok) { closeModal('ov-reject'); loadApprove(); }
+  else { errEl.textContent = res.error; }
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-// ════ USERS PAGE ════
+// ════ VEHICLES ════
+async function loadVehicles() {
+  const alertsEl = document.getElementById('veh-alerts-wrap');
+  const el = document.getElementById('vehicles-content');
+  el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
+  pbShowFull();
+  const [vRes, aRes] = await Promise.all([
+    apiGet('getVehicles', {}, {bust:true}),
+    apiGet('getAlerts', {}, {bust:true}),
+  ]);
+  pbDone();
+
+  // alerts
+  const alerts = aRes.ok ? (aRes.data || []) : [];
+  if (alerts.length) {
+    alertsEl.innerHTML = `<div class="card" style="border-left:4px solid var(--red)">
+      <div class="card-title" style="color:var(--red)">⚠️ แจ้งเตือนวันหมดอายุ (${alerts.length} รายการ)</div>
+      ${alerts.map(a => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <b>${a.plate}</b> · ${a.label}
+            <div style="font-size:12px;color:var(--text3)">หมดอายุ: ${a.expDate} · ${a.branch}</div>
+          </div>
+          <span class="date-chip ${a.level==='urgent'?'date-urgent':'date-warn'}">${a.daysLeft<=0?'หมดแล้ว':a.daysLeft+' วัน'}</span>
+        </div>`).join('')}
+    </div>`;
+  } else { alertsEl.innerHTML = ''; }
+
+  if (!vRes.ok) { el.innerHTML = `<p style="color:var(--red)">${vRes.error}</p>`; return; }
+  const vehicles = vRes.data || [];
+
+  if (!vehicles.length) { el.innerHTML = '<div class="empty">ยังไม่มีรถในระบบ</div>'; return; }
+
+  el.innerHTML = `
+    <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead><tr>
+        <th>ทะเบียน</th><th>ประเภท</th><th>สาขา</th>
+        <th>พ.ร.บ.</th><th>ประกัน</th><th>ภาษี</th><th>เพิ่มโดย</th>
+      </tr></thead>
+      <tbody>
+        ${vehicles.map(v => {
+          const today = new Date();
+          function dateBadge(d, label) {
+            if (!d) return `<span class="date-chip" style="background:#eee;color:#999">-</span>`;
+            const exp = new Date(d);
+            const diff = Math.ceil((exp - today) / 86400000);
+            const cls = diff <= 0 ? 'date-urgent' : diff <= 7 ? 'date-urgent' : diff <= 30 ? 'date-warn' : 'date-ok';
+            return `<span class="date-chip ${cls}" title="${label}">${d}</span>`;
+          }
+          return `<tr>
+            <td><b class="veh-plate">${v.plate||'-'}</b></td>
+            <td>${v.type||'-'}</td>
+            <td>${v.branch||'-'}</td>
+            <td>${dateBadge(v.prbDate,'พ.ร.บ.')}</td>
+            <td>${dateBadge(v.insurDate,'ประกัน')}</td>
+            <td>${dateBadge(v.taxDate,'ภาษี')}</td>
+            <td style="font-size:12px;color:var(--text3)">${v.addedBy||'-'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+    <!-- ประวัติน้ำมัน -->
+    <div style="margin-top:24px">
+      <div class="card-title" style="margin-bottom:12px">⛽ ประวัติเบิกน้ำมัน</div>
+      <div id="fuel-history"><div class="loading">⏳ กำลังโหลด...</div></div>
+    </div>`;
+
+  // โหลดประวัติน้ำมัน
+  loadFuelHistory();
+}
+
+async function loadFuelHistory() {
+  const el = document.getElementById('fuel-history');
+  if (!el) return;
+  const res = await apiGet('getRequests', {}, {bust:false});
+  if (!res.ok) { el.innerHTML = '<p style="color:var(--red)">โหลดไม่ได้</p>'; return; }
+  const fuel = (res.data||[]).filter(r => r.type === 'เบิกน้ำมัน').sort((a,b)=>(b.id||'').localeCompare(a.id||'')).slice(0,20);
+  if (!fuel.length) { el.innerHTML = '<div class="empty">ยังไม่มีประวัติเบิกน้ำมัน</div>'; return; }
+  el.innerHTML = `
+    <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead><tr><th>วันที่</th><th>ผู้เบิก</th><th>สาขา</th><th>รายละเอียด</th><th>จำนวนเงิน</th><th>สถานะ</th></tr></thead>
+      <tbody>
+        ${fuel.map(r => `<tr>
+          <td>${r.date||'-'}</td>
+          <td>${r.requester||'-'}</td>
+          <td>${r.branch||'-'}</td>
+          <td style="font-size:12px">${r.purpose||'-'}</td>
+          <td style="font-weight:700;color:var(--g)">฿${Number(r.amount||0).toLocaleString('th-TH')}</td>
+          <td><span class="badge badge-${r.status||'pending'}">${{pending:'รออนุมัติ',approved:'อนุมัติแล้ว',rejected:'ไม่อนุมัติ'}[r.status]||r.status}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>`;
+}
+
+function openAddVehicle() {
+  ['veh-plate','veh-prb','veh-insur','veh-tax'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('veh-err').textContent = '';
+  document.getElementById('ov-add-vehicle').classList.add('open');
+}
+
+async function doAddVehicle() {
+  const plate  = document.getElementById('veh-plate').value.trim();
+  const type   = document.getElementById('veh-type').value;
+  const branch = document.getElementById('veh-branch').value;
+  const prbDate   = document.getElementById('veh-prb').value;
+  const insurDate = document.getElementById('veh-insur').value;
+  const taxDate   = document.getElementById('veh-tax').value;
+  const errEl = document.getElementById('veh-err');
+  errEl.textContent = '';
+  if (!plate) { errEl.textContent = 'กรุณากรอกทะเบียน'; return; }
+  pbShow();
+  const res = await apiPost('addVehicle', { plate, type, branch, prbDate, insurDate, taxDate });
+  pbDone();
+  if (res.ok) { closeModal('ov-add-vehicle'); loadVehicles(); }
+  else { errEl.textContent = res.error || 'เกิดข้อผิดพลาด'; }
+}
+
+// ════ USERS ════
 const TAB_OPTIONS = [
   { id:'dashboard', label:'🏠 ภาพรวม' },
   { id:'request',   label:'💵 ยื่นคำขอ' },
   { id:'mylist',    label:'📂 รายการของฉัน' },
+  { id:'vehicles',  label:'🚗 รถ/น้ำมัน' },
 ];
 
 async function loadUsers() {
   const el = document.getElementById('users-content');
   el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
   pbShowFull();
-  const res = await apiGet('getUsers', {});
+  const res = await apiGet('getUsers', {}, {bust:true});
   pbDone();
   if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
   const users = res.data || [];
   if (!users.length) { el.innerHTML = '<div class="empty">ยังไม่มีผู้ใช้</div>'; return; }
   el.innerHTML = `
     <div style="overflow-x:auto">
-    <table class="user-table">
+    <table class="data-table">
       <thead><tr>
         <th>ชื่อ</th><th>Username</th><th>สาขา</th><th>บทบาท</th>
         <th>สิทธิ์หน้า</th><th>สถานะ</th><th style="text-align:center">จัดการ</th>
@@ -692,19 +998,18 @@ async function loadUsers() {
       <tbody>
         ${users.map(u => `
           <tr>
-            <td><b>${u.name || '-'}</b></td>
-            <td style="color:var(--text3)">${u.username || '-'}</td>
-            <td>${u.branch || '-'}</td>
+            <td><b>${u.name||'-'}</b></td>
+            <td style="color:var(--text3)">${u.username||'-'}</td>
+            <td>${u.branch||'-'}</td>
             <td><span class="role-badge ${u.role==='admin'?'role-admin':'role-user'}">${u.role==='admin'?'Admin':'พนักงาน'}</span></td>
             <td style="max-width:180px;font-size:11px;color:var(--text2)">${formatTabs(u.tabs)}</td>
             <td><span class="status-dot status-${u.status==='active'?'active':'inactive'}"></span>${u.status==='active'?'ใช้งาน':'ระงับ'}</td>
             <td>
               <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
-                <button class="btn btn-ghost btn-sm" onclick="openResetPw('${u.id}','${u.name}')">🔑 รหัส</button>
+                <button class="btn btn-ghost btn-sm" onclick="openResetPw('${u.id}','${(u.name||'').replace(/'/g,"\\'")}',${u.id===CU.id})">🔑 รหัส</button>
                 ${u.status==='active'
                   ? `<button class="btn btn-sm" style="background:#fff3e0;color:#e65100;border:1.5px solid #ffccbc" onclick="toggleUserStatus('${u.id}','inactive')">🚫 ระงับ</button>`
-                  : `<button class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;border:1.5px solid #c8e6c9" onclick="toggleUserStatus('${u.id}','active')">✅ เปิดใช้</button>`
-                }
+                  : `<button class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;border:1.5px solid #c8e6c9" onclick="toggleUserStatus('${u.id}','active')">✅ เปิดใช้</button>`}
               </div>
             </td>
           </tr>`).join('')}
@@ -716,17 +1021,15 @@ async function loadUsers() {
 function formatTabs(tabs) {
   if (!tabs) return '-';
   const t = typeof tabs === 'string' ? tabs.split(',') : tabs;
-  const map = { dashboard:'ภาพรวม', request:'ยื่นคำขอ', mylist:'รายการ', approve:'อนุมัติ' };
-  return t.filter(x => x).map(x => map[x] || x).join(', ') || '-';
+  const map = { dashboard:'ภาพรวม', request:'ยื่นคำขอ', mylist:'รายการ', approve:'อนุมัติ', vehicles:'รถ', users:'ผู้ใช้' };
+  return t.filter(x=>x).map(x=>map[x]||x).join(', ') || '-';
 }
 
-// ────── CREATE USER ──────
+// CREATE USER
 let _cuTabs = ['dashboard','request','mylist'];
 
 function openCreateUser() {
-  document.getElementById('cu-name').value = '';
-  document.getElementById('cu-username').value = '';
-  document.getElementById('cu-password').value = '';
+  ['cu-name','cu-username','cu-password'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('cu-role').value = 'user';
   document.getElementById('cu-err').textContent = '';
   _cuTabs = ['dashboard','request','mylist'];
@@ -758,24 +1061,21 @@ async function doCreateUser() {
   const role     = document.getElementById('cu-role').value;
   const errEl    = document.getElementById('cu-err');
   errEl.textContent = '';
-  if (!name || !username || !password) { errEl.textContent = 'กรุณากรอกข้อมูลให้ครบ'; return; }
+  if (!name||!username||!password) { errEl.textContent = 'กรุณากรอกข้อมูลให้ครบ'; return; }
   pbShow();
   const tabs = role === 'admin'
-    ? 'dashboard,request,mylist,approve,users'
+    ? 'dashboard,request,mylist,approve,vehicles,users'
     : (_cuTabs.length ? _cuTabs.join(',') : 'dashboard,request,mylist');
   const res = await apiPost('createUser', { name, username, password, branch, role, tabs });
   pbDone();
-  if (res.ok) {
-    closeModal('ov-create-user');
-    loadUsers();
-  } else { errEl.textContent = res.error || 'เกิดข้อผิดพลาด'; }
+  if (res.ok) { closeModal('ov-create-user'); loadUsers(); }
+  else { errEl.textContent = res.error || 'เกิดข้อผิดพลาด'; }
 }
 
-// ────── RESET PASSWORD ──────
-let _resetUserId = null;
-
-function openResetPw(id, name) {
+// RESET PASSWORD
+function openResetPw(id, name, isOwnPw) {
   _resetUserId = id;
+  _resetIsOwnPw = !!isOwnPw;
   document.getElementById('reset-pw-name').textContent = `ผู้ใช้: ${name}`;
   document.getElementById('reset-pw-val').value = '';
   document.getElementById('reset-pw-err').textContent = '';
@@ -792,20 +1092,17 @@ async function doResetPw() {
   pbDone();
   if (res.ok) {
     closeModal('ov-reset-pw');
-    // ถ้ารีเซ็ตรหัสตัวเอง ให้ logout ใหม่
-    if (CU && _resetUserId === CU.id) {
+    if (_resetIsOwnPw) {
       alert('รีเซ็ตรหัสผ่านสำเร็จ กรุณา Login ใหม่ด้วยรหัสผ่านใหม่');
-      logout();
+      doLogout();
     } else {
       alert('รีเซ็ตรหัสผ่านสำเร็จ');
     }
-  }
-  else { errEl.textContent = res.error || 'เกิดข้อผิดพลาด'; }
+  } else { errEl.textContent = res.error || 'เกิดข้อผิดพลาด'; }
 }
 
-// ────── TOGGLE STATUS ──────
 async function toggleUserStatus(userId, status) {
-  if (!confirm(status === 'inactive' ? 'ระงับผู้ใช้นี้?' : 'เปิดใช้งานผู้ใช้นี้?')) return;
+  if (!confirm(status==='inactive'?'ระงับผู้ใช้นี้?':'เปิดใช้งานผู้ใช้นี้?')) return;
   pbShow();
   const res = await apiPost('updateUserStatus', { userId, status });
   pbDone();
@@ -818,10 +1115,8 @@ async function toggleUserStatus(userId, status) {
   const token = localStorage.getItem('sst_token');
   const userData = localStorage.getItem('sst_user');
   if (token && userData) {
-    try {
-      CU = JSON.parse(userData);
-      startApp();
-    } catch(_) { localStorage.clear(); }
+    try { CU = JSON.parse(userData); startApp(); }
+    catch(_) { localStorage.clear(); }
   }
 })();
 </script>
