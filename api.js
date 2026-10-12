@@ -1,6 +1,6 @@
 // api.js — SST v4 (Batch + Cache-first + Queue + Warmup)
-const API_URL = 'https://script.google.com/macros/s/AKfycbzq1kgWjeEK2IzV92kqxI9CphbgK3QOu3KgKQT-XPAT-1Fzs_5l4lRNz-338dfPlkQzuQ/exec';
-const RETRY = 3, TIMEOUT_MS = 25000;
+const API_URL = 'https://script.google.com/macros/s/AKfycbz-P4oBmtbdXr9RA07MzalBHv6fLAGJLnW4fExoOWV2DgIYlxekvHNeE-AN64LaQvFgkA/exec';
+const RETRY = 2, TIMEOUT_MS = 20000;
 
 /* ── Memory + localStorage cache ── */
 const _mem = {};
@@ -179,5 +179,5 @@ function thaiMonthName() {
 }
 function fmtMoney(n) { return Number(n||0).toLocaleString('th-TH', {minimumFractionDigits:0, maximumFractionDigits:2}); }
 
-// Warmup ping ตอนโหลด
-setTimeout(async () => { try { await _fetch(API_URL + '?action=ping'); } catch(_){} }, 800);
+// Warmup ping ตอนโหลด (ลด delay เพื่อ warm GAS ไว้ล่วงหน้า)
+setTimeout(async () => { try { await fetch(API_URL + '?action=ping'); } catch(_){} }, 500);
