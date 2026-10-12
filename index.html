@@ -960,10 +960,13 @@ async function loadVehicles() {
       const today = new Date();
       function dateBadge(d) {
         if (!d) return `<span class="date-chip date-none">-</span>`;
+        // แปลง ISO string หรือ date string ให้เป็นวันที่ไทย dd/mm/yyyy
         const exp = new Date(d);
+        if (isNaN(exp.getTime())) return `<span class="date-chip date-none">-</span>`;
         const diff = Math.ceil((exp - today) / 86400000);
         const cls = diff <= 0 ? 'date-urgent' : diff <= 7 ? 'date-urgent' : diff <= 30 ? 'date-warn' : 'date-ok';
-        return `<span class="date-chip ${cls}">${d}</span>`;
+        const display = exp.toLocaleDateString('th-TH', { day:'2-digit', month:'2-digit', year:'numeric' });
+        return `<span class="date-chip ${cls}">${display}</span>`;
       }
       listEl.innerHTML = `
         <div class="table-wrap">
