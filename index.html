@@ -168,6 +168,28 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
 /* ── VEHICLE PLATE ── */
 .veh-plate{font-size:15px;font-weight:900;color:var(--g);letter-spacing:.04em}
 
+/* ── VEHICLE CARDS GRID ── */
+.veh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:20px}
+.veh-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;box-shadow:var(--shadow);cursor:pointer;transition:all .16s;overflow:hidden;user-select:none}
+.veh-card:hover{border-color:var(--g2);box-shadow:0 4px 18px rgba(74,124,63,.15);transform:translateY(-2px)}
+.veh-card.veh-expired{border-color:var(--red);background:var(--red2)}
+.veh-card-head{background:var(--g3);padding:12px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.veh-card-ico{font-size:22px;line-height:1}
+.veh-card-plate{font-size:17px;font-weight:900;color:var(--g);letter-spacing:.04em}
+.veh-card-type{font-size:11px;color:var(--text2);font-weight:600;margin-top:1px}
+.veh-card-body{padding:10px 14px 12px;display:flex;flex-direction:column;gap:6px}
+.veh-card-row{display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.veh-card-lbl{color:var(--text3);font-weight:600}
+.veh-card-branch{background:var(--g3);color:var(--g);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700}
+.veh-card-expired-badge{display:inline-block;background:var(--red2);color:var(--red);border-radius:6px;font-size:10px;font-weight:800;padding:1px 7px;border:1px solid #f7c8c3}
+
+/* ── VEHICLE DETAIL DRAWER ── */
+.veh-drawer{display:none;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:20px 22px;margin-bottom:16px}
+.veh-drawer.open{display:block}
+.veh-drawer-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.veh-drawer-close{margin-left:auto;background:none;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;padding:4px 10px;color:var(--text2);font-family:inherit;font-weight:700;transition:all .12s}
+.veh-drawer-close:hover{background:var(--red2);border-color:var(--red);color:var(--red)}
+
 /* ── PAGE TABS (vehicles) ── */
 .page-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--surface);border-radius:10px;padding:4px;box-shadow:var(--shadow);border:1px solid var(--border);width:fit-content}
 .page-tab{padding:8px 18px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);transition:all .14s;white-space:nowrap;user-select:none}
@@ -758,8 +780,11 @@ function buildReqForm() {
           ไม่มีใบเสร็จ
         </label>
       </div>
-      <div class="fg" id="rf-noreason-wrap" style="display:none">
-        <label>เหตุผลที่ไม่มีใบเสร็จ</label><input id="rf-noreason" placeholder="ระบุเหตุผล..."/>
+      <div id="rf-noreason-wrap" style="display:none">
+        <div class="fg"><label>เหตุผลที่ไม่มีใบเสร็จ</label><input id="rf-noreason" placeholder="ระบุเหตุผล..."/></div>
+        <div class="fg">
+          <button type="button" class="btn btn-outline btn-sm" onclick="previewNoReceiptDoc()" style="gap:6px">🖨️ ดูตัวอย่างใบรับเงิน / พิมพ์</button>
+        </div>
       </div>`;
   } else {
     extraFields = `
@@ -771,8 +796,11 @@ function buildReqForm() {
           ไม่มีใบเสร็จ
         </label>
       </div>
-      <div class="fg" id="rf-noreason-wrap" style="display:none">
-        <label>เหตุผลที่ไม่มีใบเสร็จ</label><input id="rf-noreason" placeholder="ระบุเหตุผล..."/>
+      <div id="rf-noreason-wrap" style="display:none">
+        <div class="fg"><label>เหตุผลที่ไม่มีใบเสร็จ</label><input id="rf-noreason" placeholder="ระบุเหตุผล..."/></div>
+        <div class="fg">
+          <button type="button" class="btn btn-outline btn-sm" onclick="previewNoReceiptDoc()" style="gap:6px">🖨️ ดูตัวอย่างใบรับเงิน / พิมพ์</button>
+        </div>
       </div>`;
   }
 
@@ -787,6 +815,164 @@ function toggleNoReceipt() {
   const checked = document.getElementById('rf-noreceipt')?.checked;
   const wrap = document.getElementById('rf-noreason-wrap');
   if (wrap) wrap.style.display = checked ? 'block' : 'none';
+}
+
+function previewNoReceiptDoc() {
+  const type    = document.getElementById('req-type')?.value || '';
+  const amount  = document.getElementById('rf-amount')?.value || '0';
+  const purpose = document.getElementById('rf-purpose')?.value || '';
+  const reason  = document.getElementById('rf-noreason')?.value || '';
+  const requester = document.getElementById('rf-requester')?.value || CU?.name || '';
+  const branch  = document.getElementById('rf-branch')?.value || CU?.branch || '';
+  const today   = new Date();
+  const dateTH  = today.toLocaleDateString('th-TH', { day:'2-digit', month:'long', year:'numeric' });
+  const amtNum  = Number(amount || 0);
+  const amtFmt  = amtNum.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // Thai number to words (simplified)
+  function numToWords(n) {
+    const ones = ['','หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด','แปด','เก้า'];
+    const tens = ['','สิบ','ยี่สิบ','สามสิบ','สี่สิบ','ห้าสิบ','หกสิบ','เจ็ดสิบ','แปดสิบ','เก้าสิบ'];
+    if (n === 0) return 'ศูนย์';
+    let result = '';
+    const [intPart, decPart] = String(n.toFixed(2)).split('.');
+    const int = parseInt(intPart);
+    function convertInt(num) {
+      if (num === 0) return '';
+      if (num < 10) return ones[num];
+      if (num < 100) {
+        const t = Math.floor(num / 10), o = num % 10;
+        return tens[t] + (o ? (t === 1 && o === 1 ? 'เอ็ด' : ones[o]) : '');
+      }
+      if (num < 1000) {
+        const h = Math.floor(num / 100);
+        return (h > 1 ? ones[h] : '') + 'ร้อย' + convertInt(num % 100);
+      }
+      if (num < 10000) {
+        const th = Math.floor(num / 1000);
+        return (th > 1 ? ones[th] : '') + 'พัน' + convertInt(num % 1000);
+      }
+      if (num < 100000) {
+        const tth = Math.floor(num / 10000);
+        return (tth > 1 ? ones[tth] : '') + 'หมื่น' + convertInt(num % 10000);
+      }
+      if (num < 1000000) {
+        const hth = Math.floor(num / 100000);
+        return (hth > 1 ? ones[hth] : '') + 'แสน' + convertInt(num % 100000);
+      }
+      return convertInt(Math.floor(num / 1000000)) + 'ล้าน' + convertInt(num % 1000000);
+    }
+    result = convertInt(int) + 'บาท';
+    const dec = parseInt(decPart);
+    result += dec > 0 ? convertInt(dec) + 'สตางค์' : 'ถ้วน';
+    return result;
+  }
+
+  const win = window.open('', '_blank', 'width=720,height=900');
+  win.document.write(`<!DOCTYPE html>
+<html lang="th"><head>
+<meta charset="UTF-8"/>
+<title>ใบรับเงิน</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #fff; color: #111; font-size: 14px; padding: 24px; }
+  .doc { max-width: 640px; margin: 0 auto; border: 1px solid #ccc; padding: 32px 40px; }
+  .header { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 3px double #2a6a1a; padding-bottom: 16px; margin-bottom: 20px; }
+  .logo-block { display: flex; align-items: center; gap: 12px; }
+  .logo-circle { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg,#3a7a28,#6baa44); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; font-weight: 900; letter-spacing: -1px; }
+  .company-name { font-size: 20px; font-weight: 900; color: #2a6a1a; line-height: 1.2; }
+  .company-sub { font-size: 11px; color: #666; margin-top: 2px; }
+  .doc-title-block { text-align: right; }
+  .doc-title { font-size: 22px; font-weight: 800; color: #c0392b; }
+  .doc-no { font-size: 11px; color: #888; margin-top: 4px; }
+  .meta-row { display: flex; gap: 32px; margin-bottom: 20px; }
+  .meta-item { flex: 1; }
+  .meta-label { font-size: 10px; font-weight: 700; color: #888; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 3px; }
+  .meta-value { font-size: 14px; font-weight: 700; color: #111; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+  .amount-box { background: #f0f8ea; border: 2px solid #4a7c3f; border-radius: 8px; padding: 16px 20px; margin: 20px 0; display: flex; justify-content: space-between; align-items: center; }
+  .amount-label { font-size: 12px; font-weight: 700; color: #4a7c3f; }
+  .amount-num { font-size: 26px; font-weight: 900; color: #2a6a1a; }
+  .amount-words { font-size: 12px; color: #555; margin-top: 8px; text-align: center; }
+  .detail-box { border: 1px solid #e0e0e0; border-radius: 6px; padding: 14px 16px; margin-bottom: 16px; }
+  .detail-label { font-size: 11px; font-weight: 700; color: #888; margin-bottom: 6px; }
+  .detail-value { font-size: 13px; color: #222; line-height: 1.6; }
+  .no-receipt-notice { background: #fff8e1; border-left: 4px solid #f59e0b; border-radius: 4px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #78350f; }
+  .signature-area { display: flex; gap: 32px; margin-top: 32px; }
+  .sig-block { flex: 1; text-align: center; }
+  .sig-line { border-top: 1px solid #888; margin: 48px 16px 6px; }
+  .sig-label { font-size: 11px; color: #555; }
+  .sig-name { font-size: 12px; font-weight: 700; color: #111; margin-top: 3px; }
+  .footer { margin-top: 24px; border-top: 1px solid #ddd; padding-top: 12px; text-align: center; font-size: 10px; color: #aaa; }
+  .print-btn { display: block; margin: 20px auto; padding: 10px 28px; background: #2a6a1a; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  @media print { .print-btn { display: none; } body { padding: 0; } .doc { border: none; padding: 20px 28px; } }
+</style>
+</head><body>
+<div class="doc">
+  <div class="header">
+    <div class="logo-block">
+      <div class="logo-circle">SST</div>
+      <div>
+        <div class="company-name">บริษัท ศรีสุธา จำกัด</div>
+        <div class="company-sub">สาขา ${branch}</div>
+      </div>
+    </div>
+    <div class="doc-title-block">
+      <div class="doc-title">ใบรับเงิน</div>
+      <div class="doc-title" style="font-size:14px;color:#666;margin-top:2px">RECEIPT</div>
+      <div class="doc-no">วันที่ ${dateTH}</div>
+    </div>
+  </div>
+
+  <div class="meta-row">
+    <div class="meta-item">
+      <div class="meta-label">ผู้รับเงิน / จ่ายโดย</div>
+      <div class="meta-value">${requester}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">ประเภทการเบิก</div>
+      <div class="meta-value">${type}</div>
+    </div>
+  </div>
+
+  <div class="amount-box">
+    <div>
+      <div class="amount-label">จำนวนเงิน</div>
+      <div class="amount-num">฿${amtFmt}</div>
+    </div>
+  </div>
+  <div class="amount-words">( ${numToWords(amtNum)} )</div>
+
+  <div class="detail-box" style="margin-top:14px">
+    <div class="detail-label">วัตถุประสงค์ / รายละเอียด</div>
+    <div class="detail-value">${purpose || '-'}</div>
+  </div>
+
+  ${reason ? `<div class="no-receipt-notice">⚠️ <b>หมายเหตุ — ไม่มีใบเสร็จ:</b> ${reason}</div>` : ''}
+
+  <div class="signature-area">
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-label">ผู้รับเงิน / ผู้เบิก</div>
+      <div class="sig-name">(${requester})</div>
+    </div>
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-label">ผู้จ่ายเงิน / ผู้อนุมัติ</div>
+      <div class="sig-name">(.................................)</div>
+    </div>
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-label">ผู้ตรวจสอบ</div>
+      <div class="sig-name">(.................................)</div>
+    </div>
+  </div>
+
+  <div class="footer">เอกสารนี้ออกโดยระบบเบิกจ่าย S.S.T · พิมพ์วันที่ ${dateTH}</div>
+</div>
+<button class="print-btn" onclick="window.print()">🖨️ พิมพ์เอกสาร</button>
+</body></html>`);
+  win.document.close();
 }
 
 async function submitReq() {
@@ -804,10 +990,22 @@ async function submitReq() {
   let imageUrls = '';
   const fileInput = document.getElementById('rf-file');
   if (fileInput?.files.length) {
+    const now = new Date();
+    const uploadYear  = String(now.getFullYear() + 543); // ปีพุทธศักราช
+    const uploadMonth = String(now.getMonth() + 1).padStart(2, '0') + '-' +
+      ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][now.getMonth()];
+    const uploadBranch = document.getElementById('rf-branch')?.value || CU?.branch || 'ไม่ระบุ';
+    const uploadCategory = document.getElementById('req-type')?.value || 'ทั่วไป';
     for (const f of fileInput.files) {
       try {
         const b64 = await toBase64(f);
-        const up = await apiPost('uploadImage', { base64: b64, filename: f.name });
+        const up = await apiPost('uploadImage', {
+          base64: b64, filename: f.name,
+          category: uploadCategory,
+          branch: uploadBranch,
+          year: uploadYear,
+          month: uploadMonth,
+        });
         if (up.ok) imageUrls += (imageUrls ? ',' : '') + up.url;
       } catch(e) { console.warn('upload failed', e); }
     }
@@ -960,7 +1158,6 @@ async function loadVehicles() {
       const today = new Date();
       function dateBadge(d) {
         if (!d) return `<span class="date-chip date-none">-</span>`;
-        // แปลง ISO string หรือ date string ให้เป็นวันที่ไทย dd/mm/yyyy
         const exp = new Date(d);
         if (isNaN(exp.getTime())) return `<span class="date-chip date-none">-</span>`;
         const diff = Math.ceil((exp - today) / 86400000);
@@ -968,29 +1165,52 @@ async function loadVehicles() {
         const display = exp.toLocaleDateString('th-TH', { day:'2-digit', month:'2-digit', year:'numeric' });
         return `<span class="date-chip ${cls}">${display}</span>`;
       }
+      function isExpiredSoon(d) {
+        if (!d) return false;
+        const exp = new Date(d);
+        if (isNaN(exp.getTime())) return false;
+        const diff = Math.ceil((exp - today) / 86400000);
+        return diff <= 30;
+      }
+      // สร้างรายการรถไม่ซ้ำโดย plate+branch
+      const uniqueVehicles = [];
+      const seen = new Set();
+      vehicles.forEach(v => {
+        const key = (v.plate||'') + '|' + (v.branch||'');
+        if (!seen.has(key)) { seen.add(key); uniqueVehicles.push(v); }
+      });
+      const vTypes = { 'รถยนต์':'🚗', 'รถกระบะ':'🛻', 'รถบรรทุก':'🚚', 'รถจักรยานยนต์':'🏍️', 'รถตู้':'🚐' };
       listEl.innerHTML = `
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead><tr>
-              <th>ทะเบียน</th>
-              <th>ประเภท</th>
-              <th>สาขา</th>
-              <th>พ.ร.บ.</th>
-              <th>ประกัน</th>
-              <th>ภาษีรถ</th>
-            </tr></thead>
-            <tbody>
-              ${vehicles.map(v => `<tr>
-                <td><span class="veh-plate">${v.plate||'-'}</span></td>
-                <td style="color:var(--text2)">${v.type||'-'}</td>
-                <td style="color:var(--text2)">${v.branch||'-'}</td>
-                <td>${dateBadge(v.prbDate)}</td>
-                <td>${dateBadge(v.insurDate)}</td>
-                <td>${dateBadge(v.taxDate)}</td>
-              </tr>`).join('')}
-            </tbody>
-          </table>
+        <div id="veh-drawer-container"></div>
+        <div class="veh-grid">
+          ${uniqueVehicles.map((v, idx) => {
+            const ico = vTypes[v.type] || '🚗';
+            const hasExpired = isExpiredSoon(v.prbDate) || isExpiredSoon(v.insurDate) || isExpiredSoon(v.taxDate);
+            return `<div class="veh-card${hasExpired?' veh-expired':''}" onclick="toggleVehDrawer(${idx})">
+              <div class="veh-card-head">
+                <span class="veh-card-ico">${ico}</span>
+                <div>
+                  <div class="veh-card-plate">${v.plate||'-'}</div>
+                  <div class="veh-card-type">${v.type||'-'}</div>
+                </div>
+                ${hasExpired ? '<span class="veh-card-expired-badge" style="margin-left:auto">⚠️ ใกล้หมด</span>' : ''}
+              </div>
+              <div class="veh-card-body">
+                <div class="veh-card-row">
+                  <span class="veh-card-lbl">สาขา</span>
+                  <span class="veh-card-branch">${v.branch||'-'}</span>
+                </div>
+                <div class="veh-card-row">
+                  <span class="veh-card-lbl">พ.ร.บ.</span>
+                  ${dateBadge(v.prbDate)}
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
         </div>`;
+      // เก็บข้อมูลรถสำหรับ drawer
+      window._vehiclesList = uniqueVehicles;
+      window._dateBadgeFn = dateBadge;
     }
   }
 
@@ -1051,6 +1271,56 @@ async function doAddVehicle() {
   btnRestore('veh-btn');
   if (res.ok) { closeModal('ov-add-vehicle'); loadVehicles(); }
   else { errEl.textContent = res.error || 'เกิดข้อผิดพลาด'; }
+}
+
+let _openDrawerIdx = -1;
+function toggleVehDrawer(idx) {
+  const container = document.getElementById('veh-drawer-container');
+  if (!container || !window._vehiclesList) return;
+  const v = window._vehiclesList[idx];
+  const dateBadge = window._dateBadgeFn;
+  const vTypes = { 'รถยนต์':'🚗', 'รถกระบะ':'🛻', 'รถบรรทุก':'🚚', 'รถจักรยานยนต์':'🏍️', 'รถตู้':'🚐' };
+  const ico = vTypes[v.type] || '🚗';
+
+  // ถ้ากดรถคันเดิม ก็ปิด
+  if (_openDrawerIdx === idx) {
+    container.innerHTML = '';
+    _openDrawerIdx = -1;
+    return;
+  }
+  _openDrawerIdx = idx;
+
+  container.innerHTML = `
+    <div class="veh-drawer open">
+      <div class="veh-drawer-head">
+        <span style="font-size:28px">${ico}</span>
+        <div>
+          <div style="font-size:20px;font-weight:900;color:var(--g);letter-spacing:.04em">${v.plate||'-'}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:1px">${v.type||'-'} · ${v.branch||'-'}</div>
+        </div>
+        <button class="veh-drawer-close" onclick="toggleVehDrawer(${idx})">✕ ปิด</button>
+      </div>
+      <div class="grid2" style="gap:12px">
+        <div style="background:var(--g3);border-radius:10px;padding:14px 16px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">📋 พ.ร.บ. หมดอายุ</div>
+          ${dateBadge(v.prbDate)}
+        </div>
+        <div style="background:var(--g3);border-radius:10px;padding:14px 16px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">🛡️ ประกันภัย หมดอายุ</div>
+          ${dateBadge(v.insurDate)}
+        </div>
+        <div style="background:var(--g3);border-radius:10px;padding:14px 16px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">🧾 ภาษีรถ หมดอายุ</div>
+          ${dateBadge(v.taxDate)}
+        </div>
+        <div style="background:var(--g3);border-radius:10px;padding:14px 16px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">🏢 สาขา</div>
+          <span style="font-weight:800;color:var(--g)">${v.branch||'-'}</span>
+        </div>
+      </div>
+    </div>`;
+  // scroll ไปที่ drawer
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ════ USERS ════
