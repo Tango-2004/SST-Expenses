@@ -661,159 +661,179 @@ function reqCardHtml(r, showActions, showPrint=false) {
 
 // ════ PRINT ════
 function printRequest(r) {
-  const amtNum  = Number(r.amount || 0);
-  const amtFmt  = amtNum.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const today   = new Date();
-  const dateTHLong = today.toLocaleDateString('th-TH', { day:'numeric', month:'long', year:'numeric' });
+  const today = new Date();
+  const win = window.open('', '_blank', 'width=760,height=960');
+  win.document.write(_buildDocHTML({
+    id: r.id, date: r.date, requester: r.requester, receiver: r.receiver,
+    branch: r.branch, type: r.type, purpose: r.purpose, amount: r.amount,
+    noReceipt: r.noReceipt, noReceiptReason: r.noReceiptReason, approvedBy: r.approvedBy,
+    printedAt: today.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})
+  }));
+  win.document.close();
+}
 
-  // Thai number to words (shared helper — same as previewNoReceiptDoc)
+function _buildDocHTML(data) {
+  // data: { id, date, requester, receiver, branch, type, purpose, amount, noReceipt, noReceiptReason, approvedBy, printedAt }
+  const amtNum = Number(data.amount || 0);
+  const amtFmt = amtNum.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   function numToWords(n) {
     const ones = ['','หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด','แปด','เก้า'];
     const tens = ['','สิบ','ยี่สิบ','สามสิบ','สี่สิบ','ห้าสิบ','หกสิบ','เจ็ดสิบ','แปดสิบ','เก้าสิบ'];
     if (n === 0) return 'ศูนย์บาทถ้วน';
     const [intPart, decPart] = String(n.toFixed(2)).split('.');
     const int = parseInt(intPart);
-    function convertInt(num) {
+    function c(num) {
       if (num === 0) return '';
       if (num < 10) return ones[num];
       if (num < 100) { const t=Math.floor(num/10),o=num%10; return tens[t]+(o?(t===1&&o===1?'เอ็ด':ones[o]):''); }
-      if (num < 1000) { const h=Math.floor(num/100); return (h>1?ones[h]:'')+' ร้อย'+convertInt(num%100); }
-      if (num < 10000) { const th=Math.floor(num/1000); return (th>1?ones[th]:'')+' พัน'+convertInt(num%1000); }
-      if (num < 100000) { const tth=Math.floor(num/10000); return (tth>1?ones[tth]:'')+' หมื่น'+convertInt(num%10000); }
-      if (num < 1000000) { const hth=Math.floor(num/100000); return (hth>1?ones[hth]:'')+' แสน'+convertInt(num%100000); }
-      return convertInt(Math.floor(num/1000000))+' ล้าน'+convertInt(num%1000000);
+      if (num < 1000) { const h=Math.floor(num/100); return (h>1?ones[h]:'')+' ร้อย'+c(num%100); }
+      if (num < 10000) { const th=Math.floor(num/1000); return (th>1?ones[th]:'')+' พัน'+c(num%1000); }
+      if (num < 100000) { const tth=Math.floor(num/10000); return (tth>1?ones[tth]:'')+' หมื่น'+c(num%10000); }
+      if (num < 1000000) { const hth=Math.floor(num/100000); return (hth>1?ones[hth]:'')+' แสน'+c(num%100000); }
+      return c(Math.floor(num/1000000))+' ล้าน'+c(num%1000000);
     }
-    let result = convertInt(int) + 'บาท';
-    const dec = parseInt(decPart);
-    result += dec > 0 ? convertInt(dec) + 'สตางค์' : 'ถ้วน';
-    return result;
+    let r2 = c(int)+'บาท'; const dec=parseInt(decPart); r2+=dec>0?c(dec)+'สตางค์':'ถ้วน'; return r2;
   }
-
-  const win = window.open('', '_blank', 'width=760,height=960');
-  win.document.write(`<!DOCTYPE html>
+  const today = new Date();
+  const printedAt = data.printedAt || today.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});
+  return `<!DOCTYPE html>
 <html lang="th"><head>
 <meta charset="UTF-8"/>
 <title>ใบเบิกเงิน</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800;900&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Sarabun', sans-serif; background: #f5f5f5; color: #111; font-size: 14px; }
-  .page-wrap { max-width: 700px; margin: 20px auto; }
-  .doc { background: #fff; border: 1px solid #c8e6c0; border-radius: 8px; overflow: hidden; }
-  .doc-header { display: flex; align-items: stretch; border-bottom: 2px solid #4a7c3f; }
-  .header-left { flex: 1; padding: 18px 22px; display: flex; align-items: center; gap: 14px; }
-  .logo-badge { width: 58px; height: 58px; border-radius: 12px; background: linear-gradient(135deg,#2e6b1c,#5aad36); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 18px; letter-spacing: -1px; box-shadow: 0 2px 8px rgba(46,107,28,.3); flex-shrink: 0; }
-  .logo-badge .sub { font-size: 8px; font-weight: 600; letter-spacing: .5px; opacity: .85; margin-top: 1px; }
-  .company-block .name { font-size: 18px; font-weight: 900; color: #2e6b1c; line-height: 1.25; }
-  .company-block .tagline { font-size: 11px; color: #777; margin-top: 2px; font-weight: 500; }
-  .header-right { min-width: 200px; padding: 14px 20px; background: #fafafa; border-left: 1px solid #e0e0e0; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 6px; }
-  .doc-badge { background: #c0392b; color: #fff; font-size: 17px; font-weight: 900; padding: 5px 16px; border-radius: 6px; letter-spacing: .02em; }
-  .doc-meta-line { font-size: 10.5px; color: #666; text-align: right; line-height: 1.7; }
-  .doc-meta-line b { color: #333; }
-  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #e8e8e8; }
-  .meta-cell { padding: 10px 20px; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; }
-  .meta-cell:nth-child(2n) { border-right: none; }
-  .meta-cell .lbl { font-size: 10px; font-weight: 700; color: #999; letter-spacing: .05em; margin-bottom: 3px; }
-  .meta-cell .val { font-size: 14px; font-weight: 700; color: #111; }
-  .meta-cell .val.green { color: #2e6b1c; }
-  .purpose-section { padding: 12px 20px 10px; border-bottom: 1px solid #f0f0f0; }
-  .section-label { font-size: 10px; font-weight: 700; color: #999; letter-spacing: .05em; margin-bottom: 5px; }
-  .purpose-text { font-size: 14px; color: #222; line-height: 1.6; min-height: 22px; }
-  .no-receipt-block { margin: 0 20px 12px; padding: 10px 14px; background: #fffde7; border: 1px solid #f9a825; border-left: 4px solid #f9a825; border-radius: 4px; font-size: 12.5px; color: #5d4037; }
-  .amount-section { padding: 12px 20px; border-bottom: 2px solid #e8f5e0; }
-  .amount-row { display: flex; align-items: baseline; justify-content: space-between; }
-  .amount-lbl { font-size: 12px; font-weight: 700; color: #4a7c3f; }
-  .amount-lbl-th { font-size: 11px; color: #888; }
-  .amount-num { font-size: 32px; font-weight: 900; color: #1b5e20; font-variant-numeric: tabular-nums; }
-  .amount-words-row { margin-top: 4px; display: flex; align-items: center; gap: 8px; }
-  .amount-words-box { background: #f1f8ec; border: 1px solid #c8e6c0; border-radius: 4px; padding: 4px 12px; font-size: 12.5px; color: #2e6b1c; font-weight: 600; }
-  .sig-area { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 16px 20px 8px; gap: 10px; border-top: 1px solid #eee; margin-top: 4px; }
-  .sig-block { text-align: center; padding: 0 8px; }
-  .sig-space { height: 52px; border-bottom: 1px solid #999; margin: 0 10px; }
-  .sig-lbl { font-size: 11px; color: #555; margin-top: 5px; font-weight: 500; }
-  .sig-name { font-size: 12px; font-weight: 700; color: #111; margin-top: 2px; }
-  .sig-date-line { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: #777; margin-top: 8px; }
-  .sig-date-line span { flex: 1; border-bottom: 1px dotted #aaa; height: 1px; max-width: 60px; }
-  .sig-date { font-size: 10.5px; color: #999; margin-top: 3px; }
-  .doc-footer { padding: 8px 20px; background: #f9f9f9; border-top: 1px solid #eee; text-align: center; font-size: 10px; color: #bbb; }
-  .print-controls { text-align: center; padding: 16px 0; }
-  .print-btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 30px; background: #2e6b1c; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; box-shadow: 0 2px 8px rgba(46,107,28,.25); }
-  .print-btn:hover { background: #1b5e20; }
-  @media print {
-    body { background: #fff; }
-    .page-wrap { margin: 0; }
-    .print-controls { display: none; }
-    .doc { border: 1px solid #ccc; border-radius: 0; }
-  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Sarabun',sans-serif;background:#f0f0f0;color:#111;font-size:14px}
+  .page-wrap{max-width:680px;margin:24px auto}
+  .doc{background:#fff;border:1px solid #bbb;border-radius:6px;overflow:hidden}
+
+  /* HEADER */
+  .doc-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #ccc}
+  .hl{display:flex;align-items:center;gap:14px}
+  .logo-circle{width:62px;height:62px;border-radius:50%;background:linear-gradient(145deg,#2e7d1c,#4aad2a);border:3px solid #c8a400;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:17px;letter-spacing:-1px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+  .logo-circle .sub{font-size:7px;font-weight:600;letter-spacing:.5px;opacity:.9;margin-top:1px}
+  .co-name{font-size:17px;font-weight:900;color:#1a4d0a;line-height:1.3}
+  .co-tag{font-size:11px;color:#888;margin-top:2px}
+  .hr{text-align:right}
+  .doc-title-box{display:inline-block;border:2px solid #111;padding:4px 18px;font-size:16px;font-weight:900;border-radius:4px;color:#111;margin-bottom:6px}
+  .doc-no{font-size:11px;color:#444;line-height:1.8}
+  .doc-no b{color:#000}
+
+  /* META */
+  .meta-section{padding:14px 24px 8px;border-bottom:1px solid #e0e0e0}
+  .meta-row{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:8px}
+  .meta-item .lbl{font-size:10.5px;font-weight:700;color:#888;margin-bottom:2px}
+  .meta-item .val{font-size:14px;font-weight:700;color:#111}
+
+  /* PURPOSE */
+  .purpose-section{padding:10px 24px 10px;border-bottom:1px solid #e8e8e8}
+  .purpose-box{border:1px solid #ccc;border-radius:5px;padding:8px 12px;font-size:13.5px;color:#222;line-height:1.7;min-height:36px}
+  .sec-label{font-size:10.5px;font-weight:700;color:#888;margin-bottom:5px}
+
+  /* NO RECEIPT */
+  .no-receipt-block{margin:0 24px 10px;padding:8px 12px;background:#fffde7;border:1px solid #f9a825;border-left:4px solid #e65100;border-radius:4px;font-size:12px;color:#5d4037}
+
+  /* AMOUNT */
+  .amount-section{margin:10px 24px 4px;border:2px solid #2e7d1c;border-radius:6px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .amt-left .lbl{font-size:11px;color:#555;font-weight:700;margin-bottom:4px}
+  .amt-words{font-size:16px;font-weight:800;color:#111}
+  .amt-right{text-align:right;flex-shrink:0}
+  .amt-right .lbl{font-size:11px;color:#555;font-weight:700;margin-bottom:4px}
+  .amt-num{font-size:28px;font-weight:900;color:#1a4d0a;font-variant-numeric:tabular-nums}
+
+  /* SIGNATURES */
+  .sig-area{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;padding:18px 24px 14px;border-top:1px solid #e0e0e0;margin-top:12px}
+  .sig-block{text-align:center;padding:0 6px}
+  .sig-line{border-bottom:1px solid #666;margin:0 12px;height:48px}
+  .sig-name-wrap{margin-top:5px}
+  .sig-name-inner{font-size:11px;color:#333;border-bottom:1px solid #aaa;display:inline-block;min-width:120px;padding-bottom:1px}
+  .sig-role{font-size:11.5px;font-weight:700;color:#222;margin-top:4px}
+  .sig-date-row{font-size:10.5px;color:#777;margin-top:5px}
+  .sig-date-dots{display:inline-block;border-bottom:1px dotted #999;width:80px;margin:0 2px;vertical-align:bottom}
+
+  /* FOOTER */
+  .doc-footer{padding:7px 24px;background:#f8f8f8;border-top:1px solid #e8e8e8;font-size:9.5px;color:#bbb;text-align:center;margin-top:8px}
+
+  /* CONTROLS */
+  .print-controls{text-align:center;padding:18px 0}
+  .print-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 32px;background:#2e7d1c;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+  .print-btn:hover{background:#1b5e20}
+  @media print{body{background:#fff}.page-wrap{margin:0}.print-controls{display:none}.doc{border:none;border-radius:0}}
 </style>
 </head><body>
 <div class="page-wrap">
-  <div class="doc">
-    <div class="doc-header">
-      <div class="header-left">
-        <div class="logo-badge"><span>SST</span><span class="sub">S.S.T</span></div>
-        <div class="company-block">
-          <div class="name">บริษัท ศรีสุธา จำกัด</div>
-          <div class="tagline">SST · ระบบเบิกจ่ายเงิน</div>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="doc-badge">ใบเบิกเงิน</div>
-        <div class="doc-meta-line">เลขที่: <b>${r.id||'-'}</b><br>วันที่: <b>${r.date||'-'}</b></div>
+<div class="doc">
+  <div class="doc-header">
+    <div class="hl">
+      <div class="logo-circle"><span>SST</span><span class="sub">S.S.T</span></div>
+      <div>
+        <div class="co-name">บริษัท ศรีสุธา จำกัด</div>
+        <div class="co-tag">SST · ระบบเบิกจ่ายเงิน</div>
       </div>
     </div>
-    <div class="meta-grid">
-      <div class="meta-cell"><div class="lbl">ผู้เบิก</div><div class="val">${r.requester||'-'}</div></div>
-      <div class="meta-cell"><div class="lbl">ผู้รับเงิน</div><div class="val">${r.receiver||r.requester||'-'}</div></div>
-      <div class="meta-cell"><div class="lbl">สาขา</div><div class="val green">${r.branch||'-'}</div></div>
-      <div class="meta-cell"><div class="lbl">ประเภท</div><div class="val">${r.type||'-'}</div></div>
+    <div class="hr">
+      <div class="doc-title-box">ใบเบิกเงิน</div>
+      <div class="doc-no">เลขที่: <b>${data.id||'-'}</b><br>วันที่: <b>${data.date||'-'}</b></div>
     </div>
-    <div class="purpose-section">
-      <div class="section-label">วัตถุประสงค์ / รายละเอียด</div>
-      <div class="purpose-text">${r.purpose||'-'}</div>
-    </div>
-    ${r.noReceipt === 'true' ? `<div class="no-receipt-block">⚠️ <b>หมายเหตุ — ไม่มีใบเสร็จ:</b> ${r.noReceiptReason||'ไม่ระบุ'}</div>` : ''}
-    <div class="amount-section">
-      <div class="amount-row">
-        <div><div class="amount-lbl">จำนวนเงิน (ตัวเลข)</div><div class="amount-lbl-th">Amount</div></div>
-        <div style="display:flex;align-items:baseline;gap:2px"><span class="amount-num">฿${amtFmt}</span></div>
-      </div>
-      <div class="amount-words-row">
-        <div class="amount-lbl-th">จำนวนเงิน (ตัวอักษร)</div>
-        <div class="amount-words-box">${numToWords(amtNum)}</div>
-      </div>
-    </div>
-    <div class="sig-area">
-      <div class="sig-block">
-        <div class="sig-space"></div>
-        <div class="sig-lbl">ผู้รับเงิน / ผู้เบิก</div>
-        <div class="sig-name">(${r.requester||'................................'})</div>
-        <div class="sig-date-line"><span></span>วันที่<span></span></div>
-        <div class="sig-date">...... / ...... / ......</div>
-      </div>
-      <div class="sig-block">
-        <div class="sig-space"></div>
-        <div class="sig-lbl">ผู้จ่าย / ผู้อนุมัติ</div>
-        <div class="sig-name">(${r.approvedBy||'................................'})</div>
-        <div class="sig-date-line"><span></span>วันที่<span></span></div>
-        <div class="sig-date">...... / ...... / ......</div>
-      </div>
-      <div class="sig-block">
-        <div class="sig-space"></div>
-        <div class="sig-lbl">เจ้าหน้าที่การเงิน</div>
-        <div class="sig-name">(................................)</div>
-        <div class="sig-date-line"><span></span>วันที่<span></span></div>
-        <div class="sig-date">...... / ...... / ......</div>
-      </div>
-    </div>
-    <div class="doc-footer">เอกสารนี้ออกโดยระบบเบิกจ่าย S.S.T · พิมพ์เมื่อ ${dateTHLong}</div>
   </div>
-  <div class="print-controls">
-    <button class="print-btn" onclick="window.print()">🖨️ พิมพ์เอกสาร</button>
+
+  <div class="meta-section">
+    <div class="meta-row">
+      <div class="meta-item"><div class="lbl">ผู้เบิก</div><div class="val">${data.requester||'-'}</div></div>
+      <div class="meta-item"><div class="lbl">ผู้รับเงิน</div><div class="val">${data.receiver||data.requester||'-'}</div></div>
+    </div>
+    <div class="meta-row">
+      <div class="meta-item"><div class="lbl">สาขา</div><div class="val">${data.branch||'-'}</div></div>
+      <div class="meta-item"><div class="lbl">ประเภท</div><div class="val">${data.type||'-'}</div></div>
+    </div>
   </div>
+
+  <div class="purpose-section">
+    <div class="sec-label">วัตถุประสงค์ / รายละเอียด</div>
+    <div class="purpose-box">${data.purpose||'-'}</div>
+  </div>
+
+  ${data.noReceipt === 'true' ? `<div class="no-receipt-block" style="margin-top:10px">⚠️ <b>หมายเหตุ — ไม่มีใบเสร็จ:</b> ${data.noReceiptReason||'ไม่ระบุ'}</div>` : ''}
+
+  <div class="amount-section">
+    <div class="amt-left">
+      <div class="lbl">จำนวนเงิน (ตัวหนังสือ)</div>
+      <div class="amt-words">${numToWords(amtNum)}</div>
+    </div>
+    <div class="amt-right">
+      <div class="lbl">จำนวนเงิน (ตัวเลข)</div>
+      <div class="amt-num">฿${amtFmt}</div>
+    </div>
+  </div>
+
+  <div class="sig-area">
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-name-wrap"><span class="sig-name-inner">${data.requester||'.................'}</span></div>
+      <div class="sig-role">ผู้รับเงิน / ผู้เบิก</div>
+      <div class="sig-date-row">วันที่ <span class="sig-date-dots"></span></div>
+    </div>
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-name-wrap"><span class="sig-name-inner">${data.approvedBy||'.................'}</span></div>
+      <div class="sig-role">ผู้จ่าย / ผู้อนุมัติ</div>
+      <div class="sig-date-row">วันที่ <span class="sig-date-dots"></span></div>
+    </div>
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-name-wrap"><span class="sig-name-inner">.................</span></div>
+      <div class="sig-role">เจ้าหน้าที่การเงิน</div>
+      <div class="sig-date-row">วันที่ <span class="sig-date-dots"></span></div>
+    </div>
+  </div>
+
+  <div class="doc-footer">เอกสารนี้ออกโดยระบบเบิกจ่าย S.S.T · พิมพ์เมื่อ ${printedAt}</div>
 </div>
-</body></html>`);
-  win.document.close();
+<div class="print-controls">
+  <button class="print-btn" onclick="window.print()">🖨️ พิมพ์เอกสาร</button>
+</div>
+</div>
+</body></html>`;
 }
 
 function numberToThai(n) {
@@ -912,243 +932,22 @@ function toggleNoReceipt() {
 }
 
 function previewNoReceiptDoc() {
-  const type    = document.getElementById('req-type')?.value || '';
-  const amount  = document.getElementById('rf-amount')?.value || '0';
-  const purpose = document.getElementById('rf-purpose')?.value || '';
-  const reason  = document.getElementById('rf-noreason')?.value || '';
+  const today    = new Date();
+  const type     = document.getElementById('req-type')?.value || '';
+  const amount   = document.getElementById('rf-amount')?.value || '0';
+  const purpose  = document.getElementById('rf-purpose')?.value || '';
+  const reason   = document.getElementById('rf-noreason')?.value || '';
   const requester = document.getElementById('rf-requester')?.value || CU?.name || '';
-  const branch  = document.getElementById('rf-branch')?.value || CU?.branch || '';
-  const today   = new Date();
-  const dateTH  = today.toLocaleDateString('th-TH', { day:'2-digit', month:'long', year:'numeric' });
-  const amtNum  = Number(amount || 0);
-  const amtFmt  = amtNum.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-  // Thai number to words (simplified)
-  function numToWords(n) {
-    const ones = ['','หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด','แปด','เก้า'];
-    const tens = ['','สิบ','ยี่สิบ','สามสิบ','สี่สิบ','ห้าสิบ','หกสิบ','เจ็ดสิบ','แปดสิบ','เก้าสิบ'];
-    if (n === 0) return 'ศูนย์';
-    let result = '';
-    const [intPart, decPart] = String(n.toFixed(2)).split('.');
-    const int = parseInt(intPart);
-    function convertInt(num) {
-      if (num === 0) return '';
-      if (num < 10) return ones[num];
-      if (num < 100) {
-        const t = Math.floor(num / 10), o = num % 10;
-        return tens[t] + (o ? (t === 1 && o === 1 ? 'เอ็ด' : ones[o]) : '');
-      }
-      if (num < 1000) {
-        const h = Math.floor(num / 100);
-        return (h > 1 ? ones[h] : '') + 'ร้อย' + convertInt(num % 100);
-      }
-      if (num < 10000) {
-        const th = Math.floor(num / 1000);
-        return (th > 1 ? ones[th] : '') + 'พัน' + convertInt(num % 1000);
-      }
-      if (num < 100000) {
-        const tth = Math.floor(num / 10000);
-        return (tth > 1 ? ones[tth] : '') + 'หมื่น' + convertInt(num % 10000);
-      }
-      if (num < 1000000) {
-        const hth = Math.floor(num / 100000);
-        return (hth > 1 ? ones[hth] : '') + 'แสน' + convertInt(num % 100000);
-      }
-      return convertInt(Math.floor(num / 1000000)) + 'ล้าน' + convertInt(num % 1000000);
-    }
-    result = convertInt(int) + 'บาท';
-    const dec = parseInt(decPart);
-    result += dec > 0 ? convertInt(dec) + 'สตางค์' : 'ถ้วน';
-    return result;
-  }
-
-  // สร้างเลขที่เอกสาร
-  const docNo = 'REQ-' + Date.now() + '-' + Math.floor(Math.random()*10000);
-  const receiver = document.getElementById('rf-receiver')?.value || '';
-  const dateTHLong = today.toLocaleDateString('th-TH', { day:'numeric', month:'long', year:'numeric' });
+  const receiver  = document.getElementById('rf-receiver')?.value || '';
+  const branch   = document.getElementById('rf-branch')?.value || CU?.branch || '';
+  const docNo    = 'REQ-' + Date.now() + '-' + Math.floor(Math.random()*10000);
   const dateFull = today.toLocaleString('th-TH', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
-
   const win = window.open('', '_blank', 'width=760,height=960');
-  win.document.write(`<!DOCTYPE html>
-<html lang="th"><head>
-<meta charset="UTF-8"/>
-<title>ใบเบิกเงิน</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800;900&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Sarabun', sans-serif; background: #f5f5f5; color: #111; font-size: 14px; }
-  .page-wrap { max-width: 700px; margin: 20px auto; }
-  .doc { background: #fff; border: 1px solid #c8e6c0; border-radius: 8px; overflow: hidden; }
-
-  /* ── HEADER ── */
-  .doc-header { display: flex; align-items: stretch; border-bottom: 2px solid #4a7c3f; }
-  .header-left { flex: 1; padding: 18px 22px; display: flex; align-items: center; gap: 14px; }
-  .logo-badge { width: 58px; height: 58px; border-radius: 12px; background: linear-gradient(135deg,#2e6b1c,#5aad36); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 18px; letter-spacing: -1px; box-shadow: 0 2px 8px rgba(46,107,28,.3); flex-shrink: 0; }
-  .logo-badge .sub { font-size: 8px; font-weight: 600; letter-spacing: .5px; opacity: .85; margin-top: 1px; }
-  .company-block .name { font-size: 18px; font-weight: 900; color: #2e6b1c; line-height: 1.25; }
-  .company-block .tagline { font-size: 11px; color: #777; margin-top: 2px; font-weight: 500; }
-  .header-right { min-width: 200px; padding: 14px 20px; background: #fafafa; border-left: 1px solid #e0e0e0; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 6px; }
-  .doc-badge { background: #c0392b; color: #fff; font-size: 17px; font-weight: 900; padding: 5px 16px; border-radius: 6px; letter-spacing: .02em; }
-  .doc-meta-line { font-size: 10.5px; color: #666; text-align: right; line-height: 1.7; }
-  .doc-meta-line b { color: #333; }
-
-  /* ── META GRID ── */
-  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #e8e8e8; }
-  .meta-cell { padding: 10px 20px; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; }
-  .meta-cell:nth-child(2n) { border-right: none; }
-  .meta-cell .lbl { font-size: 10px; font-weight: 700; color: #999; letter-spacing: .05em; margin-bottom: 3px; }
-  .meta-cell .val { font-size: 14px; font-weight: 700; color: #111; }
-  .meta-cell .val.green { color: #2e6b1c; }
-
-  /* ── PURPOSE ── */
-  .purpose-section { padding: 12px 20px 10px; border-bottom: 1px solid #f0f0f0; }
-  .section-label { font-size: 10px; font-weight: 700; color: #999; letter-spacing: .05em; margin-bottom: 5px; }
-  .purpose-text { font-size: 14px; color: #222; line-height: 1.6; min-height: 22px; }
-
-  /* ── NO-RECEIPT NOTICE ── */
-  .no-receipt-block { margin: 0 20px 12px; padding: 10px 14px; background: #fffde7; border: 1px solid #f9a825; border-left: 4px solid #f9a825; border-radius: 4px; font-size: 12.5px; color: #5d4037; }
-
-  /* ── AMOUNT BOX ── */
-  .amount-section { padding: 12px 20px; border-bottom: 2px solid #e8f5e0; }
-  .amount-row { display: flex; align-items: baseline; justify-content: space-between; }
-  .amount-lbl { font-size: 12px; font-weight: 700; color: #4a7c3f; }
-  .amount-lbl-th { font-size: 11px; color: #888; }
-  .amount-num { font-size: 32px; font-weight: 900; color: #1b5e20; font-variant-numeric: tabular-nums; }
-  .amount-unit { font-size: 14px; font-weight: 700; color: #4a7c3f; margin-left: 4px; }
-  .amount-words-row { margin-top: 4px; display: flex; align-items: center; gap: 8px; }
-  .amount-words-box { background: #f1f8ec; border: 1px solid #c8e6c0; border-radius: 4px; padding: 4px 12px; font-size: 12.5px; color: #2e6b1c; font-weight: 600; }
-
-  /* ── SIGNATURE AREA ── */
-  .sig-area { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 16px 20px 8px; gap: 10px; border-top: 1px solid #eee; margin-top: 4px; }
-  .sig-block { text-align: center; padding: 0 8px; }
-  .sig-space { height: 52px; border-bottom: 1px solid #999; margin: 0 10px; }
-  .sig-lbl { font-size: 11px; color: #555; margin-top: 5px; font-weight: 500; }
-  .sig-name { font-size: 12px; font-weight: 700; color: #111; margin-top: 2px; }
-  .sig-date { font-size: 10.5px; color: #999; margin-top: 3px; }
-  .sig-date-line { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: #777; margin-top: 8px; }
-  .sig-date-line span { flex: 1; border-bottom: 1px dotted #aaa; height: 1px; max-width: 60px; }
-
-  /* ── FOOTER ── */
-  .doc-footer { padding: 8px 20px; background: #f9f9f9; border-top: 1px solid #eee; text-align: center; font-size: 10px; color: #bbb; }
-
-  /* ── PRINT CONTROLS ── */
-  .print-controls { text-align: center; padding: 16px 0; }
-  .print-btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 30px; background: #2e6b1c; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; box-shadow: 0 2px 8px rgba(46,107,28,.25); }
-  .print-btn:hover { background: #1b5e20; }
-  @media print {
-    body { background: #fff; }
-    .page-wrap { margin: 0; }
-    .print-controls { display: none; }
-    .doc { border: 1px solid #ccc; border-radius: 0; }
-  }
-</style>
-</head><body>
-<div class="page-wrap">
-  <div class="doc">
-
-    <!-- HEADER -->
-    <div class="doc-header">
-      <div class="header-left">
-        <div class="logo-badge">
-          <span>SST</span>
-          <span class="sub">S.S.T</span>
-        </div>
-        <div class="company-block">
-          <div class="name">บริษัท ศรีสุธา จำกัด</div>
-          <div class="tagline">SST · ระบบเบิกจ่ายเงิน</div>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="doc-badge">ใบเบิกเงิน</div>
-        <div class="doc-meta-line">
-          เลขที่: <b>${docNo}</b><br>
-          วันที่: <b>${dateFull}</b>
-        </div>
-      </div>
-    </div>
-
-    <!-- META GRID -->
-    <div class="meta-grid">
-      <div class="meta-cell">
-        <div class="lbl">ผู้เบิก</div>
-        <div class="val">${requester || '-'}</div>
-      </div>
-      <div class="meta-cell">
-        <div class="lbl">ผู้รับเงิน (ถ้าต่างจากผู้ขอ)</div>
-        <div class="val">${receiver || requester || '-'}</div>
-      </div>
-      <div class="meta-cell">
-        <div class="lbl">สาขา</div>
-        <div class="val green">${branch || '-'}</div>
-      </div>
-      <div class="meta-cell">
-        <div class="lbl">ประเภท</div>
-        <div class="val">${type || '-'}</div>
-      </div>
-    </div>
-
-    <!-- PURPOSE -->
-    <div class="purpose-section">
-      <div class="section-label">วัตถุประสงค์ / รายละเอียด</div>
-      <div class="purpose-text">${purpose || '-'}</div>
-    </div>
-
-    ${reason ? `
-    <!-- NO RECEIPT NOTICE -->
-    <div class="no-receipt-block">
-      ⚠️ <b>หมายเหตุ — ไม่มีใบเสร็จ:</b> ${reason}
-    </div>` : ''}
-
-    <!-- AMOUNT -->
-    <div class="amount-section">
-      <div class="amount-row">
-        <div>
-          <div class="amount-lbl">จำนวนเงิน (ตัวเลข)</div>
-          <div class="amount-lbl-th">Amount</div>
-        </div>
-        <div style="display:flex;align-items:baseline;gap:2px">
-          <span class="amount-num">฿${amtFmt}</span>
-        </div>
-      </div>
-      <div class="amount-words-row">
-        <div class="amount-lbl-th">จำนวนเงิน (ตัวอักษร)</div>
-        <div class="amount-words-box">${numToWords(amtNum)}</div>
-      </div>
-    </div>
-
-    <!-- SIGNATURES -->
-    <div class="sig-area">
-      <div class="sig-block">
-        <div class="sig-space"></div>
-        <div class="sig-lbl">ผู้รับเงิน / ผู้เบิก</div>
-        <div class="sig-name">(${requester || '................................'})</div>
-        <div class="sig-date-line"><span></span>วันที่<span></span></div>
-        <div class="sig-date">...... / ...... / ......</div>
-      </div>
-      <div class="sig-block">
-        <div class="sig-space"></div>
-        <div class="sig-lbl">ผู้จ่าย / ผู้อนุมัติ</div>
-        <div class="sig-name">(................................)</div>
-        <div class="sig-date-line"><span></span>วันที่<span></span></div>
-        <div class="sig-date">...... / ...... / ......</div>
-      </div>
-      <div class="sig-block">
-        <div class="sig-space"></div>
-        <div class="sig-lbl">เจ้าหน้าที่การเงิน</div>
-        <div class="sig-name">(................................)</div>
-        <div class="sig-date-line"><span></span>วันที่<span></span></div>
-        <div class="sig-date">...... / ...... / ......</div>
-      </div>
-    </div>
-
-    <div class="doc-footer">เอกสารนี้ออกโดยระบบเบิกจ่าย S.S.T · พิมพ์เมื่อ ${dateTHLong}</div>
-  </div>
-
-  <div class="print-controls">
-    <button class="print-btn" onclick="window.print()">🖨️ พิมพ์เอกสาร</button>
-  </div>
-</div>
-</body></html>`);
+  win.document.write(_buildDocHTML({
+    id: docNo, date: dateFull, requester, receiver, branch, type,
+    purpose, amount, noReceipt: reason ? 'true' : 'false', noReceiptReason: reason,
+    printedAt: today.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})
+  }));
   win.document.close();
 }
 
