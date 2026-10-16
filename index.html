@@ -2027,6 +2027,12 @@ function siUpdateReqChip(sel) {
 }
 
 async function openStockIn(preItemId) {
+  // ensure stock items loaded
+  if (!_stockItems.length) {
+    pbShow(true);
+    try { const r = await apiPost('getStock', {}); _stockItems = r.items || []; } catch(e){}
+    finally { pbHide(true); }
+  }
   // fetch approved expense requests for dropdown
   _approvedRequests = [];
   try {
