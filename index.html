@@ -1043,9 +1043,35 @@ function buildReqForm() {
       <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" min="0"/></div>
       <div class="fg"><label>วัตถุประสงค์ / เส้นทาง</label><textarea id="rf-purpose" rows="2" placeholder="เช่น ส่งสินค้าไปคลังสาขา 2..."></textarea></div>`;
   } else if (type === 'เบิกซื้อของ') {
+    function _pBuildRow(n) {
+      return `<tr data-prn="${n}">
+        <td style="padding:4px 6px 4px 0"><input type="text" class="rf-pur-name" placeholder="ชื่อสินค้า / รายการ" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit"/></td>
+        <td style="padding:4px 6px;width:80px"><input type="number" class="rf-pur-qty" min="1" value="1" placeholder="จำนวน" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit" oninput="rfPurCalc()"/></td>
+        <td style="padding:4px 6px;width:80px"><input type="number" class="rf-pur-price" min="0" value="" placeholder="ราคา/ชิ้น" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit" oninput="rfPurCalc()"/></td>
+        <td style="padding:4px 6px;width:90px"><input readonly class="rf-pur-total" placeholder="รวม" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit;background:var(--g3);color:var(--text2);font-weight:700"/></td>
+        <td style="padding:4px 0 4px 6px;width:32px;text-align:center"><button type="button" onclick="rfPurRemoveRow(this)" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 4px">✕</button></td>
+      </tr>`;
+    }
     extraFields = `
-      <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" min="0"/></div>
-      <div class="fg"><label>รายการสินค้า / รายละเอียด</label><textarea id="rf-purpose" rows="4" placeholder="ระบุรายการสิ่งของที่ต้องการจัดซื้อ..."></textarea></div>
+      <div class="fg">
+        <label>รายการสินค้าที่ต้องการจัดซื้อ <span style="color:var(--red)">*</span></label>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="font-size:11px;color:var(--text3);font-weight:700">
+            <th style="text-align:left;padding:0 6px 6px 0">รายการสินค้า</th>
+            <th style="text-align:left;padding:0 6px 6px;width:80px">จำนวน</th>
+            <th style="text-align:left;padding:0 6px 6px;width:80px">ราคา/ชิ้น</th>
+            <th style="text-align:left;padding:0 6px 6px;width:90px">รวม (฿)</th>
+            <th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="rf-pur-tbody">${_pBuildRow(1)}</tbody>
+        </table>
+        <button type="button" onclick="rfPurAddRow()" style="margin-top:8px;width:100%;padding:7px;border:1.5px dashed var(--border);border-radius:8px;background:transparent;color:var(--g);font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">＋ เพิ่มรายการ</button>
+        <div style="text-align:right;margin-top:8px;font-size:13px;font-weight:700;color:var(--text2)">ยอดรวมทั้งหมด: <span id="rf-pur-grand" style="font-size:16px;color:var(--g);font-weight:900">฿0.00</span></div>
+        <input type="hidden" id="rf-amount" value="0"/>
+      </div>
+      <div class="fg"><label>วัตถุประสงค์ / หมายเหตุ</label>
+        <textarea id="rf-purpose" rows="2" placeholder="ระบุวัตถุประสงค์การใช้งาน..."></textarea>
+      </div>
       <div class="fg">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2)">
           <input type="checkbox" id="rf-noreceipt" onchange="toggleNoReceipt()" style="width:16px;height:16px;accent-color:var(--red)"/>
@@ -1127,6 +1153,48 @@ function buildReqForm() {
 
 function onSupplyItemChange() { /* legacy compat — unused */ }
 
+// ── เบิกซื้อของ: purchase row helpers ──
+let _rfPurCount = 1;
+function rfPurCalc() {
+  let grand = 0;
+  document.querySelectorAll('#rf-pur-tbody tr').forEach(tr => {
+    const qty = parseFloat(tr.querySelector('.rf-pur-qty')?.value || '0') || 0;
+    const price = parseFloat(tr.querySelector('.rf-pur-price')?.value || '0') || 0;
+    const total = qty * price;
+    const totalEl = tr.querySelector('.rf-pur-total');
+    if (totalEl) totalEl.value = total > 0 ? total.toFixed(2) : '';
+    grand += total;
+  });
+  const grandEl = document.getElementById('rf-pur-grand');
+  if (grandEl) grandEl.textContent = '฿' + grand.toFixed(2);
+  const amtEl = document.getElementById('rf-amount');
+  if (amtEl) amtEl.value = grand.toFixed(2);
+}
+function rfPurAddRow() {
+  _rfPurCount++;
+  const tbody = document.getElementById('rf-pur-tbody');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.dataset.prn = _rfPurCount;
+  tr.innerHTML = `
+    <td style="padding:4px 6px 4px 0"><input type="text" class="rf-pur-name" placeholder="ชื่อสินค้า / รายการ" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit"/></td>
+    <td style="padding:4px 6px;width:80px"><input type="number" class="rf-pur-qty" min="1" value="1" placeholder="จำนวน" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit" oninput="rfPurCalc()"/></td>
+    <td style="padding:4px 6px;width:80px"><input type="number" class="rf-pur-price" min="0" value="" placeholder="ราคา/ชิ้น" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit" oninput="rfPurCalc()"/></td>
+    <td style="padding:4px 6px;width:90px"><input readonly class="rf-pur-total" placeholder="รวม" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit;background:var(--g3);color:var(--text2);font-weight:700"/></td>
+    <td style="padding:4px 0 4px 6px;width:32px;text-align:center"><button type="button" onclick="rfPurRemoveRow(this)" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 4px">✕</button></td>`;
+  tbody.appendChild(tr);
+  tr.querySelector('.rf-pur-qty').addEventListener('input', rfPurCalc);
+}
+function rfPurRemoveRow(btn) {
+  const tr = btn.closest('tr');
+  const tbody = document.getElementById('rf-pur-tbody');
+  if (!tbody) return;
+  const rows = tbody.querySelectorAll('tr');
+  if (rows.length <= 1) return;
+  tr.remove();
+  rfPurCalc();
+}
+
 let _rfSiCount = 1;
 function rfSiItemChange(sel) {
   const tr = sel.closest('tr');
@@ -1196,10 +1264,10 @@ async function submitReq() {
   const errEl   = document.getElementById('rf-err');
   errEl.textContent = '';
   if (!type) { errEl.textContent = 'กรุณาเลือกประเภท'; return; }
-  if (type !== 'เบิกของ') {
+  if (type !== 'เบิกของ' && type !== 'เบิกซื้อของ') {
     if (!amount || isNaN(amount)) { errEl.textContent = 'กรุณากรอกจำนวนเงิน'; return; }
   }
-  if (type !== 'เบิกของ' && !purpose) { errEl.textContent = 'กรุณากรอกวัตถุประสงค์'; return; }
+  if (type !== 'เบิกของ' && type !== 'เบิกซื้อของ' && !purpose) { errEl.textContent = 'กรุณากรอกวัตถุประสงค์'; return; }
 
   btnLoading('rf-btn', '⏳ กำลังส่ง...');
 
@@ -1231,7 +1299,7 @@ async function submitReq() {
   const noReceiptReason = document.getElementById('rf-noreason')?.value || '';
   const vehiclePlate = document.getElementById('rf-plate')?.value || '';
 
-  // เบิกของ: ดึงข้อมูลหลายรายการ
+  // เบิกของ: ดึงข้อมูลหลายรายการจากสต็อก
   let supplyItems = [];
   if (type === 'เบิกของ') {
     const inv = _stockItems.length ? _stockItems : (window._invCache||[]);
@@ -1248,10 +1316,34 @@ async function submitReq() {
     if (!ok || !supplyItems.length) { btnRestore('rf-btn'); return; }
   }
 
+  // เบิกซื้อของ: ดึงรายการสินค้าจากตาราง
+  let purchaseItems = [];
+  if (type === 'เบิกซื้อของ') {
+    const rows = document.querySelectorAll('#rf-pur-tbody tr');
+    let ok = true;
+    rows.forEach(tr => {
+      const name = (tr.querySelector('.rf-pur-name')?.value || '').trim();
+      const qty = parseFloat(tr.querySelector('.rf-pur-qty')?.value || '1') || 1;
+      const price = parseFloat(tr.querySelector('.rf-pur-price')?.value || '0') || 0;
+      const total = qty * price;
+      if (!name) { document.getElementById('rf-err').textContent = 'กรุณาใส่ชื่อสินค้าให้ครบทุกรายการ'; ok=false; return; }
+      purchaseItems.push({ name, qty, price, total });
+    });
+    if (!ok || !purchaseItems.length) { btnRestore('rf-btn'); return; }
+    // อัปเดต amount จากผลรวม
+    const grandTotal = purchaseItems.reduce((s,i)=>s+i.total, 0);
+    const amtEl = document.getElementById('rf-amount');
+    if (amtEl) amtEl.value = grandTotal.toFixed(2);
+  }
+
   let finalPurpose = purpose;
   if (type === 'เบิกของ' && supplyItems.length) {
     const summary = supplyItems.map(i=>`${i.itemName} x${i.qty}`).join(', ');
     finalPurpose = `[เบิกของ: ${summary}] ${purpose}`.trim();
+  }
+  if (type === 'เบิกซื้อของ' && purchaseItems.length) {
+    const summary = purchaseItems.map(i=>`${i.name} x${i.qty}${i.price?` @${i.price}฿`:''}`).join(', ');
+    finalPurpose = `[รายการ: ${summary}] ${purpose}`.trim();
   }
   if (type === 'เบิกน้ำมัน' && vehiclePlate) {
     const liters = document.getElementById('rf-liters')?.value || '';
@@ -1261,19 +1353,23 @@ async function submitReq() {
   const branch = document.getElementById('rf-branch')?.value || CU.branch;
   const requester = document.getElementById('rf-requester')?.value || CU.name;
   const receiver = document.getElementById('rf-receiver')?.value || '';
+  const finalAmount = parseFloat(document.getElementById('rf-amount')?.value || '0') || 0;
+  // สร้าง items JSON สำหรับ เบิกซื้อของ
+  const itemsJson = type === 'เบิกซื้อของ' ? JSON.stringify(purchaseItems) : '';
 
   let res;
   if (type === 'เบิกของ') {
-    // ส่งหลายรายการ
+    // ส่งหลายรายการเบิกจากสต็อก
     res = await apiPost('submitSupplyRequest', {
       items: supplyItems, note: finalPurpose, branch, requester,
     });
   } else {
     res = await apiPost('submitRequest', {
-      type, amount: parseFloat(amount||0),
+      type, amount: finalAmount,
       purpose: finalPurpose,
       requester, receiver, branch,
       vehiclePlate, noReceipt, noReceiptReason, imageUrls,
+      items: itemsJson,
     });
   }
 
