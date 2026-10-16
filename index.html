@@ -375,6 +375,18 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
 <!-- PRINT AREA -->
 <div id="print-area" style="display:none"></div>
 
+<!-- MODAL: Generic (stock modals) -->
+<div class="overlay" id="ov-generic">
+  <div class="modal">
+    <div class="modal-title" id="ov-generic-title"></div>
+    <div id="ov-generic-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="ov-generic-ok" onclick="handleGenericOk()">ยืนยัน</button>
+      <button class="btn btn-ghost" onclick="closeModal('ov-generic')">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: Create User -->
 <div class="overlay" id="ov-create-user">
   <div class="modal">
@@ -1233,6 +1245,19 @@ async function doReject() {
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
+let _genericOkCallback = null;
+function openModal(title, bodyHtml, onOk) {
+  document.getElementById('ov-generic-title').innerHTML = title;
+  document.getElementById('ov-generic-body').innerHTML = bodyHtml;
+  _genericOkCallback = onOk || null;
+  document.getElementById('ov-generic').classList.add('open');
+}
+async function handleGenericOk() {
+  if (!_genericOkCallback) { closeModal('ov-generic'); return; }
+  const result = await _genericOkCallback();
+  if (result !== false) closeModal('ov-generic');
+}
+
 // ════ VEHICLES ════
 function switchVehTab(tab) {
   _vehTab = tab;
@@ -1787,7 +1812,7 @@ function openStockIn(preItemId) {
     const qty = Number(document.getElementById('si-qty').value);
     const note = document.getElementById('si-note').value.trim();
     if (!qty || qty < 1) { showToast('กรุณาใส่จำนวน','error'); return false; }
-    let payload = { action:'stockIn', qty, note, by: CU.displayName, branch: CU.branch };
+    let payload = { qty, note, by: CU.displayName, branch: CU.branch };
     if (itemId === '__new__') {
       const name = document.getElementById('ni-name').value.trim();
       const spec = document.getElementById('ni-spec').value.trim();
@@ -1801,7 +1826,7 @@ function openStockIn(preItemId) {
     }
     pbShow(true);
     try {
-      await apiPost(payload.action || 'stockIn', payload);
+      await apiPost('stockIn', payload);
       showToast('รับของเข้าคลังสำเร็จ','success');
       _stockHistory = [];
       await loadStock();
