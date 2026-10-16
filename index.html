@@ -132,7 +132,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
 .modal-title{font-size:17px;font-weight:800;color:var(--g);margin-bottom:18px;display:flex;align-items:center;gap:7px;letter-spacing:-.01em}
 .modal-actions{display:flex;gap:10px;margin-top:18px}
 /* ── STOCK-IN MODAL (wide) ── */
-.modal-si{width:600px;max-width:100%;padding:0;overflow:hidden}
+.modal-si{width:600px;max-width:100%;padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:90vh}
 .modal-si .si-head{padding:20px 24px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:9px}
 .modal-si .si-head h2{font-size:16px;font-weight:800;color:var(--g);flex:1}
 .modal-si .si-head .si-branch{font-size:11px;font-weight:700;letter-spacing:.05em;background:var(--g-light,#edf7ee);color:var(--g);padding:3px 9px;border-radius:20px}
@@ -158,7 +158,8 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
 .si-del-btn:hover{background:#ffeaea;color:var(--red,#c62828)}
 .si-add-row{display:flex;align-items:center;justify-content:center;gap:6px;margin:8px 0 14px;padding:7px 12px;border-radius:8px;border:1.5px dashed var(--border);background:transparent;color:var(--g);font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;transition:background .12s,border-color .12s}
 .si-add-row:hover{background:var(--g-light,#edf7ee);border-color:var(--g2)}
-.modal-si .si-actions{padding:14px 24px 20px;display:flex;gap:10px}
+#ov-stockin-body,#ov-withdraw-body{flex:1;overflow-y:auto;min-height:0}
+.modal-si .si-actions{padding:14px 24px 20px;display:flex;gap:10px;flex-shrink:0;border-top:1px solid var(--border)}
 .modal-si .si-btn-ok{flex:1;background:var(--g);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .14s}
 .modal-si .si-btn-ok:hover{background:#2d6336}
 .modal-si .si-btn-cancel{padding:11px 18px;border:1.5px solid var(--border);border-radius:9px;background:transparent;color:var(--text2);font-size:14px;font-family:inherit;cursor:pointer}
@@ -1058,35 +1059,43 @@ function buildReqForm() {
         </div>
       </div>`;
   } else if (type === 'เบิกของ') {
-    // โหลดรายการจาก inventory cache
-    const invItems = window._invCache || [];
-    let itemOpts = invItems.length
-      ? invItems.map(i => `<option value="${i.id}">${i.name}${i.spec?' ('+i.spec+')':''} — คงเหลือ ${i.qty??'?'} ${i.unit||'ชิ้น'}</option>`).join('')
-      : '<option value="">— ยังไม่มีรายการในสต็อก (กรุณาเพิ่มจากแท็บสต็อกของก่อน) —</option>';
+    // ใช้ cache เดียวกับ _stockItems (share)
+    const invItems = _stockItems.length ? _stockItems : (window._invCache || []);
+    function _rfItemOpts(selId) {
+      if (!invItems.length) return '<option value="">— ยังไม่มีรายการในสต็อก (โหลดอยู่...) —</option>';
+      return invItems.map(i => `<option value="${esc(String(i.id))}" ${String(i.id)===String(selId)?'selected':''}>${esc(i.name)}${i.spec?' ('+esc(i.spec)+')':''} — คงเหลือ ${i.qty??'?'} ${i.unit||'ชิ้น'}</option>`).join('');
+    }
+    function _rfBuildRow(n) {
+      return `<tr data-rn="${n}">
+        <td style="padding:4px 6px 4px 0"><select class="rf-si-item" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit" onchange="rfSiItemChange(this)">${_rfItemOpts('')}</select></td>
+        <td style="padding:4px 6px;width:90px"><input type="number" class="rf-si-qty" min="1" value="1" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit"/></td>
+        <td style="padding:4px 0 4px 4px;width:70px"><input readonly class="rf-si-unit" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit;background:var(--g3);color:var(--text2)"/></td>
+        <td style="padding:4px 0 4px 6px;width:32px;text-align:center"><button type="button" onclick="rfSiRemoveRow(this)" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 4px">✕</button></td>
+      </tr>`;
+    }
     extraFields = `
-      <div class="fg"><label>รายการที่ต้องการเบิก <span style="color:red">*</span></label>
-        <select id="rf-supply-item" class="form-control" onchange="onSupplyItemChange()">${itemOpts}</select>
+      <div class="fg">
+        <label>รายการที่ต้องการเบิก <span style="color:var(--red)">*</span></label>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="font-size:11px;color:var(--text3);font-weight:700">
+            <th style="text-align:left;padding:0 6px 6px 0">รายการ</th>
+            <th style="text-align:left;padding:0 6px 6px;width:90px">จำนวน</th>
+            <th style="text-align:left;padding:0 0 6px 4px;width:70px">หน่วย</th>
+            <th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="rf-si-tbody">${_rfBuildRow(1)}</tbody>
+        </table>
+        <button type="button" onclick="rfSiAddRow()" style="margin-top:8px;width:100%;padding:7px;border:1.5px dashed var(--border);border-radius:8px;background:transparent;color:var(--g);font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">＋ เพิ่มรายการ</button>
       </div>
-      <div class="grid2">
-        <div class="fg"><label>จำนวน <span style="color:red">*</span></label>
-          <input type="number" id="rf-supply-qty" min="1" value="1" placeholder="1"/>
-        </div>
-        <div class="fg"><label>หน่วย</label>
-          <input id="rf-supply-unit" readonly style="color:var(--text2);background:var(--card2)"/>
-        </div>
-      </div>
-      <div class="fg" id="rf-supply-stock-info" style="font-size:12px;color:var(--text2);padding:4px 0"></div>
       <div class="fg"><label>วัตถุประสงค์ / หมายเหตุ</label>
         <textarea id="rf-purpose" rows="2" placeholder="ระบุวัตถุประสงค์การใช้งาน..."></textarea>
       </div>`;
-    // หน่วง populate unit field หลัง DOM render
-    setTimeout(() => { if (typeof onSupplyItemChange === 'function') onSupplyItemChange(); }, 60);
     // load ถ้ายังไม่มี cache
     if (!invItems.length) {
       apiPost('getStock', {}).then(r => {
         if (r?.items) {
           window._invCache = r.items;
-          // re-render ถ้า type ยังเบิกของอยู่
+          _stockItems = r.items;
           if (document.getElementById('req-type')?.value === 'เบิกของ') buildReqForm();
         }
       }).catch(() => {});
@@ -1116,21 +1125,42 @@ function buildReqForm() {
     <div id="rf-success"></div>`;
 }
 
-function onSupplyItemChange() {
-  const sel = document.getElementById('rf-supply-item');
-  const unitEl = document.getElementById('rf-supply-unit');
-  const infoEl = document.getElementById('rf-supply-stock-info');
-  if (!sel) return;
-  const found = (window._invCache||[]).find(i => String(i.id) === String(sel.value));
+function onSupplyItemChange() { /* legacy compat — unused */ }
+
+let _rfSiCount = 1;
+function rfSiItemChange(sel) {
+  const tr = sel.closest('tr');
+  if (!tr) return;
+  const inv = _stockItems.length ? _stockItems : (window._invCache||[]);
+  const found = inv.find(i => String(i.id) === String(sel.value));
+  const unitEl = tr.querySelector('.rf-si-unit');
   if (unitEl) unitEl.value = found?.unit || '';
-  if (infoEl) {
-    if (found) {
-      const qty = found.qty ?? '?';
-      const minQty = found.minQty || 0;
-      const low = (qty !== '?') && qty <= minQty;
-      infoEl.innerHTML = `สต็อกคงเหลือ: <strong style="color:${low?'var(--red)':'var(--g)'}">${qty} ${found.unit||'ชิ้น'}</strong>${low?' ⚠️ ของใกล้หมด':''}`;
-    } else { infoEl.textContent = ''; }
-  }
+}
+function rfSiAddRow() {
+  _rfSiCount++;
+  const tbody = document.getElementById('rf-si-tbody');
+  if (!tbody) return;
+  const inv = _stockItems.length ? _stockItems : (window._invCache||[]);
+  const opts = inv.length
+    ? inv.map(i => `<option value="${esc(String(i.id))}">${esc(i.name)}${i.spec?' ('+esc(i.spec)+')':''} — คงเหลือ ${i.qty??'?'} ${i.unit||'ชิ้น'}</option>`).join('')
+    : '<option value="">— ยังไม่มีรายการ —</option>';
+  const tr = document.createElement('tr');
+  tr.dataset.rn = _rfSiCount;
+  tr.innerHTML = `
+    <td style="padding:4px 6px 4px 0"><select class="rf-si-item" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit" onchange="rfSiItemChange(this)">${opts}</select></td>
+    <td style="padding:4px 6px;width:90px"><input type="number" class="rf-si-qty" min="1" value="1" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit"/></td>
+    <td style="padding:4px 0 4px 4px;width:70px"><input readonly class="rf-si-unit" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit;background:var(--g3);color:var(--text2)"/></td>
+    <td style="padding:4px 0 4px 6px;width:32px;text-align:center"><button type="button" onclick="rfSiRemoveRow(this)" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 4px">✕</button></td>`;
+  tbody.appendChild(tr);
+  rfSiItemChange(tr.querySelector('select'));
+}
+function rfSiRemoveRow(btn) {
+  const tr = btn.closest('tr');
+  const tbody = document.getElementById('rf-si-tbody');
+  if (!tbody) return;
+  const rows = tbody.querySelectorAll('tr');
+  if (rows.length <= 1) return; // ต้องมีอย่างน้อย 1 แถว
+  tr.remove();
 }
 
 function toggleNoReceipt() {
@@ -1201,21 +1231,27 @@ async function submitReq() {
   const noReceiptReason = document.getElementById('rf-noreason')?.value || '';
   const vehiclePlate = document.getElementById('rf-plate')?.value || '';
 
-  // เบิกของ: ดึงข้อมูลรายการ
-  let supplyItemId = '', supplyItemName = '', supplyQty = 0;
+  // เบิกของ: ดึงข้อมูลหลายรายการ
+  let supplyItems = [];
   if (type === 'เบิกของ') {
-    const selEl = document.getElementById('rf-supply-item');
-    supplyItemId = selEl?.value || '';
-    supplyQty = parseInt(document.getElementById('rf-supply-qty')?.value || '1');
-    const found = (window._invCache||[]).find(i => i.id == supplyItemId);
-    supplyItemName = found?.name || supplyItemId;
-    if (!supplyItemId) { btnRestore('rf-btn'); document.getElementById('rf-err').textContent = 'กรุณาเลือกรายการ'; return; }
-    if (!supplyQty || supplyQty < 1) { btnRestore('rf-btn'); document.getElementById('rf-err').textContent = 'กรุณากรอกจำนวน'; return; }
+    const inv = _stockItems.length ? _stockItems : (window._invCache||[]);
+    const rows = document.querySelectorAll('#rf-si-tbody tr');
+    let ok = true;
+    rows.forEach(tr => {
+      const itemId = tr.querySelector('.rf-si-item')?.value || '';
+      const qty = parseInt(tr.querySelector('.rf-si-qty')?.value || '1');
+      const found = inv.find(i => String(i.id) === String(itemId));
+      if (!itemId || !found) { document.getElementById('rf-err').textContent = 'กรุณาเลือกรายการให้ครบ'; ok=false; return; }
+      if (!qty || qty < 1) { document.getElementById('rf-err').textContent = 'กรุณาใส่จำนวนให้ครบ'; ok=false; return; }
+      supplyItems.push({ itemId, itemName: found.name, qty, unit: found.unit||'' });
+    });
+    if (!ok || !supplyItems.length) { btnRestore('rf-btn'); return; }
   }
 
   let finalPurpose = purpose;
-  if (type === 'เบิกของ' && supplyItemName) {
-    finalPurpose = `[เบิกของ: ${supplyItemName} x${supplyQty}] ${purpose}`.trim();
+  if (type === 'เบิกของ' && supplyItems.length) {
+    const summary = supplyItems.map(i=>`${i.itemName} x${i.qty}`).join(', ');
+    finalPurpose = `[เบิกของ: ${summary}] ${purpose}`.trim();
   }
   if (type === 'เบิกน้ำมัน' && vehiclePlate) {
     const liters = document.getElementById('rf-liters')?.value || '';
@@ -1228,11 +1264,9 @@ async function submitReq() {
 
   let res;
   if (type === 'เบิกของ') {
-    // ส่งเป็น Supply Request แยก (ตัดสต็อกทันทีหรือรออนุมัติ)
+    // ส่งหลายรายการ
     res = await apiPost('submitSupplyRequest', {
-      itemId: supplyItemId, itemName: supplyItemName,
-      unit: (window._invCache||[]).find(i=>String(i.id)===String(supplyItemId))?.unit || '',
-      qty: supplyQty, note: finalPurpose, branch, requester,
+      items: supplyItems, note: finalPurpose, branch, requester,
     });
   } else {
     res = await apiPost('submitRequest', {
@@ -1871,12 +1905,18 @@ function wdRemoveRow(btn) {
   if (!tbody.querySelector('tr[data-rid]:not(.wd-info-row)')) wdAddRow();
 }
 
-function openWithdraw(preItemId) {
+async function openWithdraw(preItemId) {
+  // ensure stock items loaded (ใช้ cache ถ้ามีอยู่แล้ว)
+  if (!_stockItems.length) {
+    pbShow(true);
+    try { const r = await apiPost('getStock', {}); if (r?.items) { _stockItems = r.items; window._invCache = r.items; } } catch(e){}
+    finally { pbHide(true); }
+  }
   const branchBadge = document.getElementById('wd-head-branch');
   if (branchBadge) branchBadge.textContent = CU?.branch || '';
 
   document.getElementById('ov-withdraw-body').innerHTML = `
-<div style="overflow-y:auto;max-height:65vh">
+<div>
   <div class="si-sect" style="padding-bottom:0">
     <div class="si-sect-title">รายการที่ต้องการเบิก</div>
     <table class="si-items-tbl">
@@ -2027,18 +2067,15 @@ function siUpdateReqChip(sel) {
 }
 
 async function openStockIn(preItemId) {
-  // ensure stock items loaded
-  if (!_stockItems.length) {
-    pbShow(true);
-    try { const r = await apiPost('getStock', {}); _stockItems = r.items || []; } catch(e){}
-    finally { pbHide(true); }
-  }
-  // fetch approved expense requests for dropdown
-  _approvedRequests = [];
+  // load stock + approved requests ในคราวเดียว (parallel) ถ้ายังไม่มี cache
+  pbShow(true);
   try {
-    const res = await apiPost('getApprovedRequests', { branch: CU?.branch });
-    if (res && Array.isArray(res.data)) _approvedRequests = res.data;
-  } catch(e) { /* not fatal — dropdown will be empty */ }
+    const promises = [];
+    if (!_stockItems.length) promises.push(apiPost('getStock', {}).then(r => { if (r?.items) { _stockItems = r.items; window._invCache = r.items; } }).catch(()=>{}));
+    promises.push(apiPost('getApprovedRequests', { branch: CU?.branch }).then(r => { if (r?.data) _approvedRequests = r.data; }).catch(()=>{}));
+    _approvedRequests = [];
+    await Promise.all(promises);
+  } finally { pbHide(true); }
 
   const reqOpts = _approvedRequests.length
     ? _approvedRequests.map(r =>
@@ -2049,7 +2086,7 @@ async function openStockIn(preItemId) {
   // Build modal HTML (matches approved design)
   const today = new Date().toISOString().slice(0,10);
   const bodyHtml = `
-<div style="overflow-y:auto;max-height:65vh">
+<div>
   <!-- Section 1: ใบเสร็จ -->
   <div class="si-sect" style="padding-bottom:0">
     <div class="si-sect-title">ข้อมูลใบเสร็จ</div>
@@ -2093,14 +2130,22 @@ async function openStockIn(preItemId) {
     </div>
   </div>
 
-  <!-- Section 3: หมายเหตุ -->
+  <!-- Section 3: รูปใบเสร็จ + หมายเหตุ -->
   <div class="si-sect" style="padding-bottom:16px">
-    <div class="si-sect-title">หมายเหตุ</div>
+    <div class="si-sect-title">รูปใบเสร็จ / หมายเหตุ</div>
+    <div class="fg">
+      <label>รูปภาพใบเสร็จ <span style="font-size:11px;color:var(--text3);font-weight:400">(อัปโหลดไป Google Drive อัตโนมัติ)</span></label>
+      <input type="file" id="si-receipt-file" accept="image/*,application/pdf" multiple style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;background:var(--surface);cursor:pointer"/>
+      <div id="si-upload-status" style="font-size:12px;color:var(--text2);margin-top:4px"></div>
+    </div>
     <div class="fg">
       <textarea id="si-note" rows="2" placeholder="หมายเหตุเพิ่มเติม..." style="resize:vertical"></textarea>
     </div>
   </div>
 </div>`;
+
+  // share cache กับ request form
+  window._invCache = _stockItems;
 
   // Populate the static ov-stockin overlay
   const branchBadge = document.getElementById('si-head-branch');
@@ -2108,10 +2153,12 @@ async function openStockIn(preItemId) {
   document.getElementById('ov-stockin-body').innerHTML = bodyHtml;
   document.getElementById('ov-stockin').classList.add('open');
 
-  // Init: reset rows and add first row
+  // Init: reset rows — ใช้ setTimeout ให้ DOM flush ก่อน
   _siRowCount = 0;
-  const tbody = document.getElementById('si-items-body');
-  if (tbody) { tbody.innerHTML = ''; siAddRow(preItemId || null); }
+  setTimeout(() => {
+    const tbody = document.getElementById('si-items-body');
+    if (tbody) { tbody.innerHTML = ''; siAddRow(preItemId || null); }
+  }, 0);
 }
 
 async function handleStockInOk() {
@@ -2124,6 +2171,27 @@ async function handleStockInOk() {
   if (!receiptNo) { showToast('กรุณาใส่เลขที่ใบเสร็จ','error'); return; }
   if (!receiptDate) { showToast('กรุณาเลือกวันที่ในใบเสร็จ','error'); return; }
   if (!vendor) { showToast('กรุณาระบุชื่อร้านค้า','error'); return; }
+
+  // Upload รูปใบเสร็จไป Google Drive
+  let receiptImageUrls = '';
+  const fileInput = document.getElementById('si-receipt-file');
+  const statusEl = document.getElementById('si-upload-status');
+  if (fileInput?.files.length) {
+    pbShow(true);
+    if (statusEl) statusEl.textContent = `⏳ กำลังอัปโหลดรูปใบเสร็จ ${fileInput.files.length} ไฟล์...`;
+    const now = new Date();
+    const yr = String(now.getFullYear() + 543);
+    const mo = String(now.getMonth()+1).padStart(2,'0') + '-' + ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][now.getMonth()];
+    for (const f of fileInput.files) {
+      try {
+        const b64 = await toBase64(f);
+        const up = await apiPost('uploadImage', { base64: b64, filename: f.name, category: 'รับของเข้าคลัง', branch: CU?.branch||'', year: yr, month: mo });
+        if (up.ok) receiptImageUrls += (receiptImageUrls?',':'') + up.url;
+      } catch(e) { console.warn('upload fail',e); }
+    }
+    if (statusEl) statusEl.textContent = receiptImageUrls ? `✅ อัปโหลดสำเร็จ` : '⚠️ อัปโหลดไม่สำเร็จ';
+    pbHide(true);
+  }
 
   // Collect all item rows
   const tbody = document.getElementById('si-items-body');
@@ -2152,7 +2220,7 @@ async function handleStockInOk() {
   });
   if (!ok || items.length===0) return;
 
-  const payload = { receiptNo, receiptDate, vendor, items, note, linkedReqId, by: CU?.displayName, branch: CU?.branch };
+  const payload = { receiptNo, receiptDate, vendor, items, note, linkedReqId, imageUrls: receiptImageUrls, by: CU?.displayName, branch: CU?.branch };
   pbShow(true);
   try {
     await apiPost('stockIn', payload);
