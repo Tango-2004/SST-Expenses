@@ -1046,9 +1046,10 @@ function buildReqForm() {
     function _pBuildRow(n) {
       return `<tr data-prn="${n}">
         <td style="padding:4px 6px 4px 0"><input type="text" class="rf-pur-name" placeholder="ชื่อสินค้า / รายการ" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit"/></td>
-        <td style="padding:4px 6px;width:80px"><input type="number" class="rf-pur-qty" min="1" value="1" placeholder="จำนวน" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit" oninput="rfPurCalc()"/></td>
+        <td style="padding:4px 6px;width:75px"><input type="number" class="rf-pur-qty" min="1" value="1" placeholder="จำนวน" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit" oninput="rfPurCalc()"/></td>
+        <td style="padding:4px 6px;width:70px"><input type="text" class="rf-pur-unit" placeholder="หน่วย" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit"/></td>
         <td style="padding:4px 6px;width:80px"><input type="number" class="rf-pur-price" min="0" value="" placeholder="ราคา/ชิ้น" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit" oninput="rfPurCalc()"/></td>
-        <td style="padding:4px 6px;width:90px"><input readonly class="rf-pur-total" placeholder="รวม" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit;background:var(--g3);color:var(--text2);font-weight:700"/></td>
+        <td style="padding:4px 6px;width:85px"><input readonly class="rf-pur-total" placeholder="รวม" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit;background:var(--g3);color:var(--text2);font-weight:700"/></td>
         <td style="padding:4px 0 4px 6px;width:32px;text-align:center"><button type="button" onclick="rfPurRemoveRow(this)" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 4px">✕</button></td>
       </tr>`;
     }
@@ -1058,9 +1059,10 @@ function buildReqForm() {
         <table style="width:100%;border-collapse:collapse">
           <thead><tr style="font-size:11px;color:var(--text3);font-weight:700">
             <th style="text-align:left;padding:0 6px 6px 0">รายการสินค้า</th>
-            <th style="text-align:left;padding:0 6px 6px;width:80px">จำนวน</th>
+            <th style="text-align:left;padding:0 6px 6px;width:75px">จำนวน</th>
+            <th style="text-align:left;padding:0 6px 6px;width:70px">หน่วย</th>
             <th style="text-align:left;padding:0 6px 6px;width:80px">ราคา/ชิ้น</th>
-            <th style="text-align:left;padding:0 6px 6px;width:90px">รวม (฿)</th>
+            <th style="text-align:left;padding:0 6px 6px;width:85px">รวม (฿)</th>
             <th style="width:32px"></th>
           </tr></thead>
           <tbody id="rf-pur-tbody">${_pBuildRow(1)}</tbody>
@@ -1178,9 +1180,10 @@ function rfPurAddRow() {
   tr.dataset.prn = _rfPurCount;
   tr.innerHTML = `
     <td style="padding:4px 6px 4px 0"><input type="text" class="rf-pur-name" placeholder="ชื่อสินค้า / รายการ" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit"/></td>
-    <td style="padding:4px 6px;width:80px"><input type="number" class="rf-pur-qty" min="1" value="1" placeholder="จำนวน" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit" oninput="rfPurCalc()"/></td>
+    <td style="padding:4px 6px;width:75px"><input type="number" class="rf-pur-qty" min="1" value="1" placeholder="จำนวน" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit" oninput="rfPurCalc()"/></td>
+    <td style="padding:4px 6px;width:70px"><input type="text" class="rf-pur-unit" placeholder="หน่วย" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit"/></td>
     <td style="padding:4px 6px;width:80px"><input type="number" class="rf-pur-price" min="0" value="" placeholder="ราคา/ชิ้น" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit" oninput="rfPurCalc()"/></td>
-    <td style="padding:4px 6px;width:90px"><input readonly class="rf-pur-total" placeholder="รวม" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit;background:var(--g3);color:var(--text2);font-weight:700"/></td>
+    <td style="padding:4px 6px;width:85px"><input readonly class="rf-pur-total" placeholder="รวม" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px;font-family:inherit;background:var(--g3);color:var(--text2);font-weight:700"/></td>
     <td style="padding:4px 0 4px 6px;width:32px;text-align:center"><button type="button" onclick="rfPurRemoveRow(this)" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 4px">✕</button></td>`;
   tbody.appendChild(tr);
   tr.querySelector('.rf-pur-qty').addEventListener('input', rfPurCalc);
@@ -1324,10 +1327,11 @@ async function submitReq() {
     rows.forEach(tr => {
       const name = (tr.querySelector('.rf-pur-name')?.value || '').trim();
       const qty = parseFloat(tr.querySelector('.rf-pur-qty')?.value || '1') || 1;
+      const unit = (tr.querySelector('.rf-pur-unit')?.value || '').trim();
       const price = parseFloat(tr.querySelector('.rf-pur-price')?.value || '0') || 0;
       const total = qty * price;
       if (!name) { document.getElementById('rf-err').textContent = 'กรุณาใส่ชื่อสินค้าให้ครบทุกรายการ'; ok=false; return; }
-      purchaseItems.push({ name, qty, price, total });
+      purchaseItems.push({ name, qty, unit, price, total });
     });
     if (!ok || !purchaseItems.length) { btnRestore('rf-btn'); return; }
     // อัปเดต amount จากผลรวม
@@ -1342,7 +1346,7 @@ async function submitReq() {
     finalPurpose = `[เบิกของ: ${summary}] ${purpose}`.trim();
   }
   if (type === 'เบิกซื้อของ' && purchaseItems.length) {
-    const summary = purchaseItems.map(i=>`${i.name} x${i.qty}${i.price?` @${i.price}฿`:''}`).join(', ');
+    const summary = purchaseItems.map(i=>`${i.name} x${i.qty}${i.unit?' '+i.unit:''}${i.price?` @${i.price}฿`:''}`).join(', ');
     finalPurpose = `[รายการ: ${summary}] ${purpose}`.trim();
   }
   if (type === 'เบิกน้ำมัน' && vehiclePlate) {
