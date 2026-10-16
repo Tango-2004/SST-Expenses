@@ -95,6 +95,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 .btn-warn{background:var(--warn);color:#fff}
 .btn-warn:hover:not(:disabled){opacity:.88}
 .btn-sm{padding:6px 13px;font-size:12px;border-radius:7px}
+.refresh-btn{float:right;margin-left:auto}
 .btn-block{width:100%}
 
 /* ── REQUEST CARD ── */
@@ -519,6 +520,12 @@ function pbDone(){
   if (_loadCount === 0) document.getElementById('loading-overlay').classList.remove('show');
 }
 function pbShowFull(){ pbShow(true); }
+function pbHide(withOverlay=false){
+  const b=document.getElementById('progress-bar');
+  b.style.width='100%';
+  setTimeout(()=>{ b.style.transition='none'; b.style.width='0'; setTimeout(()=>b.style.transition='width .3s',50); },300);
+  if(withOverlay){ _loadCount=Math.max(0,_loadCount-1); if(_loadCount===0) document.getElementById('loading-overlay').classList.remove('show'); }
+}
 
 // ════ BUTTON LOADING HELPERS ════
 function btnLoading(id, text='⏳ กำลังบันทึก...') {
@@ -565,8 +572,13 @@ function startApp() {
   document.getElementById('sb-info').textContent = `${CU.branch} · ${CU.role === 'admin' ? 'Admin' : 'พนักงาน'}`;
   buildNav();
   gotoPage('dashboard');
-  // preload inventory cache (ใช้กับฟอร์มเบิกของ)
-  apiPost('getStock', {}).then(r => { if (r?.items) window._invCache = r.items; }).catch(() => {});
+  // preload stock + inventory cache ตอน login เสร็จ (ไม่ block UI)
+  apiPost('getStock', {}).then(r => {
+    if (r?.items) {
+      window._invCache = r.items;
+      window._stockItemsCache = r.items;
+    }
+  }).catch(() => {});
 }
 
 function buildNav() {
@@ -585,30 +597,42 @@ function buildNav() {
   });
 }
 
-function gotoPage(id) {
+// ── page loaded flags (ใช้ force=true เมื่อต้องการ refresh) ──
+const _loaded = {};
+function gotoPage(id, force=false) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  if (id==='stock') loadStock();
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const pg = document.getElementById('page-' + id);
   if (pg) pg.classList.add('active');
   const nav = document.getElementById('nav-' + id);
   if (nav) nav.classList.add('active');
+  if (!force && _loaded[id]) return; // ใช้ข้อมูลเดิม
+  _loaded[id] = true;
   switch(id) {
     case 'dashboard': loadDashboard(); break;
     case 'mylist':    loadMylist(); break;
     case 'approve':   loadApprove(); break;
     case 'vehicles':  loadVehicles(); break;
+    case 'stock':     loadStock(); break;
     case 'users':     loadUsers(); break;
   }
 }
 
 // ════ DASHBOARD ════
 async function loadDashboard() {
+  const dashTitle = document.getElementById('dash-page-title');
+  if (dashTitle && !dashTitle.querySelector('.refresh-btn')) {
+    const rb = document.createElement('button');
+    rb.className = 'btn btn-ghost btn-sm refresh-btn';
+    rb.innerHTML = '🔄 รีเฟรช';
+    rb.onclick = () => { delete _loaded['dashboard']; gotoPage('dashboard',true); };
+    dashTitle.appendChild(rb);
+  }
   document.getElementById('dash-stats').innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
   document.getElementById('dash-pending').innerHTML = '';
   document.getElementById('dash-alerts').innerHTML = '';
   pbShowFull();
-  const res = await apiGet('getRequests', {}, {bust:true});
+  const res = await apiGet('getRequests', {}, {bust:false, ttl:120});
   pbDone();
   if (!res.ok) { document.getElementById('dash-stats').innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
   const all = res.data || [];
@@ -646,7 +670,7 @@ async function loadMylist() {
   el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
   pbShowFull();
   const statusFilter = document.getElementById('ml-status')?.value || '';
-  const res = await apiGet('getRequests', {}, {bust:true});
+  const res = await apiGet('getRequests', {}, {bust:false, ttl:120});
   pbDone();
   if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
   let data = CU.role === 'admin' ? (res.data || []) : (res.data || []).filter(r => r.branch === CU.branch);
@@ -661,7 +685,7 @@ async function loadApprove() {
   const el = document.getElementById('approve-content');
   el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
   pbShowFull();
-  const res = await apiGet('getRequests', {status:'pending'}, {bust:true});
+  const res = await apiGet('getRequests', {status:'pending'}, {bust:false, ttl:120});
   pbDone();
   if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
   const data = (res.data || []).sort((a,b) => (b.id||'').localeCompare(a.id||''));
@@ -1235,8 +1259,8 @@ async function loadVehicles() {
 
   pbShowFull();
   const [vRes, aRes, rRes] = await Promise.all([
-    apiGet('getVehicles', {}, {bust:true}),
-    apiGet('getAlerts',   {}, {bust:true}),
+    apiGet('getVehicles', {}, {bust:false, ttl:120}),
+    apiGet('getAlerts',   {}, {bust:false, ttl:120}),
     apiGet('getRequests', {}, {bust:false}),
   ]);
   pbDone();
@@ -1450,7 +1474,7 @@ async function loadUsers() {
   const el = document.getElementById('users-content');
   el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
   pbShowFull();
-  const res = await apiGet('getUsers', {}, {bust:true});
+  const res = await apiGet('getUsers', {}, {bust:false, ttl:120});
   pbDone();
   if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
   const users = res.data || [];
