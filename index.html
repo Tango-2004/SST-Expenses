@@ -279,6 +279,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
               <option value="เบิกเงิน">💵 เบิกเงิน</option>
               <option value="เบิกน้ำมัน">⛽ เบิกน้ำมัน</option>
               <option value="เบิกซื้อของ">🛒 เบิกซื้อของ</option>
+              <option value="เบิกของ">📦 เบิกของจากสต็อก</option>
               <option value="อื่นๆ">📋 อื่นๆ</option>
             </select>
           </div>
@@ -329,6 +330,42 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
         <button class="btn btn-primary btn-sm" onclick="openCreateUser()">+ เพิ่มผู้ใช้</button>
       </div>
       <div id="users-content"></div>
+    </div>
+
+    <!-- STOCK -->
+    <div class="page" id="page-stock">
+      <div class="page-hd-row">
+        <div class="page-hd">📦 คลังวัสดุ</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="openStockIn()">+ รับของเข้า</button>
+          <button class="btn btn-sm" style="background:var(--g);color:#fff" onclick="openWithdraw()">📤 เบิกของ</button>
+        </div>
+      </div>
+
+      <!-- low stock alert -->
+      <div id="stock-alert" style="display:none;background:#fff3e0;border:1px solid #ffb74d;border-left:4px solid #e65100;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#bf360c"></div>
+
+      <!-- tabs -->
+      <div class="page-tabs" style="margin-bottom:18px">
+        <div class="page-tab active" id="stab-items" onclick="switchStockTab('items')">📋 สต็อกปัจจุบัน</div>
+        <div class="page-tab" id="stab-history" onclick="switchStockTab('history')">🕐 ประวัติการเบิก</div>
+      </div>
+
+      <div id="stock-items-panel">
+        <div id="stock-items-content"><p style="color:var(--text2);text-align:center;padding:40px">กำลังโหลด...</p></div>
+      </div>
+
+      <div id="stock-history-panel" style="display:none">
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <input id="hist-search" type="text" placeholder="ค้นหารายการ / ผู้เบิก..." class="form-control" style="max-width:260px" oninput="filterHistory()"/>
+          <select id="hist-branch" class="form-control" style="max-width:160px" onchange="filterHistory()">
+            <option value="">ทุกสาขา</option>
+            <option value="สาขา 1">สาขา 1</option>
+            <option value="สาขา 2">สาขา 2</option>
+          </select>
+        </div>
+        <div id="stock-history-content"><p style="color:var(--text2);text-align:center;padding:40px">กำลังโหลด...</p></div>
+      </div>
     </div>
 
   </div>
@@ -464,6 +501,7 @@ const NAV = [
   { id:'mylist',    label:'รายการของฉัน',  ic:'📂' },
   { id:'approve',   label:'อนุมัติ',       ic:'✅', adminOnly:true },
   { id:'vehicles',  label:'รถ / น้ำมัน',   ic:'🚗' },
+  { id:'stock',     label:'คลังวัสดุ',      ic:'📦' },
   { id:'users',     label:'จัดการผู้ใช้',  ic:'👤', adminOnly:true },
 ];
 
@@ -527,6 +565,8 @@ function startApp() {
   document.getElementById('sb-info').textContent = `${CU.branch} · ${CU.role === 'admin' ? 'Admin' : 'พนักงาน'}`;
   buildNav();
   gotoPage('dashboard');
+  // preload inventory cache (ใช้กับฟอร์มเบิกของ)
+  apiPost('getStock', {}).then(r => { if (r?.items) window._invCache = r.items; }).catch(() => {});
 }
 
 function buildNav() {
@@ -547,6 +587,7 @@ function buildNav() {
 
 function gotoPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  if (id==='stock') loadStock();
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const pg = document.getElementById('page-' + id);
   if (pg) pg.classList.add('active');
@@ -757,6 +798,24 @@ function _buildDocHTML(data) {
   .print-controls{text-align:center;padding:18px 0}
   .print-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 32px;background:#2e7d1c;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
   .print-btn:hover{background:#1b5e20}
+  /* ── STOCK ── */
+  .stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:8px}
+  .stock-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;transition:box-shadow .15s}
+  .stock-card:hover{box-shadow:var(--shadow)}
+  .stock-card.low{border-color:#ffb74d;background:#fff8f0}
+  .stock-card-name{font-size:14px;font-weight:800;color:var(--text);margin-bottom:3px}
+  .stock-card-spec{font-size:11.5px;color:var(--text2);margin-bottom:10px}
+  .stock-card-qty{font-size:28px;font-weight:900;color:var(--g);line-height:1}
+  .stock-card-unit{font-size:12px;color:var(--text2);margin-left:3px}
+  .stock-card.low .stock-card-qty{color:#e65100}
+  .stock-card-meta{font-size:10.5px;color:var(--text2);margin-top:8px;border-top:1px solid var(--border);padding-top:7px;line-height:1.8}
+  .low-badge{position:absolute;top:10px;right:10px;background:#ef5350;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px}
+  .stock-card-actions{display:flex;gap:6px;margin-top:10px}
+  .stock-card-actions button{flex:1;padding:5px 0;font-size:12px;font-weight:700;border:none;border-radius:6px;cursor:pointer;font-family:inherit}
+  .btn-withdraw{background:var(--g);color:#fff}
+  .btn-withdraw:hover{background:#1b5e20}
+  .btn-stockin{background:var(--surface2,#f0f4f0);color:var(--g);border:1px solid var(--border)!important}
+
   @media print{body{background:#fff}.page-wrap{margin:0}.print-controls{display:none}.doc{border:none;border-radius:0}}
 </style>
 </head><body>
@@ -899,6 +958,40 @@ function buildReqForm() {
           <button type="button" class="btn btn-outline btn-sm" onclick="previewNoReceiptDoc()" style="gap:6px">🖨️ ดูตัวอย่างใบรับเงิน / พิมพ์</button>
         </div>
       </div>`;
+  } else if (type === 'เบิกของ') {
+    // โหลดรายการจาก inventory cache
+    const invItems = window._invCache || [];
+    let itemOpts = invItems.length
+      ? invItems.map(i => `<option value="${i.id}">${i.name}${i.spec?' ('+i.spec+')':''} — คงเหลือ ${i.qty??'?'} ${i.unit||'ชิ้น'}</option>`).join('')
+      : '<option value="">— ยังไม่มีรายการในสต็อก (กรุณาเพิ่มจากแท็บสต็อกของก่อน) —</option>';
+    extraFields = `
+      <div class="fg"><label>รายการที่ต้องการเบิก <span style="color:red">*</span></label>
+        <select id="rf-supply-item" class="form-control" onchange="onSupplyItemChange()">${itemOpts}</select>
+      </div>
+      <div class="grid2">
+        <div class="fg"><label>จำนวน <span style="color:red">*</span></label>
+          <input type="number" id="rf-supply-qty" min="1" value="1" placeholder="1"/>
+        </div>
+        <div class="fg"><label>หน่วย</label>
+          <input id="rf-supply-unit" readonly style="color:var(--text2);background:var(--card2)"/>
+        </div>
+      </div>
+      <div class="fg" id="rf-supply-stock-info" style="font-size:12px;color:var(--text2);padding:4px 0"></div>
+      <div class="fg"><label>วัตถุประสงค์ / หมายเหตุ</label>
+        <textarea id="rf-purpose" rows="2" placeholder="ระบุวัตถุประสงค์การใช้งาน..."></textarea>
+      </div>`;
+    // หน่วง populate unit field หลัง DOM render
+    setTimeout(() => { if (typeof onSupplyItemChange === 'function') onSupplyItemChange(); }, 60);
+    // load ถ้ายังไม่มี cache
+    if (!invItems.length) {
+      apiPost('getStock', {}).then(r => {
+        if (r?.items) {
+          window._invCache = r.items;
+          // re-render ถ้า type ยังเบิกของอยู่
+          if (document.getElementById('req-type')?.value === 'เบิกของ') buildReqForm();
+        }
+      }).catch(() => {});
+    }
   } else {
     extraFields = `
       <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" min="0"/></div>
@@ -922,6 +1015,23 @@ function buildReqForm() {
     <button class="btn btn-primary btn-block" style="margin-top:10px" id="rf-btn" onclick="submitReq()">📤 ยื่นคำขอ</button>
     <p id="rf-err" class="err"></p>
     <div id="rf-success"></div>`;
+}
+
+function onSupplyItemChange() {
+  const sel = document.getElementById('rf-supply-item');
+  const unitEl = document.getElementById('rf-supply-unit');
+  const infoEl = document.getElementById('rf-supply-stock-info');
+  if (!sel) return;
+  const found = (window._invCache||[]).find(i => String(i.id) === String(sel.value));
+  if (unitEl) unitEl.value = found?.unit || '';
+  if (infoEl) {
+    if (found) {
+      const qty = found.qty ?? '?';
+      const minQty = found.minQty || 0;
+      const low = (qty !== '?') && qty <= minQty;
+      infoEl.innerHTML = `สต็อกคงเหลือ: <strong style="color:${low?'var(--red)':'var(--g)'}">${qty} ${found.unit||'ชิ้น'}</strong>${low?' ⚠️ ของใกล้หมด':''}`;
+    } else { infoEl.textContent = ''; }
+  }
 }
 
 function toggleNoReceipt() {
@@ -957,8 +1067,10 @@ async function submitReq() {
   const errEl   = document.getElementById('rf-err');
   errEl.textContent = '';
   if (!type) { errEl.textContent = 'กรุณาเลือกประเภท'; return; }
-  if (!amount || isNaN(amount)) { errEl.textContent = 'กรุณากรอกจำนวนเงิน'; return; }
-  if (!purpose) { errEl.textContent = 'กรุณากรอกวัตถุประสงค์'; return; }
+  if (type !== 'เบิกของ') {
+    if (!amount || isNaN(amount)) { errEl.textContent = 'กรุณากรอกจำนวนเงิน'; return; }
+  }
+  if (type !== 'เบิกของ' && !purpose) { errEl.textContent = 'กรุณากรอกวัตถุประสงค์'; return; }
 
   btnLoading('rf-btn', '⏳ กำลังส่ง...');
 
@@ -990,20 +1102,47 @@ async function submitReq() {
   const noReceiptReason = document.getElementById('rf-noreason')?.value || '';
   const vehiclePlate = document.getElementById('rf-plate')?.value || '';
 
+  // เบิกของ: ดึงข้อมูลรายการ
+  let supplyItemId = '', supplyItemName = '', supplyQty = 0;
+  if (type === 'เบิกของ') {
+    const selEl = document.getElementById('rf-supply-item');
+    supplyItemId = selEl?.value || '';
+    supplyQty = parseInt(document.getElementById('rf-supply-qty')?.value || '1');
+    const found = (window._invCache||[]).find(i => i.id == supplyItemId);
+    supplyItemName = found?.name || supplyItemId;
+    if (!supplyItemId) { btnRestore('rf-btn'); document.getElementById('rf-err').textContent = 'กรุณาเลือกรายการ'; return; }
+    if (!supplyQty || supplyQty < 1) { btnRestore('rf-btn'); document.getElementById('rf-err').textContent = 'กรุณากรอกจำนวน'; return; }
+  }
+
   let finalPurpose = purpose;
+  if (type === 'เบิกของ' && supplyItemName) {
+    finalPurpose = `[เบิกของ: ${supplyItemName} x${supplyQty}] ${purpose}`.trim();
+  }
   if (type === 'เบิกน้ำมัน' && vehiclePlate) {
     const liters = document.getElementById('rf-liters')?.value || '';
     finalPurpose = `[ทะเบียน: ${vehiclePlate}${liters ? ' / '+liters+' ล.' : ''}] ${purpose}`;
   }
 
-  const res = await apiPost('submitRequest', {
-    type, amount: parseFloat(amount),
-    purpose: finalPurpose,
-    requester: document.getElementById('rf-requester')?.value || CU.name,
-    receiver:  document.getElementById('rf-receiver')?.value || '',
-    branch:    document.getElementById('rf-branch')?.value || CU.branch,
-    vehiclePlate, noReceipt, noReceiptReason, imageUrls,
-  });
+  const branch = document.getElementById('rf-branch')?.value || CU.branch;
+  const requester = document.getElementById('rf-requester')?.value || CU.name;
+  const receiver = document.getElementById('rf-receiver')?.value || '';
+
+  let res;
+  if (type === 'เบิกของ') {
+    // ส่งเป็น Supply Request แยก (ตัดสต็อกทันทีหรือรออนุมัติ)
+    res = await apiPost('submitSupplyRequest', {
+      itemId: supplyItemId, itemName: supplyItemName,
+      unit: (window._invCache||[]).find(i=>String(i.id)===String(supplyItemId))?.unit || '',
+      qty: supplyQty, note: finalPurpose, branch, requester,
+    });
+  } else {
+    res = await apiPost('submitRequest', {
+      type, amount: parseFloat(amount||0),
+      purpose: finalPurpose,
+      requester, receiver, branch,
+      vehiclePlate, noReceipt, noReceiptReason, imageUrls,
+    });
+  }
 
   btnRestore('rf-btn');
 
@@ -1304,6 +1443,7 @@ const TAB_OPTIONS = [
   { id:'request',   label:'💵 ยื่นคำขอ' },
   { id:'mylist',    label:'📂 รายการของฉัน' },
   { id:'vehicles',  label:'🚗 รถ/น้ำมัน' },
+  { id:'stock',     label:'📦 คลังวัสดุ' },
 ];
 
 async function loadUsers() {
@@ -1450,6 +1590,208 @@ async function toggleUserStatus(userId, status) {
     catch(_) { localStorage.clear(); }
   }
 })();
+
+// ════ STOCK ════
+// GAS Sheets needed:
+//   Sheet "StockItems":  A=id, B=name, C=unit, D=spec, E=qty, F=minQty, G=lastBuyDate, H=lastBuyNote, I=lastWithdrawDate, J=lastWithdrawBy
+//   Sheet "StockTransactions": A=timestamp, B=itemId, C=itemName, D=type(IN/OUT), E=qty, F=by, G=branch, H=note
+// GAS actions: getStock, stockIn, stockWithdraw, getStockHistory
+
+let _stockItems = [];
+let _stockHistory = [];
+let _stockTab = 'items';
+
+function switchStockTab(t) {
+  _stockTab = t;
+  ['items','history'].forEach(x => {
+    document.getElementById('stab-'+x).classList.toggle('active', x===t);
+    document.getElementById('stock-'+x+'-panel').style.display = x===t?'':'none';
+  });
+  if (t==='history' && _stockHistory.length===0) loadStockHistory();
+}
+
+async function loadStock() {
+  pbShow(true);
+  try {
+    const r = await apiPost('getStock', {});
+    _stockItems = r.items || [];
+    renderStockItems();
+    checkLowStock();
+  } catch(e) { showToast('โหลดสต็อกล้มเหลว','error'); }
+  finally { pbHide(true); }
+}
+
+function renderStockItems() {
+  const el = document.getElementById('stock-items-content');
+  if (!_stockItems.length) {
+    el.innerHTML = '<p style="color:var(--text2);text-align:center;padding:40px">ยังไม่มีรายการในคลัง</p>'; return;
+  }
+  el.innerHTML = '<div class="stock-grid">' + _stockItems.map(item => {
+    const low = Number(item.qty) <= Number(item.minQty);
+    return `<div class="stock-card${low?' low':''}">
+      ${low ? '<span class="low-badge">⚠️ เหลือน้อย</span>' : ''}
+      <div class="stock-card-name">${esc(item.name)}</div>
+      <div class="stock-card-spec">${esc(item.spec||'')}${item.spec&&item.unit?' · ':''}${esc(item.unit||'')}</div>
+      <div>
+        <span class="stock-card-qty">${Number(item.qty).toLocaleString()}</span>
+        <span class="stock-card-unit">${esc(item.unit||'')}</span>
+      </div>
+      <div class="stock-card-meta">
+        📅 ซื้อล่าสุด: <b>${item.lastBuyDate||'-'}</b><br>
+        📤 เบิกล่าสุด: <b>${item.lastWithdrawDate||'-'}</b> ${item.lastWithdrawBy?'โดย '+esc(item.lastWithdrawBy):''}<br>
+        🔔 ขั้นต่ำ: <b>${item.minQty||0} ${esc(item.unit||'')}</b>
+      </div>
+      <div class="stock-card-actions">
+        <button class="btn-withdraw" onclick="openWithdraw('${esc(item.id)}')">📤 เบิก</button>
+        <button class="btn-stockin" onclick="openStockIn('${esc(item.id)}')">📥 รับเข้า</button>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function checkLowStock() {
+  const lowItems = _stockItems.filter(i => Number(i.qty) <= Number(i.minQty));
+  const el = document.getElementById('stock-alert');
+  if (lowItems.length) {
+    el.style.display = '';
+    el.innerHTML = '⚠️ <b>สินค้าเหลือน้อย ' + lowItems.length + ' รายการ:</b> ' +
+      lowItems.map(i => `<b>${esc(i.name)}</b> (เหลือ ${i.qty} ${esc(i.unit||'')})`).join(', ');
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+async function loadStockHistory() {
+  pbShow(true);
+  try {
+    const r = await apiPost('getStockHistory', {});
+    _stockHistory = r.rows || [];
+    renderStockHistory();
+  } catch(e) { showToast('โหลดประวัติล้มเหลว','error'); }
+  finally { pbHide(true); }
+}
+
+function renderStockHistory(rows) {
+  const data = rows || _stockHistory;
+  const el = document.getElementById('stock-history-content');
+  if (!data.length) { el.innerHTML='<p style="color:var(--text2);text-align:center;padding:40px">ไม่มีประวัติ</p>'; return; }
+  el.innerHTML = `<table class="tbl"><thead><tr>
+    <th>วันที่</th><th>รายการ</th><th>ประเภท</th><th>จำนวน</th><th>โดย</th><th>สาขา</th><th>หมายเหตุ</th>
+  </tr></thead><tbody>` + data.map(r => `<tr>
+    <td style="white-space:nowrap">${esc(r.timestamp||'')}</td>
+    <td><b>${esc(r.itemName||'')}</b></td>
+    <td><span style="font-weight:700;color:${r.type==='IN'?'var(--g)':'#c62828'}">${r.type==='IN'?'📥 รับเข้า':'📤 เบิกออก'}</span></td>
+    <td style="text-align:right;font-weight:700">${r.type==='OUT'?'-':'+'}<b>${Number(r.qty).toLocaleString()}</b></td>
+    <td>${esc(r.by||'')}</td>
+    <td>${esc(r.branch||'')}</td>
+    <td style="color:var(--text2)">${esc(r.note||'')}</td>
+  </tr>`).join('') + '</tbody></table>';
+}
+
+function filterHistory() {
+  const q = document.getElementById('hist-search').value.toLowerCase();
+  const br = document.getElementById('hist-branch').value;
+  const filtered = _stockHistory.filter(r =>
+    (!q || (r.itemName||'').toLowerCase().includes(q) || (r.by||'').toLowerCase().includes(q)) &&
+    (!br || r.branch===br)
+  );
+  renderStockHistory(filtered);
+}
+
+// ── Withdraw modal ──
+function openWithdraw(preItemId) {
+  const opts = _stockItems.map(i =>
+    `<option value="${esc(i.id)}" ${i.id==preItemId?'selected':''}>${esc(i.name)} (${esc(i.spec||'')}${i.spec?' · ':''}${esc(i.unit||'')})</option>`
+  ).join('');
+  openModal('📤 เบิกของ', `
+    <div class="form-group"><label>รายการ <span style="color:red">*</span></label>
+      <select id="wd-item" class="form-control">${opts||'<option value="">-- ไม่มีรายการ --</option>'}</select></div>
+    <div class="form-group"><label>จำนวน <span style="color:red">*</span></label>
+      <input id="wd-qty" type="number" min="1" class="form-control" placeholder="จำนวน"/></div>
+    <div class="form-group"><label>หมายเหตุ</label>
+      <input id="wd-note" type="text" class="form-control" placeholder="ใช้ทำอะไร..."/></div>
+  `, async () => {
+    const itemId = document.getElementById('wd-item').value;
+    const qty = Number(document.getElementById('wd-qty').value);
+    const note = document.getElementById('wd-note').value.trim();
+    if (!itemId) { showToast('กรุณาเลือกรายการ','error'); return false; }
+    if (!qty || qty < 1) { showToast('กรุณาใส่จำนวน','error'); return false; }
+    const item = _stockItems.find(i=>i.id==itemId);
+    if (item && qty > Number(item.qty)) { showToast('ของไม่พอ เหลือ '+item.qty+' '+item.unit,'error'); return false; }
+    pbShow(true);
+    try {
+      await apiPost('stockWithdraw', { itemId, qty, note, by: CU.displayName, branch: CU.branch });
+      showToast('เบิกของสำเร็จ','success');
+      _stockHistory = [];
+      await loadStock();
+    } catch(e) { showToast('เกิดข้อผิดพลาด','error'); }
+    finally { pbHide(true); }
+  });
+}
+
+// ── Stock-in modal ──
+function openStockIn(preItemId) {
+  const opts = _stockItems.map(i =>
+    `<option value="${esc(i.id)}" ${i.id==preItemId?'selected':''}>${esc(i.name)} (${esc(i.spec||'')}${i.spec?' · ':''}${esc(i.unit||'')})</option>`
+  ).join('');
+  const newItemHtml = `
+    <div id="new-item-section" style="display:none;margin-top:14px;padding:12px;background:var(--surface2,#f5f5f5);border-radius:8px;border:1px solid var(--border)">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--g)">➕ เพิ่มรายการใหม่</div>
+      <div class="form-group"><label>ชื่อรายการ <span style="color:red">*</span></label>
+        <input id="ni-name" type="text" class="form-control" placeholder="เช่น ปากกา, กระดาษ A4"/></div>
+      <div class="form-group"><label>รายละเอียด/สี/ขนาด</label>
+        <input id="ni-spec" type="text" class="form-control" placeholder="เช่น สีน้ำเงิน, ขนาด A4"/></div>
+      <div class="form-group"><label>หน่วย <span style="color:red">*</span></label>
+        <input id="ni-unit" type="text" class="form-control" placeholder="เช่น แท่ง, แพ็ก, รีม"/></div>
+      <div class="form-group"><label>จำนวนขั้นต่ำ (แจ้งเตือน)</label>
+        <input id="ni-min" type="number" min="0" class="form-control" placeholder="0"/></div>
+    </div>`;
+  openModal('📥 รับของเข้าคลัง', `
+    <div class="form-group"><label>รายการ <span style="color:red">*</span></label>
+      <select id="si-item" class="form-control" onchange="toggleNewItem(this.value)">
+        ${opts}
+        <option value="__new__">➕ เพิ่มรายการใหม่...</option>
+      </select></div>
+    <div class="form-group"><label>จำนวนที่รับเข้า <span style="color:red">*</span></label>
+      <input id="si-qty" type="number" min="1" class="form-control" placeholder="จำนวน"/></div>
+    <div class="form-group"><label>หมายเหตุ</label>
+      <input id="si-note" type="text" class="form-control" placeholder="ซื้อจากที่ไหน, วันที่..."/></div>
+    ${newItemHtml}
+    ${preItemId ? `<script>document.getElementById('si-item').value='${preItemId}';<\/script>` : ''}
+  `, async () => {
+    const itemId = document.getElementById('si-item').value;
+    const qty = Number(document.getElementById('si-qty').value);
+    const note = document.getElementById('si-note').value.trim();
+    if (!qty || qty < 1) { showToast('กรุณาใส่จำนวน','error'); return false; }
+    let payload = { action:'stockIn', qty, note, by: CU.displayName, branch: CU.branch };
+    if (itemId === '__new__') {
+      const name = document.getElementById('ni-name').value.trim();
+      const spec = document.getElementById('ni-spec').value.trim();
+      const unit = document.getElementById('ni-unit').value.trim();
+      const minQty = Number(document.getElementById('ni-min').value)||0;
+      if (!name||!unit) { showToast('กรุณากรอกชื่อและหน่วย','error'); return false; }
+      payload = {...payload, newItem:true, name, spec, unit, minQty};
+    } else {
+      if (!itemId) { showToast('กรุณาเลือกรายการ','error'); return false; }
+      payload.itemId = itemId;
+    }
+    pbShow(true);
+    try {
+      await apiPost(payload.action || 'stockIn', payload);
+      showToast('รับของเข้าคลังสำเร็จ','success');
+      _stockHistory = [];
+      await loadStock();
+    } catch(e) { showToast('เกิดข้อผิดพลาด','error'); }
+    finally { pbHide(true); }
+  });
+}
+
+function toggleNewItem(val) {
+  const s = document.getElementById('new-item-section');
+  if (s) s.style.display = val==='__new__' ? '' : 'none';
+}
+
+
 </script>
 </body>
 </html>
