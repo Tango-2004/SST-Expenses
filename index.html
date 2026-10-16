@@ -1779,46 +1779,69 @@ function openWithdraw(preItemId) {
 }
 
 // ── Stock-in modal ──
+function onSiItemChange(val) {
+  // show/hide unit field based on selected item
+  const found = _stockItems.find(i => String(i.id) === String(val));
+  const unitEl = document.getElementById('si-unit');
+  if (unitEl) unitEl.value = found ? (found.unit||'') : '';
+  toggleNewItem(val);
+}
+
 function openStockIn(preItemId) {
   const opts = _stockItems.map(i =>
-    `<option value="${esc(i.id)}" ${i.id==preItemId?'selected':''}>${esc(i.name)} (${esc(i.spec||'')}${i.spec?' · ':''}${esc(i.unit||'')})</option>`
+    `<option value="${esc(i.id)}" ${String(i.id)==String(preItemId)?'selected':''}>${esc(i.name)}${i.spec?' ('+esc(i.spec)+')':''}</option>`
   ).join('');
+  // auto-fill unit for first/pre-selected item
+  const preItem = preItemId ? _stockItems.find(i=>String(i.id)===String(preItemId)) : _stockItems[0];
+  const preUnit = preItem?.unit || '';
+
   const newItemHtml = `
-    <div id="new-item-section" style="display:none;margin-top:14px;padding:12px;background:var(--surface2,#f5f5f5);border-radius:8px;border:1px solid var(--border)">
-      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--g)">➕ เพิ่มรายการใหม่</div>
+    <div id="new-item-section" style="display:none;margin-top:14px;padding:12px;background:var(--card2,#f5f5f5);border-radius:8px;border:1px solid var(--border)">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--g)">➕ เพิ่มรายการใหม่ในคลัง</div>
       <div class="form-group"><label>ชื่อรายการ <span style="color:red">*</span></label>
         <input id="ni-name" type="text" class="form-control" placeholder="เช่น ปากกา, กระดาษ A4"/></div>
       <div class="form-group"><label>รายละเอียด/สี/ขนาด</label>
         <input id="ni-spec" type="text" class="form-control" placeholder="เช่น สีน้ำเงิน, ขนาด A4"/></div>
-      <div class="form-group"><label>หน่วย <span style="color:red">*</span></label>
-        <input id="ni-unit" type="text" class="form-control" placeholder="เช่น แท่ง, แพ็ก, รีม"/></div>
-      <div class="form-group"><label>จำนวนขั้นต่ำ (แจ้งเตือน)</label>
-        <input id="ni-min" type="number" min="0" class="form-control" placeholder="0"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group"><label>หน่วย <span style="color:red">*</span></label>
+          <input id="ni-unit" type="text" class="form-control" placeholder="เช่น แท่ง, แพ็ก, รีม" oninput="document.getElementById('si-unit').value=this.value"/></div>
+        <div class="form-group"><label>จำนวนขั้นต่ำแจ้งเตือน</label>
+          <input id="ni-min" type="number" min="0" class="form-control" placeholder="0"/></div>
+      </div>
     </div>`;
+
   openModal('📥 รับของเข้าคลัง', `
-    <div class="form-group"><label>รายการ <span style="color:red">*</span></label>
-      <select id="si-item" class="form-control" onchange="toggleNewItem(this.value)">
+    <div class="form-group"><label>ชื่อร้านค้า / แหล่งที่ซื้อ <span style="color:red">*</span></label>
+      <input id="si-vendor" type="text" class="form-control" placeholder="เช่น ร้านออฟฟิศเมท, ตลาดนัด..."/></div>
+    <div class="form-group"><label>รายการที่ซื้อ <span style="color:red">*</span></label>
+      <select id="si-item" class="form-control" onchange="onSiItemChange(this.value)">
         ${opts}
-        <option value="__new__">➕ เพิ่มรายการใหม่...</option>
+        <option value="__new__">➕ เพิ่มรายการใหม่ในคลัง...</option>
       </select></div>
-    <div class="form-group"><label>จำนวนที่รับเข้า <span style="color:red">*</span></label>
-      <input id="si-qty" type="number" min="1" class="form-control" placeholder="จำนวน"/></div>
-    <div class="form-group"><label>หมายเหตุ</label>
-      <input id="si-note" type="text" class="form-control" placeholder="ซื้อจากที่ไหน, วันที่..."/></div>
     ${newItemHtml}
-    ${preItemId ? `<script>document.getElementById('si-item').value='${preItemId}';<\/script>` : ''}
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px">
+      <div class="form-group"><label>จำนวนที่รับเข้า <span style="color:red">*</span></label>
+        <input id="si-qty" type="number" min="1" class="form-control" placeholder="จำนวน"/></div>
+      <div class="form-group"><label>หน่วย</label>
+        <input id="si-unit" type="text" class="form-control" value="${preUnit}" placeholder="หน่วย" readonly style="background:var(--card2);color:var(--text2)"/></div>
+    </div>
+    <div class="form-group"><label>หมายเหตุเพิ่มเติม</label>
+      <input id="si-note" type="text" class="form-control" placeholder="เช่น ล็อตใหม่, ซื้อแทนของเดิม..."/></div>
   `, async () => {
     const itemId = document.getElementById('si-item').value;
     const qty = Number(document.getElementById('si-qty').value);
+    const vendor = document.getElementById('si-vendor').value.trim();
     const note = document.getElementById('si-note').value.trim();
+    const fullNote = vendor ? (note ? `ร้าน: ${vendor} | ${note}` : `ร้าน: ${vendor}`) : note;
+    if (!vendor) { showToast('กรุณาระบุชื่อร้านค้า','error'); return false; }
     if (!qty || qty < 1) { showToast('กรุณาใส่จำนวน','error'); return false; }
-    let payload = { qty, note, by: CU.displayName, branch: CU.branch };
+    let payload = { qty, note: fullNote, vendor, by: CU.displayName, branch: CU.branch };
     if (itemId === '__new__') {
       const name = document.getElementById('ni-name').value.trim();
       const spec = document.getElementById('ni-spec').value.trim();
       const unit = document.getElementById('ni-unit').value.trim();
       const minQty = Number(document.getElementById('ni-min').value)||0;
-      if (!name||!unit) { showToast('กรุณากรอกชื่อและหน่วย','error'); return false; }
+      if (!name||!unit) { showToast('กรุณากรอกชื่อรายการและหน่วย','error'); return false; }
       payload = {...payload, newItem:true, name, spec, unit, minQty};
     } else {
       if (!itemId) { showToast('กรุณาเลือกรายการ','error'); return false; }
