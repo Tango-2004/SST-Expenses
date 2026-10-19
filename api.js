@@ -1,6 +1,7 @@
-// api.js — SST v4 (Batch + Cache-first + Queue + Warmup)
-const API_URL = 'https://script.google.com/macros/s/AKfycby8MUKknR7WJiny3l-zUL4eJXji9kAZejXkTksIyngq6sc3LHOu1aC6Rp71Qs61UAQx/exec';
-const RETRY = 2, TIMEOUT_MS = 20000;
+// api.js — SST v5 (Batch + Cache-first + Queue + Warmup + POST-retry)
+const API_URL = 'https://script.google.com/macros/s/AKfycbzwl1HXOIIyIrBmW1-d1fNIR8q4tz-9l8B9Y1zP34784qW_a9GNOLoU_6ItLH7QpssB1A/exec';
+const RETRY = 3, TIMEOUT_MS = 28000;
+const POST_RETRY = 2, POST_TIMEOUT_MS = 30000;
 
 /* ── Memory + localStorage cache ── */
 const _mem = {};
@@ -107,14 +108,32 @@ function _bgBatch(items, params, key, token) {
   }, 200);
 }
 
-/* ── POST ── */
+/* ── POST with retry ── */
+async function _fetchPost(body, attempt = 0) {
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), POST_TIMEOUT_MS);
+  try {
+    const r = await fetch(API_URL, { method: 'POST', body, signal: ctrl.signal });
+    clearTimeout(tid);
+    return JSON.parse(await r.text());
+  } catch (err) {
+    clearTimeout(tid);
+    if (attempt < POST_RETRY - 1) {
+      await new Promise(r => setTimeout(r, 3000 * (attempt + 1))); // backoff: 3s, 6s
+      return _fetchPost(body, attempt + 1);
+    }
+    throw err;
+  }
+}
+
 async function apiPost(action, payload = {}) {
   const token = localStorage.getItem('sst_token') || '';
   barShow();
   try {
-    const data = await _fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, token, payload }) });
+    const body = JSON.stringify({ action, token, payload });
+    const data = await _fetchPost(body);
     barDone(); return data;
-  } catch (e) { barDone(); return { ok: false, error: e.message }; }
+  } catch (e) { barDone(); return { ok: false, error: 'ส่งคำขอไม่สำเร็จ: ' + e.message }; }
 }
 
 /* ── Queue (offline support) ── */
@@ -143,7 +162,7 @@ window.addEventListener('online', _runQ);
 
 /* ── Auth ── */
 async function login(username, password) {
-  const data = await _fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', payload: { username, password } }) });
+  const data = await _fetch(API_URL + '?action=login&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password));
   if (data.ok) {
     localStorage.setItem('sst_token', data.token);
     localStorage.setItem('sst_user', JSON.stringify(data.user));
@@ -153,7 +172,6 @@ async function login(username, password) {
 function logout() {
   ['sst_token','sst_user','sst_queue'].forEach(k => localStorage.removeItem(k));
   Object.keys(localStorage).filter(k => k.startsWith('sst4_')).forEach(k => localStorage.removeItem(k));
-  Object.keys(_mem).forEach(k => delete _mem[k]);
   location.reload();
 }
 function getUser() { try { return JSON.parse(localStorage.getItem('sst_user')); } catch(_){ return null; } }
@@ -179,5 +197,5 @@ function thaiMonthName() {
 }
 function fmtMoney(n) { return Number(n||0).toLocaleString('th-TH', {minimumFractionDigits:0, maximumFractionDigits:2}); }
 
-// Warmup ping ตอนโหลด (ลด delay เพื่อ warm GAS ไว้ล่วงหน้า)
-setTimeout(async () => { try { await fetch(API_URL + '?action=ping'); } catch(_){} }, 500);
+// Warmup ping ตอนโหลด
+setTimeout(async () => { try { await _fetch(API_URL + '?action=ping'); } catch(_){} }, 800);
