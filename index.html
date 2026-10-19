@@ -255,7 +255,6 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
             <select id="req-type" onchange="buildReqForm()">
               <option value="">— เลือกประเภท —</option>
               <option value="เบิกเงิน">💵 เบิกเงิน</option>
-              <option value="เบิกน้ำมัน">⛽ เบิกน้ำมัน</option>
               <option value="เบิกซื้อของ">🛒 เบิกซื้อของ</option>
               <option value="อื่นๆ">📋 อื่นๆ</option>
             </select>
@@ -847,15 +846,7 @@ function buildReqForm() {
     </div>`;
 
   let extraFields = '';
-  if (type === 'เบิกน้ำมัน') {
-    extraFields = `
-      <div class="grid2">
-        <div class="fg"><label>ทะเบียนรถ</label><input id="rf-plate" placeholder="เช่น กข-1234"/></div>
-        <div class="fg"><label>จำนวนลิตร</label><input type="number" id="rf-liters" placeholder="0" min="0" step="0.1"/></div>
-      </div>
-      <div class="fg"><label>จำนวนเงิน (บาท)</label><input type="number" id="rf-amount" placeholder="0.00" min="0"/></div>
-      <div class="fg"><label>วัตถุประสงค์ / เส้นทาง</label><textarea id="rf-purpose" rows="2" placeholder="เช่น ส่งสินค้าไปคลังสาขา 2..."></textarea></div>`;
-  } else if (type === 'เบิกซื้อของ') {
+  if (type === 'เบิกซื้อของ') {
     function _pBuildRow(n) {
       return `<tr data-prn="${n}">
         <td style="padding:4px 6px 4px 0"><input type="text" class="rf-pur-name" placeholder="ชื่อสินค้า / รายการ" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit"/></td>
@@ -1014,10 +1005,6 @@ async function submitReq() {
   const vehiclePlate = document.getElementById('rf-plate')?.value || '';
 
   let finalPurpose = purpose;
-  if (type === 'เบิกน้ำมัน' && vehiclePlate) {
-    const liters = document.getElementById('rf-liters')?.value || '';
-    finalPurpose = `[ทะเบียน: ${vehiclePlate}${liters ? ' / '+liters+' ล.' : ''}] ${purpose}`;
-  }
   if (type === 'เบิกซื้อของ' && purchaseItems.length) {
     const summary = purchaseItems.map(i=>`${i.name} x${i.qty}${i.unit?' '+i.unit:''}${i.price?' @'+i.price+'฿':''}`).join(', ');
     finalPurpose = `[รายการ: ${summary}] ${purpose}`.trim();
@@ -1127,7 +1114,7 @@ async function loadVehicles() {
   const [vRes, aRes, rRes] = await Promise.all([
     apiGet('getVehicles', {}, {bust:true}),
     apiGet('getAlerts',   {}, {bust:true}),
-    apiGet('getRequests', {}, {bust:false}),
+    apiPost('getExpenses', { category: 'ค่าน้ำมัน', limit: 100 }),
   ]);
   pbDone();
 
@@ -1196,32 +1183,32 @@ async function loadVehicles() {
     }
   }
 
-  // ── TAB 2: ประวัติน้ำมัน ──
+  // ── TAB 2: ประวัติน้ำมัน (จากค่าใช้จ่าย category = ค่าน้ำมัน) ──
   if (!rRes.ok) {
-    fuelEl.innerHTML = `<p style="color:var(--red);padding:16px">${rRes.error}</p>`;
+    fuelEl.innerHTML = `<p style="color:var(--red);padding:16px">${rRes.error || 'โหลดข้อมูลไม่สำเร็จ'}</p>`;
   } else {
-    const fuel = (rRes.data||[])
-      .filter(r => r.type === 'เบิกน้ำมัน')
-      .sort((a,b) => (b.id||'').localeCompare(a.id||''))
-      .slice(0, 50);
+    const fuel = (rRes.data || []).slice(0, 100);
     if (!fuel.length) {
-      fuelEl.innerHTML = '<div class="empty">ยังไม่มีประวัติเบิกน้ำมัน</div>';
+      fuelEl.innerHTML = '<div class="empty">ยังไม่มีประวัติค่าน้ำมัน<br><small style="color:var(--text3);font-size:12px">บันทึกผ่านหน้า "บันทึกค่าใช้จ่าย" เลือกประเภท ค่าน้ำมัน</small></div>';
     } else {
-      const stTh = { pending:'รออนุมัติ', approved:'อนุมัติแล้ว', rejected:'ไม่อนุมัติ' };
+      const totalAmt = fuel.reduce((s,r) => s + (Number(r.amount)||0), 0);
       fuelEl.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <span style="font-size:13px;color:var(--text2);font-weight:600">แสดง ${fuel.length} รายการล่าสุด</span>
+          <span style="font-size:14px;font-weight:800;color:var(--g)">รวม ฿${totalAmt.toLocaleString('th-TH',{minimumFractionDigits:2})}</span>
+        </div>
         <div class="table-wrap">
           <table class="data-table">
             <thead><tr>
-              <th>วันที่</th><th>ผู้เบิก</th><th>สาขา</th><th>รายละเอียด</th><th>จำนวน</th><th>สถานะ</th>
+              <th>วันที่</th><th>ผู้บันทึก</th><th>สาขา</th><th>รายละเอียด</th><th>จำนวน</th>
             </tr></thead>
             <tbody>
               ${fuel.map(r => `<tr>
                 <td style="white-space:nowrap">${r.date||'-'}</td>
-                <td>${r.requester||'-'}</td>
+                <td>${r.payer||r.recordedBy||'-'}</td>
                 <td style="color:var(--text2)">${r.branch||'-'}</td>
-                <td style="font-size:12px;color:var(--text2);max-width:220px">${r.purpose||'-'}</td>
-                <td style="font-weight:800;color:var(--g);white-space:nowrap">฿${Number(r.amount||0).toLocaleString('th-TH')}</td>
-                <td><span class="badge badge-${r.status||'pending'}">${stTh[r.status]||r.status}</span></td>
+                <td style="font-size:12px;color:var(--text2);max-width:220px">${r.description||r.note||'-'}</td>
+                <td style="font-weight:800;color:var(--g);white-space:nowrap">฿${Number(r.amount||0).toLocaleString('th-TH',{minimumFractionDigits:2})}</td>
               </tr>`).join('')}
             </tbody>
           </table>
