@@ -299,6 +299,95 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
       <div id="veh-tab-fuel" style="display:none"></div>
     </div>
 
+    <!-- INVENTORY — คลังวัสดุ -->
+    <div class="page" id="page-inventory">
+      <div class="page-hd-row">
+        <div class="page-hd" style="margin-bottom:0">📦 คลังวัสดุ</div>
+        <button class="btn btn-primary btn-sm" onclick="openAddInventoryItem()">+ เพิ่มรายการ</button>
+      </div>
+      <div id="inv-alerts-wrap"></div>
+      <div class="card" style="padding:14px 20px;margin-bottom:16px">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div class="fg" style="margin:0;min-width:140px"><label>สาขา</label>
+            <select id="inv-branch-filter" style="padding:7px 10px">
+              <option value="">ทุกสาขา</option>
+              <option value="สาขา 1">สาขา 1</option>
+              <option value="สาขา 2">สาขา 2</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="loadInventory()" style="height:36px;align-self:flex-end">🔍 ค้นหา</button>
+        </div>
+      </div>
+      <div id="inv-table"><p style="color:var(--text3);text-align:center;padding:30px">กำลังโหลด...</p></div>
+      <!-- Modal เพิ่มรายการ -->
+      <div id="inv-modal" class="modal-bg" style="display:none">
+        <div class="modal" style="max-width:460px">
+          <div class="modal-title">📦 เพิ่ม / อัปเดตรายการวัสดุ</div>
+          <div class="fg"><label>ชื่อวัสดุ <span style="color:var(--red)">*</span></label><input id="inv-name" placeholder="เช่น กระดาษ A4"/></div>
+          <div class="grid2">
+            <div class="fg"><label>หน่วย</label><input id="inv-unit" placeholder="เช่น รีม, ชิ้น"/></div>
+            <div class="fg"><label>จำนวน</label><input type="number" id="inv-qty" placeholder="0" min="0"/></div>
+          </div>
+          <div class="grid2">
+            <div class="fg"><label>ราคา/หน่วย (บาท)</label><input type="number" id="inv-price" placeholder="0.00" min="0" step="0.01"/></div>
+            <div class="fg"><label>สาขา</label>
+              <select id="inv-branch">
+                <option value="สาขา 1">สาขา 1</option>
+                <option value="สาขา 2">สาขา 2</option>
+              </select>
+            </div>
+          </div>
+          <p id="inv-err" class="err"></p>
+          <div class="modal-footer">
+            <button class="btn btn-ghost btn-sm" onclick="closeInvModal()">ยกเลิก</button>
+            <button class="btn btn-primary btn-sm" id="inv-save-btn" onclick="saveInventoryItem()">💾 บันทึก</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUPPLY — เบิกของจากคลัง -->
+    <div class="page" id="page-supply">
+      <div class="page-hd-row">
+        <div class="page-hd" style="margin-bottom:0">🏪 เบิกของจากคลัง</div>
+        <button class="btn btn-ghost btn-sm" onclick="delete _loaded['supply'];loadSupplyPage()">🔄 รีเฟรช</button>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+        <div class="card" style="flex:0 0 380px;min-width:280px">
+          <div class="card-title">📝 ยื่นคำขอเบิกของ</div>
+          <div class="fg">
+            <label>วัสดุที่ต้องการ <span style="color:var(--red)">*</span></label>
+            <select id="sup-item" onchange="onSupItemChange()">
+              <option value="">— เลือกวัสดุ —</option>
+            </select>
+          </div>
+          <div id="sup-item-info" style="font-size:12px;color:var(--text2);margin:-8px 0 10px;padding:6px 10px;background:var(--g3);border-radius:6px;display:none"></div>
+          <div class="grid2">
+            <div class="fg"><label>จำนวนที่ขอ <span style="color:var(--red)">*</span></label><input type="number" id="sup-qty" placeholder="0" min="1"/></div>
+            <div class="fg"><label>สาขา</label>
+              <select id="sup-branch">
+                <option value="สาขา 1">สาขา 1</option>
+                <option value="สาขา 2">สาขา 2</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg"><label>หมายเหตุ</label><textarea id="sup-note" rows="2" placeholder="ระบุเหตุผล / การใช้งาน..."></textarea></div>
+          <button class="btn btn-primary btn-block" id="sup-btn" onclick="submitSupplyReq()">📤 ยื่นคำขอ</button>
+          <p id="sup-err" class="err" style="margin-top:8px"></p>
+          <div id="sup-success"></div>
+        </div>
+        <div style="flex:1;min-width:260px">
+          <div style="font-size:14px;font-weight:700;color:var(--g);margin-bottom:12px">📋 รายการของฉัน</div>
+          <div id="sup-mylist"><p style="color:var(--text2);text-align:center;padding:30px">กำลังโหลด...</p></div>
+          <!-- Admin section -->
+          <div id="sup-admin-wrap" style="display:none">
+            <div style="font-size:14px;font-weight:700;color:var(--g);margin-bottom:12px;margin-top:20px">⏳ รออนุมัติ</div>
+            <div id="sup-pending-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- USERS -->
     <div class="page" id="page-users">
       <div class="page-hd-row">
@@ -326,6 +415,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
               <option value="ค่าซ่อมบำรุง">🔧 ค่าซ่อมบำรุง</option>
               <option value="ค่าสาธารณูปโภค">💡 ค่าสาธารณูปโภค</option>
               <option value="ค่าวัสดุสิ้นเปลือง">📦 ค่าวัสดุสิ้นเปลือง</option>
+              <option value="ค่าอุปกรณ์สำนักงาน">🖊️ ค่าอุปกรณ์สำนักงาน</option>
               <option value="ค่าจ้างแรงงาน">👷 ค่าจ้างแรงงาน</option>
               <option value="ค่าขนส่ง">🚚 ค่าขนส่ง</option>
               <option value="ค่าอาหาร / เลี้ยงรับรอง">🍽️ ค่าอาหาร / เลี้ยงรับรอง</option>
@@ -342,8 +432,22 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
               </select>
             </div>
           </div>
+          <div class="grid2">
+            <div class="fg"><label>เลขที่บิล</label><input type="text" id="exp-bill-number" placeholder="เช่น INV-2024-001"/></div>
+            <div class="fg"><label>วันที่ใบเสร็จ</label><input type="date" id="exp-bill-date"/></div>
+          </div>
           <div class="fg"><label>ผู้รับผิดชอบ / ผู้จ่าย</label><input type="text" id="exp-payer" placeholder="ชื่อผู้จ่ายเงิน..."/></div>
           <div class="fg"><label>หมายเหตุ</label><textarea id="exp-note" rows="2" placeholder="หมายเหตุเพิ่มเติม..."></textarea></div>
+          <div class="fg">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2)">
+              <input type="checkbox" id="exp-noreceipt" onchange="toggleExpNoReceipt()" style="width:16px;height:16px;accent-color:var(--red)"/>
+              ไม่มีใบเสร็จ
+            </label>
+          </div>
+          <div class="fg" id="exp-noreason-wrap" style="display:none">
+            <label>เหตุผลที่ไม่มีใบเสร็จ <span style="color:var(--red)">*</span></label>
+            <input id="exp-noreason" placeholder="ระบุเหตุผล เช่น ซื้อของตลาดนัด..."/>
+          </div>
           <div class="fg">
             <label>รูปใบเสร็จ / หลักฐาน <span style="font-size:10px;color:var(--text3)">(Google Drive)</span></label>
             <input type="file" id="exp-file" accept="image/*,application/pdf" multiple/>
@@ -386,6 +490,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
               <option value="ค่าซ่อมบำรุง">ค่าซ่อมบำรุง</option>
               <option value="ค่าสาธารณูปโภค">ค่าสาธารณูปโภค</option>
               <option value="ค่าวัสดุสิ้นเปลือง">ค่าวัสดุสิ้นเปลือง</option>
+              <option value="ค่าอุปกรณ์สำนักงาน">ค่าอุปกรณ์สำนักงาน</option>
               <option value="ค่าจ้างแรงงาน">ค่าจ้างแรงงาน</option>
               <option value="ค่าขนส่ง">ค่าขนส่ง</option>
               <option value="ค่าอาหาร / เลี้ยงรับรอง">ค่าอาหาร / เลี้ยงรับรอง</option>
@@ -546,6 +651,8 @@ const NAV = [
   { id:'expense',   label:'บันทึกค่าใช้จ่าย',   ic:'🧾' },
   { id:'report',    label:'รายงานค่าใช้จ่าย',   ic:'📊', adminOnly:true },
   { id:'vehicles',  label:'รถ / น้ำมัน',        ic:'🚗' },
+  { id:'inventory', label:'คลังวัสดุ',          ic:'📦', adminOnly:true },
+  { id:'supply',    label:'เบิกของจากคลัง',     ic:'🏪' },
   { id:'users',     label:'จัดการผู้ใช้',       ic:'👤', adminOnly:true },
 ];
 
@@ -641,6 +748,8 @@ function gotoPage(id) {
     case 'expense':   loadExpensePage(); break;
     case 'report':    loadReport(); break;
     case 'vehicles':  loadVehicles(); break;
+    case 'inventory': loadInventory(); break;
+    case 'supply':    loadSupplyPage(); break;
     case 'users':     loadUsers(); break;
   }
 }
@@ -1247,7 +1356,13 @@ const TAB_OPTIONS = [
   { id:'dashboard', label:'🏠 ภาพรวม' },
   { id:'request',   label:'💵 ยื่นคำขอ' },
   { id:'mylist',    label:'📂 รายการของฉัน' },
+  { id:'approve',   label:'✅ อนุมัติ' },
+  { id:'expense',   label:'🧾 บันทึกค่าใช้จ่าย' },
+  { id:'report',    label:'📊 รายงานค่าใช้จ่าย' },
   { id:'vehicles',  label:'🚗 รถ/น้ำมัน' },
+  { id:'inventory', label:'📦 คลังวัสดุ' },
+  { id:'supply',    label:'🏪 เบิกของจากคลัง' },
+  { id:'users',     label:'👤 จัดการผู้ใช้' },
 ];
 
 async function loadUsers() {
@@ -1292,7 +1407,7 @@ async function loadUsers() {
 function formatTabs(tabs) {
   if (!tabs) return '-';
   const t = typeof tabs === 'string' ? tabs.split(',') : tabs;
-  const map = { dashboard:'ภาพรวม', request:'ยื่นคำขอ', mylist:'รายการ', approve:'อนุมัติ', vehicles:'รถ', users:'ผู้ใช้' };
+  const map = { dashboard:'ภาพรวม', request:'ยื่นคำขอ', mylist:'รายการ', approve:'อนุมัติ', expense:'ค่าใช้จ่าย', report:'รายงาน', vehicles:'รถ', inventory:'คลัง', supply:'เบิกของ', users:'ผู้ใช้' };
   return t.filter(x=>x).map(x=>map[x]||x).join(', ') || '-';
 }
 
@@ -1336,7 +1451,7 @@ async function doCreateUser() {
   btnLoading('cu-btn', '⏳ กำลังบันทึก...');
   pbShow();
   const tabs = role === 'admin'
-    ? 'dashboard,request,mylist,approve,vehicles,users'
+    ? 'dashboard,request,mylist,approve,expense,report,vehicles,inventory,supply,users'
     : (_cuTabs.length ? _cuTabs.join(',') : 'dashboard,request,mylist');
   const res = await apiPost('createUser', { name, username, password, branch, role, tabs });
   pbDone();
@@ -1398,6 +1513,12 @@ async function toggleUserStatus(userId, status) {
 // ════ EXPENSE ════
 const EXP_COLORS = ['#4a7c3f','#e05545','#d97706','#2563eb','#7c3f7c','#3f7c7c','#a05010','#888'];
 
+function toggleExpNoReceipt() {
+  const checked = document.getElementById('exp-noreceipt')?.checked;
+  const wrap = document.getElementById('exp-noreason-wrap');
+  if (wrap) wrap.style.display = checked ? 'block' : 'none';
+}
+
 async function loadExpensePage() {
   const dateEl = document.getElementById('exp-date');
   if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0,10);
@@ -1405,6 +1526,21 @@ async function loadExpensePage() {
   if (branchEl && CU?.branch) branchEl.value = CU.branch;
   const payerEl = document.getElementById('exp-payer');
   if (payerEl && !payerEl.value) payerEl.value = CU?.name || '';
+  // Enter key navigation for expense form
+  const expFields = ['exp-date','exp-cat','exp-desc','exp-amount','exp-branch',
+                     'exp-bill-number','exp-bill-date','exp-payer','exp-note'];
+  expFields.forEach((fid, idx) => {
+    const el = document.getElementById(fid);
+    if (!el) return;
+    el.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const next = document.getElementById(expFields[idx + 1]);
+        if (next) next.focus();
+        else document.getElementById('exp-btn')?.click();
+      }
+    });
+  });
   await loadExpenseRecent();
 }
 
@@ -1425,6 +1561,8 @@ async function loadExpenseRecent() {
             <span style="background:var(--g3);color:var(--g);border-radius:4px;padding:1px 6px;font-weight:600">${esc(e.category||'')}</span>
             &nbsp;${esc(e.date||'')} · ${esc(e.branch||'')} · ${esc(e.payer||'')}
           </div>
+          ${e.billNumber?`<div style="font-size:11px;color:var(--text3);margin-top:2px">เลขที่บิล: ${esc(e.billNumber)}${e.billDate?' · วันที่ใบเสร็จ: '+esc(e.billDate):''}</div>`:''}
+          ${e.noReceipt==='true'?`<div style="font-size:11px;color:var(--warn);font-weight:600;margin-top:2px">⚠️ ไม่มีใบเสร็จ${e.noReceiptReason?' — '+esc(e.noReceiptReason):''}</div>`:''}
           ${e.note?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(e.note)}</div>`:''}
         </div>
         <div style="font-size:15px;font-weight:800;color:var(--red);white-space:nowrap">฿${Number(e.amount||0).toLocaleString('th-TH',{minimumFractionDigits:2})}</div>
@@ -1434,18 +1572,23 @@ async function loadExpenseRecent() {
 
 async function submitExpense() {
   const errEl = document.getElementById('exp-err');
-  const date   = document.getElementById('exp-date')?.value;
-  const cat    = document.getElementById('exp-cat')?.value;
-  const desc   = (document.getElementById('exp-desc')?.value||'').trim();
-  const amt    = parseFloat(document.getElementById('exp-amount')?.value||'0');
-  const branch = document.getElementById('exp-branch')?.value || CU?.branch || '';
-  const payer  = (document.getElementById('exp-payer')?.value||'').trim() || CU?.name || '';
-  const note   = (document.getElementById('exp-note')?.value||'').trim();
+  const date       = document.getElementById('exp-date')?.value;
+  const cat        = document.getElementById('exp-cat')?.value;
+  const desc       = (document.getElementById('exp-desc')?.value||'').trim();
+  const amt        = parseFloat(document.getElementById('exp-amount')?.value||'0');
+  const branch     = document.getElementById('exp-branch')?.value || CU?.branch || '';
+  const payer      = (document.getElementById('exp-payer')?.value||'').trim() || CU?.name || '';
+  const note       = (document.getElementById('exp-note')?.value||'').trim();
+  const billNumber = (document.getElementById('exp-bill-number')?.value||'').trim();
+  const billDate   = document.getElementById('exp-bill-date')?.value || '';
+  const noReceipt  = document.getElementById('exp-noreceipt')?.checked ? 'true' : 'false';
+  const noReceiptReason = (document.getElementById('exp-noreason')?.value||'').trim();
   errEl.textContent = '';
   if (!date) { errEl.textContent = 'กรุณาเลือกวันที่'; return; }
   if (!cat)  { errEl.textContent = 'กรุณาเลือกหมวดหมู่'; return; }
   if (!desc) { errEl.textContent = 'กรุณากรอกรายละเอียด'; return; }
   if (!amt || amt <= 0) { errEl.textContent = 'กรุณากรอกจำนวนเงิน'; return; }
+  if (noReceipt === 'true' && !noReceiptReason) { errEl.textContent = 'กรุณาระบุเหตุผลที่ไม่มีใบเสร็จ'; return; }
   btnLoading('exp-btn', '⏳ กำลังบันทึก...');
   let imageUrls = '';
   const fileInput = document.getElementById('exp-file');
@@ -1462,7 +1605,10 @@ async function submitExpense() {
     if (statusEl) statusEl.textContent = imageUrls ? '✅ อัปโหลดสำเร็จ' : '⚠️ อัปโหลดไม่สำเร็จ';
   }
   try {
-    const res = await apiPost('addExpense', { date, category:cat, description:desc, amount:amt, branch, payer, note, imageUrls, recordedBy:CU?.name });
+    const res = await apiPost('addExpense', {
+      date, category:cat, description:desc, amount:amt, branch, payer, note,
+      billNumber, billDate, noReceipt, noReceiptReason, imageUrls, recordedBy:CU?.name
+    });
     btnRestore('exp-btn');
     if (res.ok) {
       document.getElementById('exp-success').innerHTML = '<div class="success-msg">✅ บันทึกเรียบร้อยแล้ว!</div>';
@@ -1470,6 +1616,13 @@ async function submitExpense() {
       document.getElementById('exp-desc').value = '';
       document.getElementById('exp-amount').value = '';
       document.getElementById('exp-note').value = '';
+      document.getElementById('exp-bill-number').value = '';
+      document.getElementById('exp-bill-date').value = '';
+      if (document.getElementById('exp-noreceipt')) {
+        document.getElementById('exp-noreceipt').checked = false;
+        document.getElementById('exp-noreason-wrap').style.display = 'none';
+        document.getElementById('exp-noreason').value = '';
+      }
       if (fileInput) fileInput.value = '';
       if (statusEl) statusEl.textContent = '';
       setTimeout(()=>{ document.getElementById('exp-success').innerHTML=''; },2000);
@@ -1553,6 +1706,196 @@ async function loadReport() {
         </tr>
       </tbody></table>`;
   } catch(e) { pbDone(); el.innerHTML = `<p style="color:var(--red)">เกิดข้อผิดพลาด: ${e.message}</p>`; }
+}
+
+// ════ INVENTORY ════
+async function loadInventory() {
+  const el = document.getElementById('inv-table');
+  if (!el) return;
+  el.innerHTML = '<p style="color:var(--text2);text-align:center;padding:20px">⏳ กำลังโหลด...</p>';
+  pbShowFull();
+  const branch = document.getElementById('inv-branch-filter')?.value || '';
+  const r = await apiGet('getInventory', branch ? { branch } : {}, { bust:true });
+  pbDone();
+  if (!r.ok) { el.innerHTML = `<p style="color:var(--red)">${r.error||'โหลดไม่สำเร็จ'}</p>`; return; }
+  const rows = r.data || [];
+  if (!rows.length) { el.innerHTML = '<div class="empty">ยังไม่มีรายการในคลัง</div>'; return; }
+  el.innerHTML = `<div class="card" style="padding:0;overflow:hidden">
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;min-width:500px">
+      <thead><tr style="background:var(--g3);font-size:11px;color:var(--text2);font-weight:700">
+        <th style="padding:10px 14px;text-align:left">ชื่อวัสดุ</th>
+        <th style="padding:10px 14px;text-align:center">หน่วย</th>
+        <th style="padding:10px 14px;text-align:right">คงเหลือ</th>
+        <th style="padding:10px 14px;text-align:right">ราคา/หน่วย</th>
+        <th style="padding:10px 14px;text-align:center">สาขา</th>
+        <th style="padding:10px 14px;text-align:center">วันที่อัปเดต</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map((it,i) => `<tr style="${i%2===0?'':'background:var(--g3)'}">
+          <td style="padding:9px 14px;font-weight:600;color:var(--text)">${esc(it.name||'')}</td>
+          <td style="padding:9px 14px;text-align:center;color:var(--text2)">${esc(it.unit||'')}</td>
+          <td style="padding:9px 14px;text-align:right;font-weight:700;color:${Number(it.qty||0)<5?'var(--red)':'var(--text)'}">${Number(it.qty||0).toLocaleString('th-TH')}</td>
+          <td style="padding:9px 14px;text-align:right;color:var(--text2)">${it.pricePerUnit?'฿'+Number(it.pricePerUnit).toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
+          <td style="padding:9px 14px;text-align:center;color:var(--text2)">${esc(it.branch||'')}</td>
+          <td style="padding:9px 14px;text-align:center;color:var(--text3);font-size:11px">${esc(it.lastPurchaseDate||'')}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function openAddInventoryItem() {
+  document.getElementById('inv-name').value = '';
+  document.getElementById('inv-unit').value = '';
+  document.getElementById('inv-qty').value = '';
+  document.getElementById('inv-price').value = '';
+  document.getElementById('inv-err').textContent = '';
+  if (CU?.branch) document.getElementById('inv-branch').value = CU.branch;
+  document.getElementById('inv-modal').style.display = 'flex';
+}
+function closeInvModal() { document.getElementById('inv-modal').style.display = 'none'; }
+
+async function saveInventoryItem() {
+  const errEl = document.getElementById('inv-err');
+  const name  = (document.getElementById('inv-name')?.value||'').trim();
+  const unit  = (document.getElementById('inv-unit')?.value||'').trim();
+  const qty   = parseFloat(document.getElementById('inv-qty')?.value||'0');
+  const price = parseFloat(document.getElementById('inv-price')?.value||'0');
+  const branch= document.getElementById('inv-branch')?.value||'สาขา 1';
+  errEl.textContent = '';
+  if (!name) { errEl.textContent = 'กรุณากรอกชื่อวัสดุ'; return; }
+  btnLoading('inv-save-btn', '⏳ กำลังบันทึก...');
+  const r = await apiPost('addInventoryItem', { name, unit, qty, pricePerUnit:price, branch });
+  btnRestore('inv-save-btn');
+  if (r.ok) {
+    closeInvModal();
+    loadInventory();
+  } else { errEl.textContent = r.error || 'เกิดข้อผิดพลาด'; }
+}
+
+// ════ SUPPLY ════
+let _invItems = [];
+async function loadSupplyPage() {
+  if (!_invItems.length) {
+    const r = await apiGet('getInventory', {}, { bust:true });
+    _invItems = r.ok ? (r.data||[]) : [];
+    const sel = document.getElementById('sup-item');
+    if (sel) {
+      sel.innerHTML = '<option value="">— เลือกวัสดุ —</option>';
+      _invItems.forEach(it => {
+        const opt = document.createElement('option');
+        opt.value = it.id;
+        opt.textContent = `${it.name} (คงเหลือ: ${Number(it.qty||0).toLocaleString('th-TH')} ${it.unit||''})`;
+        opt.dataset.qty = it.qty || 0;
+        opt.dataset.unit = it.unit || '';
+        opt.dataset.name = it.name || '';
+        sel.appendChild(opt);
+      });
+    }
+  }
+  if (CU?.branch) {
+    const br = document.getElementById('sup-branch');
+    if (br) br.value = CU.branch;
+  }
+  await loadSupplyList();
+}
+
+function onSupItemChange() {
+  const sel = document.getElementById('sup-item');
+  const infoEl = document.getElementById('sup-item-info');
+  const opt = sel?.options[sel.selectedIndex];
+  if (opt && opt.value) {
+    infoEl.textContent = `คงเหลือ: ${Number(opt.dataset.qty||0).toLocaleString('th-TH')} ${opt.dataset.unit}`;
+    infoEl.style.display = 'block';
+  } else {
+    infoEl.style.display = 'none';
+  }
+}
+
+async function loadSupplyList() {
+  const el = document.getElementById('sup-mylist');
+  if (!el) return;
+  el.innerHTML = '<p style="color:var(--text2);text-align:center;padding:16px">⏳ กำลังโหลด...</p>';
+  const r = await apiGet('getSupplyRequests', {}, { bust:true });
+  if (!r.ok) { el.innerHTML = `<p style="color:var(--red)">${r.error||'โหลดไม่สำเร็จ'}</p>`; return; }
+  const all = r.data || [];
+  const mine = CU.role === 'admin' ? all : all.filter(x => x.requester === CU.name);
+  if (!mine.length) { el.innerHTML = '<p style="color:var(--text3);text-align:center;padding:16px">ยังไม่มีรายการ</p>'; }
+  else {
+    el.innerHTML = mine.slice(0,15).map(x => {
+      const st = x.status || 'pending';
+      const bc = { pending:'badge-pending', approved:'badge-approved', rejected:'badge-rejected' }[st]||'badge-pending';
+      const stTh = { pending:'รออนุมัติ', approved:'อนุมัติแล้ว', rejected:'ไม่อนุมัติ' }[st]||st;
+      return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 14px;border-radius:8px;margin-bottom:8px;background:var(--surface);border:1px solid var(--border)">
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13px;color:var(--text)">${esc(x.itemName||'')} × ${Number(x.qtyRequested||0).toLocaleString('th-TH')} ${esc(x.unit||'')}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">${esc(x.date||'')} · ${esc(x.branch||'')} · ${esc(x.requester||'')}</div>
+          ${x.rejectReason?`<div style="font-size:11px;color:var(--red)">เหตุผลปฏิเสธ: ${esc(x.rejectReason)}</div>`:''}
+        </div>
+        <span class="badge ${bc}" style="flex-shrink:0;margin-left:8px">${stTh}</span>
+      </div>`;
+    }).join('');
+  }
+  // Admin: show pending
+  const adminWrap = document.getElementById('sup-admin-wrap');
+  if (CU.role === 'admin' && adminWrap) {
+    adminWrap.style.display = 'block';
+    const pending = all.filter(x => x.status === 'pending');
+    const pel = document.getElementById('sup-pending-list');
+    if (!pending.length) { pel.innerHTML = '<p style="color:var(--text3);text-align:center;padding:10px">ไม่มีรายการรออนุมัติ</p>'; }
+    else {
+      pel.innerHTML = pending.map(x => `
+        <div style="padding:10px 14px;border-radius:8px;margin-bottom:8px;background:var(--surface);border:1.5px solid var(--warn)">
+          <div style="font-weight:700;font-size:13px;color:var(--text)">${esc(x.itemName||'')} × ${Number(x.qtyRequested||0).toLocaleString('th-TH')} ${esc(x.unit||'')}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">${esc(x.date||'')} · ${esc(x.branch||'')} · ผู้ขอ: <b>${esc(x.requester||'')}</b></div>
+          <div class="req-actions" style="margin-top:8px">
+            <button class="btn btn-success btn-sm" onclick="approveSupply('${x.id}')">✅ อนุมัติ</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectSupply('${x.id}')">❌ ปฏิเสธ</button>
+          </div>
+        </div>`).join('');
+    }
+  }
+}
+
+async function submitSupplyReq() {
+  const errEl = document.getElementById('sup-err');
+  const sel   = document.getElementById('sup-item');
+  const itemId   = sel?.value;
+  const opt      = sel?.options[sel.selectedIndex];
+  const itemName = opt?.dataset.name || '';
+  const unit     = opt?.dataset.unit || '';
+  const qty      = parseFloat(document.getElementById('sup-qty')?.value||'0');
+  const branch   = document.getElementById('sup-branch')?.value || CU?.branch || '';
+  errEl.textContent = '';
+  if (!itemId) { errEl.textContent = 'กรุณาเลือกวัสดุ'; return; }
+  if (!qty || qty <= 0) { errEl.textContent = 'กรุณาระบุจำนวนที่ขอ'; return; }
+  btnLoading('sup-btn', '⏳ กำลังส่ง...');
+  const r = await apiPost('submitSupplyRequest', { itemId, itemName, unit, qtyRequested:qty, branch });
+  btnRestore('sup-btn');
+  if (r.ok) {
+    document.getElementById('sup-success').innerHTML = '<div class="success-msg">✅ ยื่นคำขอเรียบร้อยแล้ว!</div>';
+    sel.value = '';
+    document.getElementById('sup-qty').value = '';
+    document.getElementById('sup-item-info').style.display = 'none';
+    document.getElementById('sup-note').value = '';
+    setTimeout(()=>{ document.getElementById('sup-success').innerHTML=''; },2000);
+    _invItems = [];
+    await loadSupplyPage();
+  } else { errEl.textContent = r.error || 'เกิดข้อผิดพลาด'; }
+}
+
+async function approveSupply(id) {
+  if (!confirm('อนุมัติรายการนี้?')) return;
+  const r = await apiPost('approveSupplyRequest', { id });
+  if (r.ok) { _invItems = []; loadSupplyPage(); } else alert(r.error||'เกิดข้อผิดพลาด');
+}
+async function rejectSupply(id) {
+  const reason = prompt('ระบุเหตุผลที่ปฏิเสธ:');
+  if (reason === null) return;
+  const r = await apiPost('rejectSupplyRequest', { id, reason });
+  if (r.ok) loadSupplyPage(); else alert(r.error||'เกิดข้อผิดพลาด');
 }
 
 function _drawExpensePie(byCat) {
