@@ -2454,7 +2454,8 @@ async function openAddStockFromRequest() {
           </div>
           <button class="btn btn-success btn-sm" style="flex-shrink:0" onclick="doAddInventoryFromRequest('${req.id}',this)">📥 เพิ่มสต็อก</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } catch(e) {
     listEl.innerHTML = `<p style="color:var(--red)">เกิดข้อผิดพลาด: ${e.message}</p>`;
   }
