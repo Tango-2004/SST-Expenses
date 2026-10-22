@@ -1189,14 +1189,19 @@ function doPrint() {
   setTimeout(() => { printEl.style.display = 'none'; }, 500);
 }
 
-async function savePrintToDrive(requestId) {
+async async function savePrintToDrive(requestId) {
   const btn = document.getElementById('pp-save-btn');
   const statusEl = document.getElementById('pp-status');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...'; }
   if (statusEl) statusEl.textContent = '';
 
-  // ส่ง html ไปให้ backend แปลงเป็น PDF แล้วเซฟขึ้น Drive
-  const r = window._printReqData;
+  // ดึง r จาก _reqCache (หรือ fallback _printReqData)
+  const r = (window._reqCache && window._reqCache[requestId]) || window._printReqData;
+  if (!r) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:red">❌ ไม่พบข้อมูลคำขอ กรุณาปิดแล้วเปิดใหม่</span>';
+    if (btn) { btn.disabled = false; btn.textContent = '💾 บันทึกขึ้น Drive'; }
+    return;
+  }
   const html = buildRequestDocHtml(r);
   const res = await apiPost('saveDocToDrive', {
     requestId: r.id,
