@@ -1039,6 +1039,11 @@ function reqCardHtml(r, showActions, showPrint=false) {
 }
 
 // ════ PRINT ════
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function buildRequestDocHtml(r) {
   const amt = Number(r.amount||0);
   const amtTh = numberToThai(amt);
