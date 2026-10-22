@@ -1005,7 +1005,9 @@ function reqCardHtml(r, showActions, showPrint=false) {
     <button class="btn btn-success btn-sm" onclick="openApprove('${r.id}','${(r.requester||'').replace(/'/g,"\\'")}','${amt}')">✅ อนุมัติ</button>
     <button class="btn btn-danger btn-sm" onclick="openReject('${r.id}','${(r.requester||'').replace(/'/g,"\\'")}')">❌ ปฏิเสธ</button>` : '';
   const printTypes = ['เบิกเงิน','เบิกซื้อของ'];
-  const printBtn = showPrint && printTypes.includes(r.type) ? `<button class="btn btn-warn btn-sm" onclick="printRequest(${JSON.stringify(r).replace(/"/g,'&quot;')})">🖨️ พิมพ์ใบเบิก</button>` : '';
+  if (!window._reqCache) window._reqCache = {};
+  if (showPrint && printTypes.includes(r.type)) window._reqCache[r.id] = r;
+  const printBtn = showPrint && printTypes.includes(r.type) ? `<button class="btn btn-warn btn-sm" onclick="printRequestById('${r.id}')">🖨️ พิมพ์ใบเบิก</button>` : '';
   // Receipt badge for เบิกของ type
   let receiptInfo = '';
   if (r.type === 'เบิกของ' && r.inventoryItemName) {
@@ -1130,7 +1132,11 @@ function buildRequestDocHtml(r) {
 }
 
 function printRequest(r) {
-  // เปิด modal preview ก่อนพิมพ์
+  showPrintPreviewModal(r);
+}
+function printRequestById(id) {
+  const r = (window._reqCache && window._reqCache[id]) || null;
+  if (!r) { alert('ไม่พบข้อมูลคำขอ กรุณารีเฟรชหน้าแล้วลองใหม่'); return; }
   showPrintPreviewModal(r);
 }
 
