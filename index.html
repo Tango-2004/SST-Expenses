@@ -1244,20 +1244,26 @@ async function buildReqForm() {
         <label style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;display:block">เอกสารประกอบ</label>
         <div class="doc-radio-group">
           <label class="doc-radio-row" style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer">
-            <input type="radio" name="rf-doctype" value="ไม่มีใบเสร็จ" style="accent-color:var(--red)"/>
+            <input type="radio" name="rf-doctype" value="ไม่มีใบเสร็จ" onchange="onDocTypeChange()" style="accent-color:var(--red)"/>
             <span style="font-size:13px;color:var(--text)">❌ ไม่มีใบเสร็จ</span>
           </label>
           <label class="doc-radio-row" style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer">
-            <input type="radio" name="rf-doctype" value="แนบใบเสนอราคา" style="accent-color:var(--warn)"/>
+            <input type="radio" name="rf-doctype" value="แนบใบเสนอราคา" onchange="onDocTypeChange()" style="accent-color:var(--warn)"/>
             <span style="font-size:13px;color:var(--text)">📄 แนบใบเสนอราคา</span>
           </label>
           <label class="doc-radio-row" style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer">
-            <input type="radio" name="rf-doctype" value="แนบใบเสร็จ" style="accent-color:var(--g)"/>
+            <input type="radio" name="rf-doctype" value="แนบใบเสร็จ" onchange="onDocTypeChange()" style="accent-color:var(--g)"/>
             <span style="font-size:13px;color:var(--text)">✅ แนบใบเสร็จ</span>
           </label>
         </div>
         <div id="rf-noreason-wrap" style="display:none;margin-top:8px">
-          <label>เหตุผลที่ไม่มีใบเสร็จ</label><input id="rf-noreason" placeholder="ระบุเหตุผล..."/>
+          <label>เหตุผลที่ไม่มีใบเสร็จ <span style="color:var(--red)">*</span></label>
+          <input id="rf-noreason" placeholder="ระบุเหตุผล เช่น ซื้อของตลาดนัด..."/>
+        </div>
+        <div id="rf-file-wrap" style="display:none;margin-top:8px">
+          <label id="rf-file-label">แนบไฟล์เอกสาร (รูปภาพ / PDF)</label>
+          <input type="file" id="rf-file" accept="image/*,application/pdf" multiple/>
+          <div id="rf-file-hint" style="font-size:11px;color:var(--text3);margin-top:4px">อัปโหลดไปยัง Google Drive อัตโนมัติ</div>
         </div>
       </div>`;
     extraFields = `
@@ -1304,7 +1310,13 @@ async function buildReqForm() {
           </label>
         </div>
         <div id="rf-noreason-wrap" style="display:none;margin-top:8px">
-          <label>เหตุผลที่ไม่มีใบเสร็จ</label><input id="rf-noreason" placeholder="ระบุเหตุผล..."/>
+          <label>เหตุผลที่ไม่มีใบเสร็จ <span style="color:var(--red)">*</span></label>
+          <input id="rf-noreason" placeholder="ระบุเหตุผล เช่น ซื้อของตลาดนัด..."/>
+        </div>
+        <div id="rf-file-wrap" style="display:none;margin-top:8px">
+          <label id="rf-file-label">แนบไฟล์เอกสาร (รูปภาพ / PDF)</label>
+          <input type="file" id="rf-file" accept="image/*,application/pdf" multiple/>
+          <div id="rf-file-hint" style="font-size:11px;color:var(--text3);margin-top:4px">อัปโหลดไปยัง Google Drive อัตโนมัติ</div>
         </div>
       </div>`;
     extraFields = `
@@ -1313,10 +1325,8 @@ async function buildReqForm() {
       ${docSection}`;
   }
 
-  const fileSection = type === 'เบิกของ' ? '' :
-    `<div class="fg"><label>เอกสาร / รูปใบเสร็จ (ถ้ามี)</label><input type="file" id="rf-file" accept="image/*,application/pdf" multiple/></div>`;
-
-  el.innerHTML = commonFields + extraFields + fileSection + `
+  // rf-file is now inside docSection (rf-file-wrap), no separate fileSection needed
+  el.innerHTML = commonFields + extraFields + `
     <button class="btn btn-primary btn-block" style="margin-top:10px" id="rf-btn" onclick="submitReq()">📤 ยื่นคำขอ</button>
     <p id="rf-err" class="err"></p>
     <div id="rf-success"></div>`;
@@ -1324,8 +1334,23 @@ async function buildReqForm() {
 
 function onDocTypeChange() {
   const selected = document.querySelector('input[name="rf-doctype"]:checked')?.value;
-  const wrap = document.getElementById('rf-noreason-wrap');
-  if (wrap) wrap.style.display = (selected === 'ไม่มีใบเสร็จ') ? 'block' : 'none';
+  const reasonWrap = document.getElementById('rf-noreason-wrap');
+  if (reasonWrap) reasonWrap.style.display = (selected === 'ไม่มีใบเสร็จ') ? 'block' : 'none';
+
+  const fileWrap = document.getElementById('rf-file-wrap');
+  const fileLabel = document.getElementById('rf-file-label');
+  if (fileWrap) {
+    if (!selected) {
+      fileWrap.style.display = 'none';
+    } else {
+      fileWrap.style.display = 'block';
+      if (fileLabel) {
+        if (selected === 'ไม่มีใบเสร็จ') fileLabel.textContent = 'แนบหลักฐานประกอบ (ถ้ามี)';
+        else if (selected === 'แนบใบเสนอราคา') fileLabel.textContent = 'แนบไฟล์ใบเสนอราคา *';
+        else if (selected === 'แนบใบเสร็จ') fileLabel.textContent = 'แนบไฟล์ใบเสร็จ *';
+      }
+    }
+  }
 }
 
 function onRfInvChange() {
@@ -1455,28 +1480,45 @@ async function submitReq() {
 
   const amount  = document.getElementById('rf-amount')?.value;
   const purpose = (document.getElementById('rf-purpose')?.value || '').trim();
+  const docType = document.querySelector('input[name="rf-doctype"]:checked')?.value || '';
+  const noReceiptReason = (document.getElementById('rf-noreason')?.value || '').trim();
+
   if (type !== 'เบิกซื้อของ') {
     if (!amount || isNaN(amount)) { errEl.textContent = 'กรุณากรอกจำนวนเงิน'; return; }
     if (!purpose) { errEl.textContent = 'กรุณากรอกวัตถุประสงค์'; return; }
   }
+  if (docType === 'ไม่มีใบเสร็จ' && !noReceiptReason) {
+    errEl.textContent = 'กรุณาระบุเหตุผลที่ไม่มีใบเสร็จ'; return;
+  }
+  if ((docType === 'แนบใบเสนอราคา' || docType === 'แนบใบเสร็จ') && !document.getElementById('rf-file')?.files.length) {
+    errEl.textContent = `กรุณาแนบไฟล์${docType === 'แนบใบเสนอราคา' ? 'ใบเสนอราคา' : 'ใบเสร็จ'}`; return;
+  }
 
   btnLoading('rf-btn', '⏳ กำลังส่ง...');
 
+  // อัปโหลดไฟล์ไป Google Drive
   let imageUrls = '';
   const fileInput = document.getElementById('rf-file');
   if (fileInput?.files.length) {
+    const branch = document.getElementById('rf-branch')?.value || CU.branch || '';
+    const now = new Date();
+    const year = String(now.getFullYear());
+    const month = String(now.getMonth()+1).padStart(2,'0');
+    // จัด category ตาม docType
+    const category = docType === 'แนบใบเสร็จ' ? 'ใบเสร็จ'
+                   : docType === 'แนบใบเสนอราคา' ? 'ใบเสนอราคา'
+                   : docType === 'ไม่มีใบเสร็จ' ? 'หลักฐานอื่นๆ'
+                   : 'เอกสาร';
     for (const f of fileInput.files) {
       try {
         const b64 = await toBase64(f);
-        const up = await apiPost('uploadImage', { base64: b64, filename: f.name });
+        const up = await apiPost('uploadImage', { base64: b64, filename: f.name, category, branch, year, month });
         if (up.ok) imageUrls += (imageUrls ? ',' : '') + up.url;
       } catch(e) { console.warn('upload failed', e); }
     }
   }
 
-  const docType = document.querySelector('input[name="rf-doctype"]:checked')?.value || '';
   const noReceipt = docType === 'ไม่มีใบเสร็จ' ? 'true' : '';
-  const noReceiptReason = document.getElementById('rf-noreason')?.value || '';
 
   let finalPurpose = purpose;
   if (type === 'เบิกซื้อของ' && purchaseItems.length) {
