@@ -1189,7 +1189,7 @@ function doPrint() {
   setTimeout(() => { printEl.style.display = 'none'; }, 500);
 }
 
-async async function savePrintToDrive(requestId) {
+async function savePrintToDrive(requestId) {
   const btn = document.getElementById('pp-save-btn');
   const statusEl = document.getElementById('pp-status');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...'; }
