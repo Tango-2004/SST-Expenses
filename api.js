@@ -7,7 +7,7 @@ const POST_RETRY = 2, POST_TIMEOUT_MS = 30000;
 const _mem = {};
 function cacheSet(k, v, ttl = 60) {
   _mem[k] = { v, exp: Date.now() + ttl * 1000 };
-  try { localStorage.setItem('sst4_' + k, JSON.stringify({ v, exp: Date.now() + ttl * 10000 })); } catch (_) {}
+  try { localStorage.setItem('sst4_' + k, JSON.stringify({ v, exp: Date.now() + ttl * 1000 })); } catch (_) {}
 }
 function cacheGet(k) {
   if (_mem[k]?.exp > Date.now()) return _mem[k].v;
@@ -48,7 +48,7 @@ async function _fetch(url, opts = {}, attempt = 0) {
 }
 
 /* ── GET with cache-first ── */
-async function apiGet(action, params = {}, { bust = false, ttl = 60 } = {}) {
+async function apiGet(action, params = {}, { bust = false, ttl = 120 } = {}) {
   const token = localStorage.getItem('sst_token') || '';
   const key = action + JSON.stringify(params);
   if (!bust) {
@@ -197,5 +197,6 @@ function thaiMonthName() {
 }
 function fmtMoney(n) { return Number(n||0).toLocaleString('th-TH', {minimumFractionDigits:0, maximumFractionDigits:2}); }
 
-// Warmup ping ตอนโหลด
+// Warmup ping — keep Apps Script warm ทุก 4 นาที
 setTimeout(async () => { try { await _fetch(API_URL + '?action=ping'); } catch(_){} }, 800);
+setInterval(async () => { try { await _fetch(API_URL + '?action=ping'); } catch(_){} }, 4 * 60 * 1000);
