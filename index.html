@@ -358,6 +358,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
       <div class="page-hd-row">
         <div class="page-hd" style="margin-bottom:0">📦 คลังวัสดุ</div>
         <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="delete _loaded['inventory'];_inventoryCache=[];loadInventory()">🔄 รีเฟรช</button>
           <button class="btn btn-outline btn-sm" id="inv-from-req-btn" onclick="openAddStockFromRequest()" style="display:none">📥 เพิ่มจากคำขอ</button>
           <button class="btn btn-primary btn-sm" onclick="openAddInventoryItem()">+ เพิ่มรายการ</button>
         </div>
@@ -379,26 +380,44 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
       <div id="inv-table"><p style="color:var(--text3);text-align:center;padding:30px">กำลังโหลด...</p></div>
       <!-- Modal เพิ่มรายการ -->
       <div id="inv-modal" class="modal-bg" style="display:none">
-        <div class="modal" style="max-width:460px">
-          <div class="modal-title">📦 เพิ่ม / อัปเดตรายการวัสดุ</div>
-          <div class="fg"><label>ชื่อวัสดุ <span style="color:var(--red)">*</span></label><input id="inv-name" placeholder="เช่น กระดาษ A4"/></div>
-          <div class="grid2">
-            <div class="fg"><label>หน่วย</label><input id="inv-unit" placeholder="เช่น รีม, ชิ้น"/></div>
-            <div class="fg"><label>จำนวน</label><input type="number" id="inv-qty" placeholder="0" min="0"/></div>
-          </div>
-          <div class="grid2">
-            <div class="fg"><label>ราคา/หน่วย (บาท)</label><input type="number" id="inv-price" placeholder="0.00" min="0" step="0.01"/></div>
-            <div class="fg"><label>สาขา</label>
+        <div class="modal" style="max-width:720px;width:95vw">
+          <div class="modal-title">📦 เพิ่ม/อัปเดตรายการวัสดุ</div>
+          <!-- สาขา + ร้านค้า -->
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+            <div class="fg" style="margin:0;flex:0 0 160px;min-width:120px">
+              <label>สาขา</label>
               <select id="inv-branch">
                 <option value="สาขา 1">สาขา 1</option>
                 <option value="สาขา 2">สาขา 2</option>
               </select>
             </div>
+            <div class="fg" style="margin:0;flex:1;min-width:160px">
+              <label>ร้านค้า / ผู้จัดจำหน่าย</label>
+              <input id="inv-vendor" placeholder="เช่น ศรีพูนทอง, ออฟฟิศเมท"/>
+            </div>
           </div>
-          <p id="inv-err" class="err"></p>
+          <!-- ตารางหลายแถว -->
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:13px">
+              <thead>
+                <tr style="background:var(--g3)">
+                  <th style="padding:7px 8px;text-align:left;color:var(--text2);font-weight:700">ชื่อวัสดุ *</th>
+                  <th style="padding:7px 8px;text-align:left;color:var(--text2);font-weight:700;width:80px">หน่วย</th>
+                  <th style="padding:7px 8px;text-align:right;color:var(--text2);font-weight:700;width:75px">จำนวน</th>
+                  <th style="padding:7px 8px;text-align:right;color:var(--text2);font-weight:700;width:105px">ราคา/หน่วย</th>
+                  <th style="width:32px"></th>
+                </tr>
+              </thead>
+              <tbody id="inv-rows">
+                <!-- rows injected by JS -->
+              </tbody>
+            </table>
+          </div>
+          <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="addInvRow()">+ เพิ่มแถว</button>
+          <p id="inv-err" class="err" style="margin-top:8px"></p>
           <div class="modal-footer">
             <button class="btn btn-ghost btn-sm" onclick="closeInvModal()">ยกเลิก</button>
-            <button class="btn btn-primary btn-sm" id="inv-save-btn" onclick="saveInventoryItem()">💾 บันทึก</button>
+            <button class="btn btn-primary btn-sm" id="inv-save-btn" onclick="saveInventoryItem()">💾 บันทึกทั้งหมด</button>
           </div>
         </div>
       </div>
@@ -762,6 +781,9 @@ function doLogout() {
 }
 
 // ════ APP START ════
+// simple per-page load-cache: set page id here after first successful load, delete to force refresh
+const _loaded = {};
+
 function startApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
@@ -788,13 +810,17 @@ function buildNav() {
   });
 }
 
-function gotoPage(id) {
+function gotoPage(id, forceRefresh) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const pg = document.getElementById('page-' + id);
   if (pg) pg.classList.add('active');
   const nav = document.getElementById('nav-' + id);
   if (nav) nav.classList.add('active');
+  // ถ้าหน้านี้โหลดแล้วและไม่ force refresh ให้ข้ามได้
+  // ยกเว้น dashboard, approve (ต้องการ live เสมอ)
+  const alwaysRefresh = ['dashboard','approve'];
+  if (!forceRefresh && !alwaysRefresh.includes(id) && _loaded[id]) return;
   switch(id) {
     case 'dashboard': loadDashboard(); break;
     case 'mylist':    loadMylist(); break;
@@ -806,6 +832,7 @@ function gotoPage(id) {
     case 'supply':    loadSupplyPage(); break;
     case 'users':     loadUsers(); break;
   }
+  _loaded[id] = true;
 }
 
 // ════ NOTIFICATIONS ════
@@ -932,13 +959,22 @@ function setBadge(id, count) {
 }
 
 // ════ MYLIST ════
+let _requestsCache = null, _requestsCacheTs = 0;
 async function loadMylist() {
   const el = document.getElementById('mylist-content');
-  el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
-  pbShow();
   const statusFilter = document.getElementById('ml-status')?.value || '';
-  const res = await apiGet('getRequests', {}, {bust:true});
-  pbDone();
+  // ใช้ cache ถ้าอายุน้อยกว่า 60 วินาที
+  let res;
+  const now = Date.now();
+  if (_requestsCache && (now - _requestsCacheTs < 60000) && !statusFilter) {
+    res = _requestsCache;
+  } else {
+    el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
+    pbShow();
+    res = await apiGet('getRequests', {}, {bust:true});
+    pbDone();
+    if (res.ok) { _requestsCache = res; _requestsCacheTs = now; }
+  }
   if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
   let data = CU.role === 'admin' ? (res.data || []) : (res.data || []).filter(r => r.branch === CU.branch);
   if (statusFilter) data = data.filter(r => r.status === statusFilter);
@@ -1103,28 +1139,90 @@ async function buildReqForm() {
   let extraFields = '';
 
   if (type === 'เบิกของ') {
-    // Load inventory items
-    let invOpts = '<option value="">— เลือกวัสดุ —</option>';
+    // Load inventory items for the dropdowns
+    let invItems = [];
     try {
       if (!_inventoryCache.length) {
         const ir = await apiGet('getInventory', {}, { bust:true });
         _inventoryCache = ir.ok ? (ir.data||[]) : [];
       }
-      invOpts += _inventoryCache.map(it =>
-        `<option value="${esc(it.id)}" data-name="${esc(it.name||'')}" data-unit="${esc(it.unit||'')}" data-qty="${it.qty||0}">
-          ${esc(it.name||'')} (คงเหลือ: ${Number(it.qty||0).toLocaleString('th-TH')} ${esc(it.unit||'')})
-        </option>`
-      ).join('');
+      invItems = _inventoryCache;
     } catch(e) { console.warn('inv load err', e); }
+
+    function _wdBuildInvOpts(selectedId) {
+      return '<option value="">— เลือกวัสดุ —</option>' + invItems.map(it =>
+        `<option value="${esc(it.id)}" data-name="${esc(it.name||'')}" data-unit="${esc(it.unit||'')}" data-qty="${it.qty||0}" ${it.id===selectedId?'selected':''}>
+          ${esc(it.name||'')} (คงเหลือ: ${Number(it.qty||0).toLocaleString('th-TH')} ${esc(it.unit||'')})
+        </option>`).join('');
+    }
+
+    function _wdRow(n) {
+      return `<tr id="wd-row-${n}">
+        <td style="padding:4px 6px 4px 0">
+          <select class="wd-item-sel" onchange="onWdSelChange(this)" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:6px 8px;font-size:13px;font-family:inherit">
+            ${_wdBuildInvOpts()}
+          </select>
+          <div class="wd-item-info" style="font-size:11px;color:var(--text3);margin-top:2px;min-height:14px"></div>
+        </td>
+        <td style="padding:4px 6px;width:90px">
+          <input type="number" class="wd-item-qty" min="1" value="1" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:6px 8px;font-size:13px;font-family:inherit"/>
+        </td>
+        <td style="padding:4px 0 4px 4px;width:32px;text-align:center">
+          <button type="button" onclick="wdRemoveRow(${n})" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:2px 4px;line-height:1">✕</button>
+        </td>
+      </tr>`;
+    }
+
+    // expose helpers to global scope for onclick
+    window._wdBuildInvOpts = _wdBuildInvOpts;
+    window._wdRowN = 1;
+    window.wdAddRow = function() {
+      const tb = document.getElementById('wd-tbody');
+      if (!tb) return;
+      const n = window._wdRowN++;
+      tb.insertAdjacentHTML('beforeend', `<tr id="wd-row-${n}">
+        <td style="padding:4px 6px 4px 0">
+          <select class="wd-item-sel" onchange="onWdSelChange(this)" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:6px 8px;font-size:13px;font-family:inherit">
+            ${_wdBuildInvOpts()}
+          </select>
+          <div class="wd-item-info" style="font-size:11px;color:var(--text3);margin-top:2px;min-height:14px"></div>
+        </td>
+        <td style="padding:4px 6px;width:90px">
+          <input type="number" class="wd-item-qty" min="1" value="1" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:6px 8px;font-size:13px;font-family:inherit"/>
+        </td>
+        <td style="padding:4px 0 4px 4px;width:32px;text-align:center">
+          <button type="button" onclick="wdRemoveRow(${n})" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:2px 4px;line-height:1">✕</button>
+        </td>
+      </tr>`);
+    };
+    window.wdRemoveRow = function(n) {
+      const r = document.getElementById('wd-row-'+n);
+      const tb = document.getElementById('wd-tbody');
+      if (r && tb && tb.querySelectorAll('tr').length > 1) r.remove();
+    };
+    window.onWdSelChange = function(sel) {
+      const opt = sel.options[sel.selectedIndex];
+      const info = sel.closest('tr').querySelector('.wd-item-info');
+      if (info && opt.value) {
+        info.textContent = `คงเหลือ: ${Number(opt.dataset.qty||0).toLocaleString('th-TH')} ${opt.dataset.unit||''}`;
+      } else if (info) { info.textContent = ''; }
+    };
+    window._wdRowN = 2; // row 1 already rendered
 
     extraFields = `
       <div class="fg">
-        <label>วัสดุที่ต้องการเบิก <span style="color:var(--red)">*</span></label>
-        <select id="rf-inv-item" onchange="onRfInvChange()">${invOpts}</select>
-        <div id="rf-inv-info" style="display:none;font-size:12px;color:var(--text2);margin-top:4px;padding:6px 10px;background:var(--g3);border-radius:6px"></div>
-      </div>
-      <div class="fg"><label>จำนวนที่ขอเบิก <span style="color:var(--red)">*</span></label>
-        <input type="number" id="rf-inv-qty" min="1" value="1" placeholder="ระบุจำนวน"/>
+        <label>รายการวัสดุที่ต้องการเบิก <span style="color:var(--red)">*</span></label>
+        <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:300px">
+          <thead><tr style="font-size:11px;color:var(--text3);font-weight:700">
+            <th style="text-align:left;padding:0 6px 6px 0">วัสดุ</th>
+            <th style="text-align:left;padding:0 6px 6px;width:90px">จำนวน</th>
+            <th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="wd-tbody">${_wdRow(1)}</tbody>
+        </table>
+        </div>
+        <button type="button" onclick="wdAddRow()" style="margin-top:8px;width:100%;padding:7px;border:1.5px dashed var(--border);border-radius:8px;background:transparent;color:var(--g);font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">＋ เพิ่มรายการ</button>
       </div>
       <div class="fg"><label>วัตถุประสงค์ / หมายเหตุ</label>
         <textarea id="rf-purpose" rows="2" placeholder="ระบุวัตถุประสงค์..."></textarea>
@@ -1289,35 +1387,51 @@ async function submitReq() {
   errEl.textContent = '';
   if (!type) { errEl.textContent = 'กรุณาเลือกประเภท'; return; }
 
-  // ── เบิกของ: collect inventory item ──
+  // ── เบิกของ: collect multi-item rows ──
   if (type === 'เบิกของ') {
-    const sel = document.getElementById('rf-inv-item');
-    const inventoryItemId = sel?.value;
-    const opt = sel?.options[sel?.selectedIndex];
-    const inventoryItemName = opt?.dataset.name || '';
-    const inventoryUnit = opt?.dataset.unit || '';
-    const qty = parseFloat(document.getElementById('rf-inv-qty')?.value||'1')||1;
-    const purpose = (document.getElementById('rf-purpose')?.value||'').trim();
-    if (!inventoryItemId) { errEl.textContent = 'กรุณาเลือกวัสดุ'; return; }
-    if (!qty || qty <= 0) { errEl.textContent = 'กรุณาระบุจำนวน'; return; }
-    btnLoading('rf-btn', '⏳ กำลังส่ง...');
-    const res = await apiPost('submitRequest', {
-      type,
-      amount: 0,
-      purpose: purpose || `เบิก ${inventoryItemName} × ${qty} ${inventoryUnit}`,
-      requester: document.getElementById('rf-requester')?.value || CU.name,
-      receiver:  document.getElementById('rf-receiver')?.value || '',
-      branch:    document.getElementById('rf-branch')?.value || CU.branch,
-      inventoryItemId, inventoryItemName, inventoryUnit, qty,
+    const wdRows = document.querySelectorAll('#wd-tbody tr');
+    const wdItems = [];
+    let wdOk = true;
+    wdRows.forEach(tr => {
+      const sel = tr.querySelector('.wd-item-sel');
+      const qtyInp = tr.querySelector('.wd-item-qty');
+      const itemId = sel?.value;
+      if (!itemId) return; // ข้ามแถวที่ยังไม่เลือก
+      const opt = sel.options[sel.selectedIndex];
+      const itemName = opt?.dataset.name || '';
+      const unit = opt?.dataset.unit || '';
+      const qty = parseFloat(qtyInp?.value||'1')||1;
+      if (qty <= 0) { errEl.textContent = 'กรุณาระบุจำนวนที่ถูกต้อง'; wdOk = false; return; }
+      wdItems.push({ inventoryItemId: itemId, inventoryItemName: itemName, inventoryUnit: unit, qty });
     });
+    if (!wdOk) return;
+    if (!wdItems.length) { errEl.textContent = 'กรุณาเลือกวัสดุอย่างน้อย 1 รายการ'; return; }
+    const purpose = (document.getElementById('rf-purpose')?.value||'').trim();
+    const requester = document.getElementById('rf-requester')?.value || CU.name;
+    const receiver  = document.getElementById('rf-receiver')?.value || '';
+    const branch    = document.getElementById('rf-branch')?.value || CU.branch;
+    btnLoading('rf-btn', `⏳ กำลังส่ง ${wdItems.length} รายการ...`);
+    const results = [];
+    for (const wd of wdItems) {
+      const r = await apiPost('submitRequest', {
+        type, amount: 0,
+        purpose: purpose || `เบิก ${wd.inventoryItemName} × ${wd.qty} ${wd.inventoryUnit}`,
+        requester, receiver, branch,
+        inventoryItemId: wd.inventoryItemId,
+        inventoryItemName: wd.inventoryItemName,
+        inventoryUnit: wd.inventoryUnit,
+        qty: wd.qty,
+      });
+      results.push(r);
+    }
     btnRestore('rf-btn');
-    if (res.ok) {
-      document.getElementById('rf-success').innerHTML = '<div class="success-msg">✅ ยื่นขอเบิกเรียบร้อยแล้ว!</div>';
-      document.getElementById('req-type').value = '';
-      document.getElementById('req-form-body').innerHTML = '';
-      _inventoryCache = [];
-      setTimeout(() => gotoPage('mylist'), 1200);
-    } else { errEl.textContent = res.error || 'เกิดข้อผิดพลาด'; }
+    const failed = results.filter(r => !r.ok);
+    if (failed.length) { errEl.textContent = 'บางรายการส่งไม่สำเร็จ: ' + (failed[0].error||'ผิดพลาด'); return; }
+    document.getElementById('rf-success').innerHTML = `<div class="success-msg">✅ ยื่นขอเบิก ${wdItems.length} รายการเรียบร้อยแล้ว!</div>`;
+    document.getElementById('req-type').value = '';
+    document.getElementById('req-form-body').innerHTML = '';
+    _inventoryCache = [];
+    setTimeout(() => gotoPage('mylist'), 1200);
     return;
   }
 
@@ -2032,7 +2146,7 @@ async function loadInventory() {
     <table class="data-table">
       <thead><tr>
         <th>ชื่อวัสดุ</th><th>หน่วย</th><th style="text-align:right">คงเหลือ</th>
-        <th style="text-align:right">ราคา/หน่วย</th><th>สาขา</th><th>ซื้อล่าสุด</th>
+        <th style="text-align:right">ราคา/หน่วย</th><th>สาขา</th><th>ร้านค้า</th><th>ซื้อล่าสุด</th>
       </tr></thead>
       <tbody>
         ${rows.map((it,i) => `<tr style="${i%2===0?'':'background:var(--g3)'}">
@@ -2041,6 +2155,7 @@ async function loadInventory() {
           <td style="text-align:right;font-weight:700;color:${Number(it.qty||0)<5?'var(--red)':'var(--text)'}">${Number(it.qty||0).toLocaleString('th-TH')}</td>
           <td style="text-align:right;color:var(--text2)">${it.pricePerUnit?'฿'+Number(it.pricePerUnit).toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
           <td style="color:var(--text2)">${esc(it.branch||'')}</td>
+          <td style="color:var(--text3);font-size:12px">${esc(it.vendor||'')}</td>
           <td style="color:var(--text3);font-size:11px">${esc(it.lastPurchaseDate||'')}</td>
         </tr>`).join('')}
       </tbody>
@@ -2048,40 +2163,85 @@ async function loadInventory() {
     </div>`;
 }
 
+function _invRowHtml(i) {
+  return `<tr id="inv-row-${i}">
+    <td style="padding:5px 6px"><input class="inv-r-name" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px" placeholder="เช่น กระดาษ A4"/></td>
+    <td style="padding:5px 6px"><input class="inv-r-unit" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px" placeholder="รีม"/></td>
+    <td style="padding:5px 6px"><input type="number" class="inv-r-qty" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;text-align:right" placeholder="0" min="0" value="0"/></td>
+    <td style="padding:5px 6px"><input type="number" class="inv-r-price" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;text-align:right" placeholder="0.00" min="0" step="0.01" value=""/></td>
+    <td style="padding:5px 4px;text-align:center"><button onclick="removeInvRow(${i})" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:16px;line-height:1" title="ลบ">×</button></td>
+  </tr>`;
+}
+
+let _invRowCount = 0;
+
+function addInvRow() {
+  const tbody = document.getElementById('inv-rows');
+  if (!tbody) return;
+  const i = _invRowCount++;
+  tbody.insertAdjacentHTML('beforeend', _invRowHtml(i));
+}
+
+function removeInvRow(i) {
+  const row = document.getElementById('inv-row-'+i);
+  if (row) row.remove();
+}
+
 function openAddInventoryItem() {
-  document.getElementById('inv-name').value = '';
-  document.getElementById('inv-unit').value = '';
-  document.getElementById('inv-qty').value = '';
-  document.getElementById('inv-price').value = '';
+  _invRowCount = 0;
+  document.getElementById('inv-rows').innerHTML = '';
   document.getElementById('inv-err').textContent = '';
+  const vendorEl = document.getElementById('inv-vendor');
+  if (vendorEl) vendorEl.value = '';
   if (CU?.branch) document.getElementById('inv-branch').value = CU.branch;
+  addInvRow(); // เริ่มด้วย 1 แถว
   document.getElementById('inv-modal').style.display = 'flex';
 }
+
 function closeInvModal() { document.getElementById('inv-modal').style.display = 'none'; }
 
 async function saveInventoryItem() {
-  const errEl = document.getElementById('inv-err');
-  const name  = (document.getElementById('inv-name')?.value||'').trim();
-  const unit  = (document.getElementById('inv-unit')?.value||'').trim();
-  const qty   = parseFloat(document.getElementById('inv-qty')?.value||'0');
-  const price = parseFloat(document.getElementById('inv-price')?.value||'0');
-  const branch= document.getElementById('inv-branch')?.value||'สาขา 1';
+  const errEl  = document.getElementById('inv-err');
+  const branch = document.getElementById('inv-branch')?.value || 'สาขา 1';
+  const vendor = (document.getElementById('inv-vendor')?.value||'').trim();
   errEl.textContent = '';
-  if (!name) { errEl.textContent = 'กรุณากรอกชื่อวัสดุ'; return; }
-  btnLoading('inv-save-btn', '⏳ กำลังบันทึก...');
-  const r = await apiPost('addInventoryItem', { name, unit, qty, pricePerUnit:price, branch });
+
+  // รวบรวมทุกแถว
+  const rows = document.querySelectorAll('#inv-rows tr');
+  const items = [];
+  for (const row of rows) {
+    const name  = (row.querySelector('.inv-r-name')?.value||'').trim();
+    const unit  = (row.querySelector('.inv-r-unit')?.value||'').trim();
+    const qty   = parseFloat(row.querySelector('.inv-r-qty')?.value||'0') || 0;
+    const price = parseFloat(row.querySelector('.inv-r-price')?.value||'0') || 0;
+    if (!name) continue; // ข้ามแถวว่าง
+    items.push({ name, unit, qty, pricePerUnit:price, branch, vendor });
+  }
+
+  if (!items.length) { errEl.textContent = 'กรุณากรอกชื่อวัสดุอย่างน้อย 1 รายการ'; return; }
+
+  btnLoading('inv-save-btn', `⏳ กำลังบันทึก ${items.length} รายการ...`);
+  let saved = 0, failed = [];
+  for (const it of items) {
+    const r = await apiPost('addInventoryItem', it);
+    if (r.ok) saved++;
+    else failed.push(it.name + ': ' + (r.error||'ผิดพลาด'));
+  }
   btnRestore('inv-save-btn');
-  if (r.ok) {
+
+  if (failed.length) {
+    errEl.textContent = 'บันทึกไม่สำเร็จ: ' + failed.join(', ');
+  } else {
     closeInvModal();
     _inventoryCache = [];
     loadInventory();
-  } else { errEl.textContent = r.error || 'เกิดข้อผิดพลาด'; }
+  }
 }
 
 // ── เพิ่มสต็อกจากคำขอที่อนุมัติ ──
 async function openAddStockFromRequest() {
   const ovEl = document.getElementById('ov-add-from-req');
-  const listEl = document.getElementById('afr-list');
+  const listEl = document.getElementById('req-list-for-stock');
   if (!ovEl || !listEl) return;
   listEl.innerHTML = '<p style="text-align:center;padding:16px;color:var(--text2)">⏳ กำลังโหลด...</p>';
   ovEl.classList.add('open');
