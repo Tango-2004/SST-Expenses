@@ -1012,14 +1012,18 @@ function reqCardHtml(r, showActions, showPrint=false) {
   const adminBtns = showActions && CU.role === 'admin' && st === 'pending' ? `
     <button class="btn btn-success btn-sm" onclick="openApprove('${r.id}','${(r.requester||'').replace(/'/g,"\\'")}','${amt}')">✅ อนุมัติ</button>
     <button class="btn btn-danger btn-sm" onclick="openReject('${r.id}','${(r.requester||'').replace(/'/g,"\\'")}')">❌ ปฏิเสธ</button>` : '';
+  // แสดงปุ่มพิมพ์สำหรับ เบิกเงิน, เบิกซื้อของ (ทุกกรณี รวมถึงไม่มีใบเสร็จ)
   const printTypes = ['เบิกเงิน','เบิกซื้อของ'];
   if (!window._reqCache) window._reqCache = {};
-  if (showPrint && printTypes.includes(r.type)) window._reqCache[r.id] = r;
-  const printBtn = showPrint && printTypes.includes(r.type) ? `<button class="btn btn-warn btn-sm" onclick="printRequestById('${r.id}')">🖨️ พิมพ์ใบเบิก</button>` : '';
+  const canPrint = showPrint && (printTypes.includes(r.type) || (r.type === 'อื่นๆ' && r.amount));
+  if (canPrint) window._reqCache[r.id] = r;
+  const printBtn = canPrint ? `<button class="btn btn-warn btn-sm" onclick="printRequestById('${r.id}')">🖨️ พิมพ์ใบเบิก</button>` : '';
   // Receipt badge / items info
   let receiptInfo = '';
   if (r.type === 'เบิกของ' && r.inventoryItemName) {
-    receiptInfo = `<div style="font-size:12px;color:var(--text2);margin-bottom:4px;padding:6px 8px;background:var(--g3);border-radius:6px">📦 <b>${esc(r.inventoryItemName)}</b> × <b>${r.qty||1}</b> ${esc(r.inventoryUnit||'')}</div>`;
+    const qtyNum = parseFloat(r.qty||r.inventoryQty||1);
+    const qtyStr = isNaN(qtyNum) ? '1' : qtyNum.toLocaleString('th-TH');
+    receiptInfo = `<div style="font-size:12px;color:var(--text2);margin-bottom:4px;padding:6px 8px;background:var(--g3);border-radius:6px">📦 <b>${esc(r.inventoryItemName)}</b> × <b>${qtyStr}</b> ${esc(r.inventoryUnit||'')}</div>`;
   } else if (r.type === 'เบิกซื้อของ' && r.items) {
     // แสดง items list สำหรับ เบิกซื้อของ
     try {
@@ -1043,7 +1047,7 @@ function reqCardHtml(r, showActions, showPrint=false) {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
           <div>
             <div class="req-type">${r.type || '-'}</div>
-            <div class="req-meta">${r.id} · ${r.date || ''} · ${r.branch || ''}</div>
+            <div class="req-meta">${r.id} · ${fmtReqDate(r.date)} · ${fmtBranch(r.branch)}</div>
           </div>
           <span class="badge ${badgeClass}" style="flex-shrink:0">${stTh}</span>
         </div>
@@ -1061,6 +1065,24 @@ function reqCardHtml(r, showActions, showPrint=false) {
 function esc(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+// แปลงวันที่ ISO / string ให้เป็นรูปแบบไทยอ่านง่าย
+function fmtReqDate(d) {
+  if (!d) return '-';
+  try {
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return String(d).substring(0,10);
+    return dt.toLocaleDateString('th-TH', { year:'numeric', month:'short', day:'numeric' });
+  } catch(_) { return String(d).substring(0,10); }
+}
+// แปลง branch ตัวเลข (1,2,3) → ชื่อสาขา
+function fmtBranch(b) {
+  if (!b && b !== 0) return '-';
+  const s = String(b).trim();
+  if (s === '1') return 'สาขา 1';
+  if (s === '2') return 'สาขา 2';
+  if (s === '3') return 'สาขา 3';
+  return s || '-';
 }
 
 function buildRequestDocHtml(r) {
@@ -1115,7 +1137,7 @@ function buildRequestDocHtml(r) {
     <table style="width:100%;border-collapse:collapse;margin-bottom:14px">
       <tr>
         <td style="width:50%;padding:6px 0;vertical-align:top"><div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.04em">ผู้ยื่นเบิก</div><div style="font-size:15px;font-weight:700;margin-top:2px">${esc(r.requester||'-')}</div></td>
-        <td style="width:50%;padding:6px 0;vertical-align:top"><div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.04em">ผู้รับเงิน</div><div style="font-size:15px;font-weight:700;margin-top:2px">${esc(r.receiver||r.requester||'-')}</div></td>
+        <td style="width:50%;padding:6px 0;vertical-align:top"><div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.04em">${r.type==='เบิกซื้อของ'?'ผู้รับของ':r.type==='อื่นๆ'?'ผู้รับ':'ผู้รับเงิน'}</div><div style="font-size:15px;font-weight:700;margin-top:2px">${esc(r.receiver||r.requester||'-')}</div></td>
       </tr>
       <tr>
         <td style="padding:6px 0;vertical-align:top"><div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.04em">สาขา</div><div style="font-size:15px;font-weight:700;margin-top:2px">${esc(r.branch||'-')}</div></td>
@@ -1263,11 +1285,19 @@ async function buildReqForm() {
   const el = document.getElementById('req-form-body');
   if (!type) { el.innerHTML = ''; return; }
 
+  // label ผู้รับเปลี่ยนตามประเภท; เบิกของไม่แสดงช่องผู้รับ
+  const receiverLabel = type === 'เบิกเงิน' ? 'ผู้รับเงิน (ถ้าต่างจากผู้ขอ)'
+                      : type === 'เบิกซื้อของ' ? 'ผู้รับของ (ถ้าต่างจากผู้ขอ)'
+                      : type === 'อื่นๆ' ? 'ผู้รับ (ถ้าต่างจากผู้ขอ)'
+                      : '';
+  const receiverField = receiverLabel
+    ? `<div class="fg"><label>${receiverLabel}</label><input id="rf-receiver" placeholder="ชื่อ"/></div>`
+    : `<div class="fg" style="visibility:hidden"><label>ผู้รับ</label><input id="rf-receiver" placeholder=""/></div>`;
   const commonFields = `
     <hr class="div"/>
     <div class="grid2">
       <div class="fg"><label>ผู้ขอเบิก</label><input id="rf-requester" value="${CU.name}"/></div>
-      <div class="fg"><label>ผู้รับเงิน (ถ้าต่างจากผู้ขอ)</label><input id="rf-receiver" placeholder="ชื่อ"/></div>
+      ${receiverField}
     </div>
     <div class="fg"><label>สาขา</label>
       <select id="rf-branch">
