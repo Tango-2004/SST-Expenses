@@ -1008,7 +1008,15 @@ function reqCardHtml(r, showActions, showPrint=false) {
   const st = r.status || 'pending';
   const badgeClass = { pending:'badge-pending', approved:'badge-approved', rejected:'badge-rejected' }[st] || 'badge-pending';
   const stTh = { pending:'รออนุมัติ', approved:'อนุมัติแล้ว', rejected:'ไม่อนุมัติ' }[st] || st;
-  const amt = r.amount ? '฿' + Number(r.amount).toLocaleString('th-TH',{minimumFractionDigits:2}) : '-';
+  // คำนวณยอดรวมจาก items ถ้า amount เป็น 0 หรือไม่มีค่า (กรณี เบิกซื้อของ)
+  let amtNum = parseFloat(r.amount) || 0;
+  if (!amtNum && r.type === 'เบิกซื้อของ' && r.items) {
+    try {
+      const its = JSON.parse(r.items || '[]');
+      amtNum = its.reduce((s, i) => s + ((parseFloat(i.qty)||1) * (parseFloat(i.price)||0)), 0);
+    } catch(_) {}
+  }
+  const amt = amtNum ? '฿' + amtNum.toLocaleString('th-TH',{minimumFractionDigits:2}) : '-';
   const adminBtns = showActions && CU.role === 'admin' && st === 'pending' ? `
     <button class="btn btn-success btn-sm" onclick="openApprove('${r.id}','${(r.requester||'').replace(/'/g,"\\'")}','${amt}')">✅ อนุมัติ</button>
     <button class="btn btn-danger btn-sm" onclick="openReject('${r.id}','${(r.requester||'').replace(/'/g,"\\'")}')">❌ ปฏิเสธ</button>` : '';
@@ -1052,7 +1060,18 @@ function reqCardHtml(r, showActions, showPrint=false) {
           <span class="badge ${badgeClass}" style="flex-shrink:0">${stTh}</span>
         </div>
         <div class="req-amount">${amt}</div>
-        <div class="req-purpose">${r.purpose || ''}</div>
+        <div class="req-purpose">${(() => {
+          // ถ้าไม่มี purpose ให้ดึงชื่อสินค้าจาก items มาสรุปแทน
+          if (r.purpose && r.purpose.trim() && r.purpose.trim() !== '-') return esc(r.purpose);
+          if (r.type === 'เบิกซื้อของ' && r.items) {
+            try {
+              const its = JSON.parse(r.items || '[]');
+              if (its.length) return esc(its.map(i => `${i.name||''}${i.qty&&i.qty!=1?' '+i.qty+(i.unit?' '+i.unit:''):''}`).join(', '));
+            } catch(_) {}
+          }
+          if (r.type === 'เบิกของ' && r.inventoryItemName) return esc(r.inventoryItemName);
+          return '';
+        })()}</div>
         ${receiptInfo}
         <div style="font-size:12px;color:var(--text3);font-weight:500">ผู้ขอ: <b style="color:var(--text2)">${r.requester || '-'}</b>${r.receiver ? ' → ผู้รับ: <b style="color:var(--text2)">'+r.receiver+'</b>' : ''}${r.approvedBy ? ' · อนุมัติโดย: <b style="color:var(--text2)">'+r.approvedBy+'</b>' : ''}</div>
         ${(adminBtns||printBtn) ? `<div class="req-actions">${adminBtns}${printBtn}</div>` : ''}
