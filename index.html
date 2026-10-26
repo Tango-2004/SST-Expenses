@@ -2202,6 +2202,7 @@ async function loadExpenseRecent() {
   el.innerHTML = '<p style="color:var(--text2);text-align:center;padding:20px">⏳ กำลังโหลด...</p>';
   try {
     const r = await apiPost('getExpenses', { limit: 20 });
+    console.log('getExpenses raw:', JSON.stringify(r));
     if (!r.ok) { el.innerHTML = `<p style="color:var(--red)">${r.error||'โหลดไม่สำเร็จ'}</p>`; return; }
     const rows = r.data || [];
     if (!rows.length) { el.innerHTML = '<p style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีรายการ</p>'; return; }
