@@ -1,5 +1,5 @@
 // api.js — SST v5 (Batch + Cache-first + Queue + Warmup + POST-retry)
-const API_URL = 'https://script.google.com/macros/s/AKfycbzJPVJXgGo0sSQTOquAfbtEmR9Cb_WfWf1uoiCeU_GKA_TFIxPsjwJx6qb-OzkJ1nfEJA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1gAZBk28EcqTXUiModCTEsHD0tNPIZ65bdrpnG9OO9RltP9xp_-f6xZ6gB7Q5Gdppmw/exec';
 const RETRY = 3, TIMEOUT_MS = 28000;
 const POST_RETRY = 2, POST_TIMEOUT_MS = 30000;
 
