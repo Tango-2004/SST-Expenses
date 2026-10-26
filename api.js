@@ -1,5 +1,5 @@
 // api.js — SST v5 (Batch + Cache-first + Queue + Warmup + POST-retry)
-const API_URL = 'https://script.google.com/macros/s/AKfycbx1gAZBk28EcqTXUiModCTEsHD0tNPIZ65bdrpnG9OO9RltP9xp_-f6xZ6gB7Q5Gdppmw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxAEgdLBW7uqlmr5mdle9y6_NBrqMEqiMgqunOztvMO53yl-YMFOPGp8OqlDaEYYybm9g/exec';
 const RETRY = 3, TIMEOUT_MS = 28000;
 const POST_RETRY = 2, POST_TIMEOUT_MS = 30000;
 
@@ -200,3 +200,4 @@ function fmtMoney(n) { return Number(n||0).toLocaleString('th-TH', {minimumFract
 // Warmup ping — keep Apps Script warm ทุก 4 นาที
 setTimeout(async () => { try { await _fetch(API_URL + '?action=ping'); } catch(_){} }, 800);
 setInterval(async () => { try { await _fetch(API_URL + '?action=ping'); } catch(_){} }, 4 * 60 * 1000);
+
