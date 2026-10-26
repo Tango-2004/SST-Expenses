@@ -532,6 +532,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
       <div class="page-hd-row">
         <div class="page-hd">📊 รายงานค่าใช้จ่าย</div>
         <button class="btn btn-ghost btn-sm" onclick="delete _loaded['report'];loadReport()">🔄 รีเฟรช</button>
+        <button class="btn btn-ghost btn-sm" style="background:#fff3cd;color:#856404;border:1px solid #ffc107" onclick="debugExpensesSheet()">🔧 Debug Sheet</button>
       </div>
       <div class="card" style="padding:14px 20px;margin-bottom:16px">
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
@@ -2284,6 +2285,19 @@ async function submitExpense() {
 }
 
 // ════ REPORT ════
+// DEBUG function — ลบออกหลัง debug เสร็จ
+async function debugExpensesSheet() {
+  try {
+    const r = await apiPost('debugExpenses', {});
+    if (!r.ok) { alert('Error: ' + (r.error||'unknown')); return; }
+    let msg = `Sheet exists: ${r.sheetExists}\nRows (incl. header): ${r.rowCount}\nHeaders: ${(r.headers||[]).join(' | ')}\n\nLast rows:\n`;
+    (r.lastRows||[]).forEach(row => {
+      msg += `id=${row.id} | date=${row.date} | cat=${row.category} | amount=${row.amount} | branch=${row.branch} | payer=${row.payer}\n`;
+    });
+    alert(msg);
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
 async function loadReport() {
   const el = document.getElementById('rp-table');
   const sumEl = document.getElementById('rp-summary');
