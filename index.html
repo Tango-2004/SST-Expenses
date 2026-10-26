@@ -2210,7 +2210,7 @@ async function loadExpenseRecent() {
           <div style="font-weight:700;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.description||'')}</div>
           <div style="font-size:11px;color:var(--text2);margin-top:2px">
             <span style="background:var(--g3);color:var(--g);border-radius:4px;padding:1px 6px;font-weight:600">${esc(e.category||'')}</span>
-            &nbsp;${esc(e.date||'')} · ${esc(e.branch||'')} · ${esc(e.payer||'')}
+            &nbsp;${fmtReqDate(e.date)} · ${esc(e.branch||'')} · ${esc(e.payer||'')}
           </div>
           ${e.billNumber?`<div style="font-size:11px;color:var(--text3);margin-top:2px">เลขที่บิล: ${esc(e.billNumber)}${e.billDate?' · วันที่ใบเสร็จ: '+esc(e.billDate):''}</div>`:''}
           ${e.noReceipt==='true'?`<div style="font-size:11px;color:var(--warn);font-weight:600;margin-top:2px">⚠️ ไม่มีใบเสร็จ${e.noReceiptReason?' — '+esc(e.noReceiptReason):''}</div>`:''}
@@ -2344,7 +2344,7 @@ async function loadReport() {
       </tr></thead>
       <tbody>${expenses.map((r,i)=>`
         <tr style="border-bottom:1px solid var(--border);${i%2?'background:var(--g3)':''}">
-          <td style="padding:8px 10px;white-space:nowrap">${esc(r.date||'')}</td>
+          <td style="padding:8px 10px;white-space:nowrap">${fmtReqDate(r.date)}</td>
           <td style="padding:8px 10px"><span style="background:var(--g3);color:var(--g);border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700">${esc(r.category||'')}</span></td>
           <td style="padding:8px 10px">${esc((r.description||'').substring(0,60))}${(r.description||'').length>60?'…':''}</td>
           <td style="padding:8px 10px;color:var(--text2)">${esc(r.branch||'')}</td>
