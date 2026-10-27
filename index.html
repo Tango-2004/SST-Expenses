@@ -1272,7 +1272,7 @@ function reqCardHtml(r, showActions, showPrint=false) {
         <div class="req-amount">${amt}</div>
         <div class="req-purpose">${(() => {
           // รองรับทั้ง field ชื่อ purpose, description, note
-          const purp = r.purpose || r.description || r.note || '';
+          const purp = String(r.purpose || r.description || r.note || '');
           // ถ้าไม่มี purpose ให้ดึงชื่อสินค้าจาก items มาสรุปแทน
           if (purp && purp.trim() && purp.trim() !== '-') return esc(purp);
           if (r.type === 'เบิกซื้อของ' && r.items) {
