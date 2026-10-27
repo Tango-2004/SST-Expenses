@@ -1361,7 +1361,7 @@ function buildRequestDocHtml(r) {
       <div style="text-align:right">
         <div style="font-size:19px;font-weight:900;border:2px solid #2c5e1a;padding:6px 18px;border-radius:6px;color:#2c5e1a">${docLabel}</div>
         <div style="font-size:12px;color:#555;margin-top:6px">เลขที่: <b>${r.id||'-'}</b></div>
-        <div style="font-size:12px;color:#555">วันที่: <b>${r.date||'-'}</b></div>
+        <div style="font-size:12px;color:#555">วันที่: <b>${fmtReqDate(r.date)||'-'}</b></div>
         ${r.approvedBy ? `<div style="font-size:12px;color:#555">อนุมัติโดย: <b>${esc(r.approvedBy)}</b></div>` : ''}
       </div>
     </div>
