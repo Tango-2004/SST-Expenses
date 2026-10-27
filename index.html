@@ -1069,7 +1069,7 @@ async function loadNotifications() {
       <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:${n.read?'transparent':'var(--g3)'};cursor:pointer"
            onclick="markRead('${n.id}',this)">
         <div style="font-size:13px;font-weight:${n.read?'500':'700'};color:var(--text);line-height:1.4">${esc(n.message||'')}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">${esc(n.createdAt||n.date||'')}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">${fmtReqDate(n.createdAt||n.date)}</div>
       </div>`).join('');
   } catch(e) { console.warn('notif load error', e); }
 }
@@ -1431,8 +1431,8 @@ function showPrintPreviewModal(r) {
       <!-- toolbar -->
       <div style="background:#2c5e1a;color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
         <div style="font-size:15px;font-weight:700">🖨️ ตัวอย่างก่อนพิมพ์ — ${r.type||''} ${r.id||''}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button id="pp-save-btn" onclick="savePrintToDrive('${r.id||''}')" style="background:#fff;color:#2c5e1a;border:none;border-radius:6px;padding:7px 14px;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit">💾 บันทึกขึ้น Drive</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          ${r.driveUrl ? `<a href="${r.driveUrl}" target="_blank" style="background:#34a853;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px">📄 ดูใน Drive</a>` : `<span id="pp-drive-status" style="font-size:12px;color:rgba(255,255,255,.7)">⏳ กำลังบันทึก PDF ขึ้น Drive...</span>`}
           <button onclick="doPrint()" style="background:#f4b942;color:#000;border:none;border-radius:6px;padding:7px 14px;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit">🖨️ พิมพ์</button>
           <button onclick="document.getElementById('print-preview-modal').remove()" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit">✕ ปิด</button>
         </div>
@@ -2116,7 +2116,9 @@ async function openVehicleDetail(idx) {
         <div style="font-size:12px;color:var(--text3);margin-top:4px">${esc(v.type||'-')} · ${esc(v.branch||'-')}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        ${CU.role === 'admin' ? `<button onclick="deleteVehicle('${esc(v.id||'')}','${esc(v.plate||'')}')" style="background:#fff0f0;border:1px solid var(--red);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--red);font-weight:700">🗑️ ลบรถ</button>` : ''}
+        ${CU.role === 'admin' ? `
+          <button onclick="openEditVehicle(${idx})" style="background:#f0f7ff;border:1px solid var(--blue,#3b82f6);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--blue,#3b82f6);font-weight:700">✏️ แก้ไข</button>
+          <button onclick="deleteVehicle('${esc(v.id||'')}','${esc(v.plate||'')}')" style="background:#fff0f0;border:1px solid var(--red);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--red);font-weight:700">🗑️ ลบรถ</button>` : ''}
         <button onclick="closeVehicleDetail()" style="background:var(--g3);border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2)">✕</button>
       </div>
     </div>
@@ -2166,7 +2168,7 @@ async function openVehicleDetail(idx) {
         ${fuel.slice(0,10).map(e=>`
           <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
             <div>
-              <div style="font-size:12px;font-weight:600;color:var(--text)">${esc(e.date||'')}</div>
+              <div style="font-size:12px;font-weight:600;color:var(--text)">${fmtReqDate(e.date)}</div>
               <div style="font-size:11px;color:var(--text3)">${esc(e.description||e.note||'')} · ${esc(e.payer||e.recordedBy||'')}</div>
             </div>
             <span style="font-size:13px;font-weight:800;color:var(--red)">฿${Number(e.amount||0).toLocaleString('th-TH',{minimumFractionDigits:2})}</span>
@@ -2177,6 +2179,103 @@ async function openVehicleDetail(idx) {
 
 function closeVehicleDetail() {
   document.getElementById('veh-detail-overlay')?.classList.remove('open');
+}
+
+function openEditVehicle(idx) {
+  const v = _vehiclesCache[idx];
+  if (!v) return;
+  // Build edit modal inside veh-detail-modal
+  const modal = document.getElementById('veh-detail-modal');
+  if (!modal) return;
+
+  // Format date for input[type=date] (YYYY-MM-DD)
+  function toInputDate(d) {
+    if (!d) return '';
+    try {
+      const dt = new Date(d);
+      if (isNaN(dt)) return '';
+      return dt.toISOString().split('T')[0];
+    } catch(e) { return ''; }
+  }
+
+  modal.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px 12px;border-bottom:1px solid var(--border)">
+      <div style="font-size:16px;font-weight:800;color:var(--text)">✏️ แก้ไขข้อมูลรถ</div>
+      <button onclick="openVehicleDetail(${idx})" style="background:var(--g3);border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2)">✕</button>
+    </div>
+    <div style="padding:16px 20px;overflow-y:auto;flex:1">
+      <div style="display:grid;gap:14px">
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px">ทะเบียน</label>
+          <input id="ev-plate" value="${esc(v.plate||'')}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px">ประเภทรถ</label>
+          <select id="ev-type" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
+            ${['รถยนต์','รถกระบะ','รถบรรทุก','รถตู้','รถจักรยานยนต์','อื่นๆ'].map(t=>`<option value="${t}" ${v.type===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px">สาขา</label>
+          <select id="ev-branch" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
+            ${(BRANCHES||['กรุงเทพ','เชียงใหม่','ขอนแก่น','สงขลา']).map(b=>`<option value="${b}" ${v.branch===b?'selected':''}>${b}</option>`).join('')}
+          </select>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:14px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">วันหมดอายุ</div>
+          <div style="display:grid;gap:10px">
+            <div>
+              <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">พ.ร.บ.</label>
+              <input id="ev-prbDate" type="date" value="${toInputDate(v.prbDate)}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">ประกันภัย</label>
+              <input id="ev-insurDate" type="date" value="${toInputDate(v.insurDate)}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">ภาษีรถยนต์</label>
+              <input id="ev-taxDate" type="date" value="${toInputDate(v.taxDate)}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="ev-msg" style="margin-top:12px;font-size:13px;text-align:center"></div>
+    </div>
+    <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px">
+      <button onclick="openVehicleDetail(${idx})" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:var(--g4);color:var(--text2);font-size:14px;cursor:pointer;font-weight:600">ยกเลิก</button>
+      <button onclick="doUpdateVehicle('${esc(v.id||'')}',${idx})" style="flex:2;padding:12px;border:none;border-radius:10px;background:var(--blue,#3b82f6);color:#fff;font-size:14px;cursor:pointer;font-weight:700">💾 บันทึก</button>
+    </div>`;
+}
+
+async function doUpdateVehicle(vehicleId, idx) {
+  const plate    = document.getElementById('ev-plate')?.value.trim();
+  const type     = document.getElementById('ev-type')?.value;
+  const branch   = document.getElementById('ev-branch')?.value;
+  const prbDate  = document.getElementById('ev-prbDate')?.value;
+  const insurDate= document.getElementById('ev-insurDate')?.value;
+  const taxDate  = document.getElementById('ev-taxDate')?.value;
+  const msg      = document.getElementById('ev-msg');
+
+  if (!plate) { if(msg) msg.innerHTML='<span style="color:var(--red)">กรุณากรอกทะเบียนรถ</span>'; return; }
+  if(msg) msg.innerHTML = '<span style="color:var(--text2)">⏳ กำลังบันทึก...</span>';
+
+  try {
+    const r = await apiPost('updateVehicle', { id: vehicleId, plate, type, branch, prbDate, insurDate, taxDate });
+    if (r.ok) {
+      // Update local cache
+      if (_vehiclesCache[idx]) {
+        _vehiclesCache[idx] = { ..._vehiclesCache[idx], plate, type, branch, prbDate, insurDate, taxDate };
+      }
+      // Reload vehicles list
+      await loadVehicles();
+      // Re-open detail with updated data
+      openVehicleDetail(idx);
+    } else {
+      if(msg) msg.innerHTML = `<span style="color:var(--red)">เกิดข้อผิดพลาด: ${esc(r.error||'ไม่ทราบสาเหตุ')}</span>`;
+    }
+  } catch(e) {
+    if(msg) msg.innerHTML = `<span style="color:var(--red)">เกิดข้อผิดพลาด: ${esc(String(e.message||e))}</span>`;
+  }
 }
 
 async function deleteVehicle(vehicleId, plate) {
@@ -2764,7 +2863,7 @@ async function openAddStockFromRequest() {
             + '</div>';
         }
       } catch(_) {}
-      const dateStr = req.date ? new Date(req.date).toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'}) : '';
+      const dateStr = fmtReqDate(req.date);
       const amt = req.amount ? '฿'+Number(req.amount).toLocaleString('th-TH',{minimumFractionDigits:2}) : '';
       return `
       <div style="padding:12px 14px;border-radius:8px;margin-bottom:8px;background:var(--surface);border:1.5px solid var(--border)">
