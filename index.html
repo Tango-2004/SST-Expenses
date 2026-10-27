@@ -1100,8 +1100,8 @@ async function loadDashboard() {
   if (expSumEl) expSumEl.innerHTML = '';
   pbShow();
   const [res, alertsRes] = await Promise.all([
-    apiGet('getRequests', {}, {bust:true}),
-    apiGet('getAlerts',   {}, {bust:true}),
+    apiGet('getRequests', {}, {bust:true, ttl:90}),
+    apiGet('getAlerts',   {}, {bust:true, ttl:120}),
   ]);
   pbDone();
   if (!res.ok) { document.getElementById('dash-stats').innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
@@ -1183,7 +1183,7 @@ async function loadMylist() {
   } else {
     el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
     pbShow();
-    res = await apiGet('getRequests', {}, {bust:true});
+    res = await apiGet('getRequests', {}, {ttl:90});
     pbDone();
     if (res.ok) { _requestsCache = res; _requestsCacheTs = now; }
   }
@@ -1200,7 +1200,7 @@ async function loadApprove() {
   const el = document.getElementById('approve-content');
   el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
   pbShow();
-  const res = await apiGet('getRequests', {status:'pending'}, {bust:true});
+  const res = await apiGet('getRequests', {status:'pending'}, {ttl:60});
   pbDone();
   if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
   const data = (res.data || []).sort((a,b) => (b.id||'').localeCompare(a.id||''));
@@ -1220,7 +1220,7 @@ function reqCardHtml(r, showActions, showPrint=false) {
       amtNum = its.reduce((s, i) => s + ((parseFloat(i.qty)||1) * (parseFloat(i.price)||0)), 0);
     } catch(_) {}
   }
-  const amt = amtNum ? '฿' + amtNum.toLocaleString('th-TH',{minimumFractionDigits:2}) : '-';
+  const amt = amtNum ? '฿' + amtNum.toLocaleString('th-TH',{minimumFractionDigits:2}) : (r.type === 'เบิกของ' ? '' : '-');
   const adminBtns = showActions && CU.role === 'admin' && st === 'pending' ? `
     <button class="btn btn-success btn-sm" onclick="openApprove('${r.id}','${(r.requester||'').replace(/'/g,"\\'")}','${amt}')">✅ อนุมัติ</button>
     <button class="btn btn-danger btn-sm" onclick="openReject('${r.id}','${(r.requester||'').replace(/'/g,"\\'")}')">❌ ปฏิเสธ</button>` : '';
@@ -1265,8 +1265,10 @@ function reqCardHtml(r, showActions, showPrint=false) {
         </div>
         <div class="req-amount">${amt}</div>
         <div class="req-purpose">${(() => {
+          // รองรับทั้ง field ชื่อ purpose, description, note
+          const purp = r.purpose || r.description || r.note || '';
           // ถ้าไม่มี purpose ให้ดึงชื่อสินค้าจาก items มาสรุปแทน
-          if (r.purpose && r.purpose.trim() && r.purpose.trim() !== '-') return esc(r.purpose);
+          if (purp && purp.trim() && purp.trim() !== '-') return esc(purp);
           if (r.type === 'เบิกซื้อของ' && r.items) {
             try {
               const its = JSON.parse(r.items || '[]');
@@ -2406,7 +2408,12 @@ async function loadExpenseRecent() {
   try {
     const r = await apiPost('getExpenses', { limit: 20 });
     if (!r.ok) { el.innerHTML = `<p style="color:var(--red)">❌ Error: ${r.error||'โหลดไม่สำเร็จ'}</p>`; return; }
-    const rows = (r.data || []).filter(e => e.id && (e.amount > 0 || e.description || e.category));
+    const rows = (r.data || []).filter(e => {
+      const hasAmount = e.amount && Number(e.amount) > 0;
+      const hasDesc = e.description && e.description !== '---' && e.description.trim() !== '';
+      const hasCat = e.category && e.category !== '---' && e.category.trim() !== '';
+      return hasAmount || hasDesc || hasCat;
+    });
     if (!rows.length) {
       // แสดง debug: ลองดึงข้อมูลแบบ admin (ไม่ filter branch)
       const rd = await apiPost('debugExpenses', {});
@@ -2532,7 +2539,12 @@ async function loadReport() {
       category: document.getElementById('rp-cat')?.value
     });
     pbDone();
-    const expenses = r.ok ? (r.data||[]).filter(e => e.id && (e.amount > 0 || e.description || e.category)) : [];
+    const expenses = r.ok ? (r.data||[]).filter(e => {
+      const hasAmount = e.amount && Number(e.amount) > 0;
+      const hasDesc = e.description && e.description !== '---' && e.description.trim() !== '';
+      const hasCat = e.category && e.category !== '---' && e.category.trim() !== '';
+      return hasAmount || hasDesc || hasCat;
+    }) : [];
     const total = expenses.reduce((s,r)=>s+(+r.amount||0),0);
     const byCat = {};
     expenses.forEach(r => { const c = r.category||'อื่นๆ'; byCat[c]=(byCat[c]||0)+(+r.amount||0); });
