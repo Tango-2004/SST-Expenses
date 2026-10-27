@@ -1183,11 +1183,17 @@ async function loadMylist() {
   } else {
     el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
     pbShow();
-    res = await apiGet('getRequests', {}, {ttl:90});
+    try {
+      res = await apiGet('getRequests', {}, {bust:true, ttl:90});
+    } catch(e) {
+      pbDone();
+      el.innerHTML = `<p style="color:var(--red)">❌ โหลดไม่สำเร็จ: ${e.message}</p>`;
+      return;
+    }
     pbDone();
     if (res.ok) { _requestsCache = res; _requestsCacheTs = now; }
   }
-  if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
+  if (!res.ok) { el.innerHTML = `<p style="color:var(--red)">❌ ${res.error||'โหลดไม่สำเร็จ'}</p>`; return; }
   let data = CU.role === 'admin' ? (res.data || []) : (res.data || []).filter(r => r.branch === CU.branch);
   if (statusFilter) data = data.filter(r => r.status === statusFilter);
   data.sort((a,b) => (b.id||'').localeCompare(a.id||''));
