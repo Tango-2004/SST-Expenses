@@ -2406,7 +2406,7 @@ async function loadExpenseRecent() {
   try {
     const r = await apiPost('getExpenses', { limit: 20 });
     if (!r.ok) { el.innerHTML = `<p style="color:var(--red)">❌ Error: ${r.error||'โหลดไม่สำเร็จ'}</p>`; return; }
-    const rows = r.data || [];
+    const rows = (r.data || []).filter(e => e.id && (e.amount > 0 || e.description || e.category));
     if (!rows.length) {
       // แสดง debug: ลองดึงข้อมูลแบบ admin (ไม่ filter branch)
       const rd = await apiPost('debugExpenses', {});
@@ -2532,7 +2532,7 @@ async function loadReport() {
       category: document.getElementById('rp-cat')?.value
     });
     pbDone();
-    const expenses = r.ok ? (r.data||[]) : [];
+    const expenses = r.ok ? (r.data||[]).filter(e => e.id && (e.amount > 0 || e.description || e.category)) : [];
     const total = expenses.reduce((s,r)=>s+(+r.amount||0),0);
     const byCat = {};
     expenses.forEach(r => { const c = r.category||'อื่นๆ'; byCat[c]=(byCat[c]||0)+(+r.amount||0); });
