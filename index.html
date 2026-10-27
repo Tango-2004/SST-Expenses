@@ -713,7 +713,210 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
   </div>
 </div>
 
-<script src="api.js"></script>
+<script>
+// api.js — SST v5 (Batch + Cache-first + Queue + Warmup + POST-retry)
+const API_URL = 'https://script.google.com/macros/s/AKfycbxAEgdLBW7uqlmr5mdle9y6_NBrqMEqiMgqunOztvMO53yl-YMFOPGp8OqlDaEYYybm9g/exec';
+const RETRY = 3, TIMEOUT_MS = 28000;
+const POST_RETRY = 2, POST_TIMEOUT_MS = 30000;
+
+/* ── Memory + localStorage cache ── */
+const _mem = {};
+function cacheSet(k, v, ttl = 60) {
+  _mem[k] = { v, exp: Date.now() + ttl * 1000 };
+  try { localStorage.setItem('sst4_' + k, JSON.stringify({ v, exp: Date.now() + ttl * 1000 })); } catch (_) {}
+}
+function cacheGet(k) {
+  if (_mem[k]?.exp > Date.now()) return _mem[k].v;
+  try {
+    const s = localStorage.getItem('sst4_' + k);
+    if (s) { const p = JSON.parse(s); if (p.exp > Date.now()) { _mem[k] = p; return p.v; } }
+  } catch (_) {}
+  return null;
+}
+
+/* ── Loading bar ── */
+let _bar;
+function barShow() {
+  if (!_bar) {
+    _bar = document.createElement('div');
+    _bar.style.cssText = 'position:fixed;top:0;left:0;height:3px;background:#43a047;width:0;z-index:99999;transition:width .3s,opacity .4s';
+    document.body.appendChild(_bar);
+  }
+  _bar.style.width = '40%'; _bar.style.opacity = '1';
+}
+function barDone() {
+  if (_bar) { _bar.style.width = '100%'; setTimeout(() => { _bar.style.opacity = '0'; _bar.style.width = '0'; }, 350); }
+}
+
+/* ── Core fetch with retry ── */
+async function _fetch(url, opts = {}, attempt = 0) {
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  try {
+    const r = await fetch(url, { ...opts, signal: ctrl.signal });
+    clearTimeout(tid);
+    return JSON.parse(await r.text());
+  } catch (err) {
+    clearTimeout(tid);
+    if (attempt < RETRY - 1) { await new Promise(r => setTimeout(r, 2000)); return _fetch(url, opts, attempt + 1); }
+    throw err;
+  }
+}
+
+/* ── GET with cache-first ── */
+async function apiGet(action, params = {}, { bust = false, ttl = 120 } = {}) {
+  const token = localStorage.getItem('sst_token') || '';
+  const key = action + JSON.stringify(params);
+  if (!bust) {
+    const cached = cacheGet(key);
+    if (cached) { _bgRefresh(action, params, key, ttl, token); return cached; }
+  }
+  barShow();
+  try {
+    const qs = new URLSearchParams({ action, token, ...params }).toString();
+    const data = await _fetch(API_URL + '?' + qs);
+    if (data.ok !== false) cacheSet(key, data, ttl);
+    barDone(); return data;
+  } catch (e) {
+    barDone();
+    const stale = cacheGet(key);
+    return stale || { ok: false, error: e.message };
+  }
+}
+
+function _bgRefresh(action, params, key, ttl, token) {
+  setTimeout(async () => {
+    try {
+      const qs = new URLSearchParams({ action, token: localStorage.getItem('sst_token') || '', ...params }).toString();
+      const data = await _fetch(API_URL + '?' + qs);
+      if (data.ok !== false) cacheSet(key, data, ttl);
+    } catch (_) {}
+  }, 200);
+}
+
+/* ── BATCH GET ── */
+async function apiBatch(items = 'requests,vehicles,alerts', params = {}, { bust = false } = {}) {
+  const token = localStorage.getItem('sst_token') || '';
+  const key = 'batch_' + items + JSON.stringify(params);
+  if (!bust) {
+    const cached = cacheGet(key);
+    if (cached) { _bgBatch(items, params, key, token); return cached; }
+  }
+  barShow();
+  try {
+    const qs = new URLSearchParams({ action: 'batch', token, items, ...params }).toString();
+    const data = await _fetch(API_URL + '?' + qs);
+    if (data.ok !== false) cacheSet(key, data, 60);
+    barDone(); return data;
+  } catch (e) {
+    barDone();
+    return cacheGet(key) || { ok: false, error: e.message };
+  }
+}
+
+function _bgBatch(items, params, key, token) {
+  setTimeout(async () => {
+    try {
+      const qs = new URLSearchParams({ action: 'batch', token: localStorage.getItem('sst_token') || '', items, ...params }).toString();
+      const data = await _fetch(API_URL + '?' + qs);
+      if (data.ok !== false) cacheSet(key, data, 60);
+    } catch (_) {}
+  }, 200);
+}
+
+/* ── POST with retry ── */
+async function _fetchPost(body, attempt = 0) {
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), POST_TIMEOUT_MS);
+  try {
+    const r = await fetch(API_URL, { method: 'POST', body, signal: ctrl.signal });
+    clearTimeout(tid);
+    return JSON.parse(await r.text());
+  } catch (err) {
+    clearTimeout(tid);
+    if (attempt < POST_RETRY - 1) {
+      await new Promise(r => setTimeout(r, 3000 * (attempt + 1))); // backoff: 3s, 6s
+      return _fetchPost(body, attempt + 1);
+    }
+    throw err;
+  }
+}
+
+async function apiPost(action, payload = {}) {
+  const token = localStorage.getItem('sst_token') || '';
+  barShow();
+  try {
+    const body = JSON.stringify({ action, token, payload });
+    const data = await _fetchPost(body);
+    barDone(); return data;
+  } catch (e) { barDone(); return { ok: false, error: 'ส่งคำขอไม่สำเร็จ: ' + e.message }; }
+}
+
+/* ── Queue (offline support) ── */
+const _queue = (() => { try { return JSON.parse(localStorage.getItem('sst_queue') || '[]'); } catch(_){return[];} })();
+let _qRunning = false;
+function enqueue(action, payload) {
+  const clientId = 'cid-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  _queue.push({ action, payload: { ...payload, clientId }, clientId });
+  try { localStorage.setItem('sst_queue', JSON.stringify(_queue)); } catch(_) {}
+  _runQ();
+  return clientId;
+}
+async function _runQ() {
+  if (_qRunning || !_queue.length) return;
+  _qRunning = true;
+  while (_queue.length) {
+    try {
+      const r = await apiPost(_queue[0].action, _queue[0].payload);
+      if (r.ok || r.duplicate) { _queue.shift(); try { localStorage.setItem('sst_queue', JSON.stringify(_queue)); } catch(_){} }
+      else break;
+    } catch (_) { break; }
+  }
+  _qRunning = false;
+}
+window.addEventListener('online', _runQ);
+
+/* ── Auth ── */
+async function login(username, password) {
+  const data = await _fetch(API_URL + '?action=login&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password));
+  if (data.ok) {
+    localStorage.setItem('sst_token', data.token);
+    localStorage.setItem('sst_user', JSON.stringify(data.user));
+  }
+  return data;
+}
+function logout() {
+  ['sst_token','sst_user','sst_queue'].forEach(k => localStorage.removeItem(k));
+  Object.keys(localStorage).filter(k => k.startsWith('sst4_')).forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
+function getUser() { try { return JSON.parse(localStorage.getItem('sst_user')); } catch(_){ return null; } }
+
+/* ── Polling ── */
+let _pollTimer;
+function startPolling(cb, ms = 60000) { stopPolling(); _pollTimer = setInterval(cb, ms); }
+function stopPolling() { clearInterval(_pollTimer); }
+
+/* ── Helpers ── */
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+function buddhistYear() { return String(new Date().getFullYear() + 543); }
+function thaiMonthName() {
+  return ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+          'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'][new Date().getMonth()];
+}
+function fmtMoney(n) { return Number(n||0).toLocaleString('th-TH', {minimumFractionDigits:0, maximumFractionDigits:2}); }
+
+// Warmup ping — keep Apps Script warm ทุก 4 นาที
+setTimeout(async () => { try { await _fetch(API_URL + '?action=ping'); } catch(_){} }, 800);
+setInterval(async () => { try { await _fetch(API_URL + '?action=ping'); } catch(_){} }, 4 * 60 * 1000);
+</script>
 <script>
 // ════ STATE ════
 let CU = null;
@@ -2202,9 +2405,18 @@ async function loadExpenseRecent() {
   el.innerHTML = '<p style="color:var(--text2);text-align:center;padding:20px">⏳ กำลังโหลด...</p>';
   try {
     const r = await apiPost('getExpenses', { limit: 20 });
-    if (!r.ok) { el.innerHTML = `<p style="color:var(--red)">${r.error||'โหลดไม่สำเร็จ'}</p>`; return; }
+    if (!r.ok) { el.innerHTML = `<p style="color:var(--red)">❌ Error: ${r.error||'โหลดไม่สำเร็จ'}</p>`; return; }
     const rows = r.data || [];
-    if (!rows.length) { el.innerHTML = '<p style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีรายการ</p>'; return; }
+    if (!rows.length) {
+      // แสดง debug: ลองดึงข้อมูลแบบ admin (ไม่ filter branch)
+      const rd = await apiPost('debugExpenses', {});
+      el.innerHTML = `<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px;font-size:12px;color:#856404">
+        <b>ไม่พบรายการ</b> — ข้อมูลใน Sheet:<br>
+        ${rd.ok ? `มี ${rd.rowCount} แถว (รวม header)<br>Headers: ${(rd.headers||[]).join(' | ')}<br>
+        ${(rd.lastRows||[]).map(row=>`id=${row.id}|date=${row.date}|cat=${row.category}|amt=${row.amount}|branch=${row.branch}|payer=${row.payer}`).join('<br>')}` : `Error: ${rd.error}`}
+      </div>`;
+      return;
+    }
     el.innerHTML = rows.map(e => `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 14px;border-radius:8px;margin-bottom:8px;background:var(--surface);border:1px solid var(--border);gap:10px">
         <div style="flex:1;min-width:0">
