@@ -7,14 +7,20 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800;900&display=swap"/>
 <style>
 :root {
-  --g:#4a7c3f; --g2:#6baa55; --g3:#eaf5e1; --g4:#2f5728;
-  --red:#c0392b; --red2:#fdecea;
-  --warn:#d97706; --warn2:#fef9ee;
+  /* Brand greens */
+  --g:#2d6a4f; --g2:#52b788; --g3:#d8f3dc; --g4:#1b4332;
+  --red:#e63946; --red2:#fdecea;
+  --warn:#f4a261; --warn2:#fef9ee;
   --blue:#2563eb; --blue2:#eff6ff;
-  --bg:#f2f7ee; --surface:#fff; --border:#d4e8c0;
-  --text:#1e2a1a; --text2:#4a6640; --text3:#8aac78;
-  --shadow:0 1px 4px rgba(30,60,20,.08), 0 4px 16px rgba(30,60,20,.06);
+  /* Layout */
+  --bg:#f0f4f0; --surface:#ffffff; --border:#e2eae0;
+  --text:#1a2e1a; --text2:#3d5a3d; --text3:#7a9e7a;
+  --shadow:0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
   --radius:10px;
+  /* Sidebar dark */
+  --sb-bg:#1a2e1a; --sb-text:#d0e8c8; --sb-text2:#8aac78;
+  --sb-active:#2d6a4f; --sb-hover:rgba(255,255,255,.08);
+  --sb-border:rgba(255,255,255,.08);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);font-size:15px;-webkit-font-smoothing:antialiased}
@@ -41,21 +47,25 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 #app{display:flex;height:100vh;overflow:hidden}
 
 /* ── SIDEBAR ── */
-.sidebar{width:220px;min-width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:relative}
-.sidebar::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),#e05545)}
-.sb-logo{padding:20px 16px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
-.sb-logo img{width:38px;height:38px;object-fit:contain;border-radius:8px}
-.sb-logo .brand{font-size:17px;font-weight:900;color:var(--g);letter-spacing:-.01em}
-.sb-logo .sub{font-size:10px;color:var(--text3);margin-top:1px;font-weight:500}
-.sb-user{padding:12px 16px;background:var(--g3);border-bottom:1px solid var(--border)}
-.sb-user .name{font-weight:800;font-size:14px;color:var(--text);line-height:1.3}
-.sb-user .info{font-size:11px;color:var(--text2);margin-top:3px;font-weight:500}
-.sb-nav{flex:1;overflow-y:auto;padding:8px 8px}
-.nav-item{display:flex;align-items:center;gap:9px;padding:10px 12px;cursor:pointer;font-size:13.5px;font-weight:600;border-radius:8px;margin-bottom:2px;color:var(--text2);transition:all .14s;border:1px solid transparent;user-select:none}
-.nav-item:hover{background:var(--g3);color:var(--g)}
-.nav-item.active{background:var(--red2);color:var(--red);font-weight:800;border-color:#f7c8c3}
+.sidebar{width:230px;min-width:230px;flex-shrink:0;background:var(--sb-bg);display:flex;flex-direction:column;height:100vh;position:relative}
+.sb-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--sb-border)}
+.sb-logo img{width:38px;height:38px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,.12);padding:4px}
+.sb-logo .brand{font-size:16px;font-weight:900;color:#fff;letter-spacing:-.01em;line-height:1.2}
+.sb-logo .sub{font-size:10px;color:var(--sb-text2);margin-top:2px;font-weight:500}
+.sb-user{padding:12px 18px;border-bottom:1px solid var(--sb-border)}
+.sb-user .avatar{width:32px;height:32px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0}
+.sb-user-row{display:flex;align-items:center;gap:10px}
+.sb-user .name{font-weight:700;font-size:13px;color:#fff;line-height:1.3}
+.sb-user .info{font-size:11px;color:var(--sb-text2);margin-top:2px;font-weight:500}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;font-size:13px;font-weight:600;border-radius:9px;margin-bottom:2px;color:var(--sb-text);transition:all .14s;user-select:none}
+.nav-item:hover{background:var(--sb-hover);color:#fff}
+.nav-item.active{background:var(--sb-active);color:#fff;font-weight:700}
+.nav-item .nav-ic{font-size:16px;width:22px;text-align:center;flex-shrink:0}
 .nav-badge{background:#ef5350;color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;margin-left:auto;font-weight:700;min-width:18px;text-align:center}
-.sb-footer{padding:12px 8px;border-top:1px solid var(--border)}
+.sb-footer{padding:12px 8px;border-top:1px solid var(--sb-border)}
+.sb-logout-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;background:transparent;border:1px solid var(--sb-border);border-radius:8px;color:var(--sb-text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .14s}
+.sb-logout-btn:hover{background:rgba(230,57,70,.18);color:#ff9999;border-color:rgba(230,57,70,.4)}
 
 /* ── CONTENT ── */
 .content{flex:1;min-width:0;height:100vh;overflow-y:auto;background:var(--bg)}
@@ -165,10 +175,9 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
 .date-urgent{background:var(--red2);color:var(--red)}
 .date-none{background:#f0f0f0;color:#aaa}
 
-/* ── VEHICLE PLATE ── */
-.veh-plate{font-size:15px;font-weight:900;color:var(--g);letter-spacing:.04em}
 
-/* ── PAGE TABS (vehicles) ── */
+
+
 .page-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--surface);border-radius:10px;padding:4px;box-shadow:var(--shadow);border:1px solid var(--border);width:fit-content}
 .page-tab{padding:8px 18px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);transition:all .14s;white-space:nowrap;user-select:none}
 .page-tab:hover{background:var(--g3);color:var(--g)}
@@ -185,26 +194,9 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
 .filter-select{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text);background:var(--surface);cursor:pointer;transition:border-color .14s}
 .filter-select:focus{outline:none;border-color:var(--g2)}
 
-/* ── VEHICLE CARD GRID (NEW) ── */
-.veh-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:4px}
-.veh-card{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);border:1px solid rgba(210,230,190,.6);padding:18px 16px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
-.veh-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--g),var(--g2))}
-.veh-card:hover{box-shadow:0 4px 14px rgba(30,60,20,.14),0 8px 28px rgba(30,60,20,.1);transform:translateY(-2px)}
-.veh-card-plate{font-size:20px;font-weight:900;color:var(--g);letter-spacing:.04em;margin-bottom:4px}
-.veh-card-type{font-size:12px;color:var(--text2);font-weight:600;margin-bottom:12px}
-.veh-card-dates{display:flex;flex-direction:column;gap:5px;margin-top:8px}
-.veh-card-date-row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px}
-.veh-card-date-label{color:var(--text3);font-weight:600}
 
-/* ── VEHICLE DETAIL OVERLAY (NEW) ── */
-.veh-detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.46);z-index:1100;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;backdrop-filter:blur(2px)}
-.veh-detail-overlay.open{display:flex}
-.veh-detail-modal{background:var(--surface);border-radius:16px;width:640px;max-width:100%;padding:28px;box-shadow:0 24px 72px rgba(0,0,0,.28)}
-.veh-detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
-.veh-detail-plate{font-size:28px;font-weight:900;color:var(--g);letter-spacing:.04em}
-.veh-detail-meta{font-size:13px;color:var(--text2);font-weight:600;margin-top:2px}
-.veh-detail-section{margin-bottom:20px}
-.veh-detail-section-title{font-size:13px;font-weight:800;color:var(--g4);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);letter-spacing:.02em}
+
+
 
 /* ── LOW STOCK BANNER (NEW) ── */
 .low-stock-banner{background:var(--warn2);border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
@@ -282,13 +274,18 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
       <div><div class="brand">S.S.T</div><div class="sub">ศรีสุธา · ระบบเบิกจ่าย</div></div>
     </div>
     <div class="sb-user">
-      <div class="name" id="sb-name">—</div>
-      <div class="info" id="sb-info">—</div>
+      <div class="sb-user-row">
+        <div class="avatar" id="sb-avatar">—</div>
+        <div>
+          <div class="name" id="sb-name">—</div>
+          <div class="info" id="sb-info">—</div>
+        </div>
+      </div>
     </div>
     <div class="sb-nav" id="sb-nav"></div>
     <div class="sb-footer">
-      <button class="btn btn-ghost btn-sm" onclick="toggleNotifPanel()" style="width:100%;margin-bottom:6px">🔔 การแจ้งเตือน <span id="notif-count-btn" style="display:none;background:#ef5350;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px"></span></button>
-      <button class="btn btn-ghost btn-sm btn-block" onclick="doLogout()">🚪 ออกจากระบบ</button>
+      <button class="btn btn-ghost btn-sm" onclick="toggleNotifPanel()" style="width:100%;margin-bottom:6px;border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.6)">🔔 การแจ้งเตือน <span id="notif-count-btn" style="display:none;background:#ef5350;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px"></span></button>
+      <button class="sb-logout-btn" onclick="doLogout()">🚪 ออกจากระบบ</button>
     </div>
   </div>
 
@@ -341,16 +338,6 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
     <div class="page" id="page-approve">
       <div class="page-hd">✅ อนุมัติคำขอ</div>
       <div id="approve-content"></div>
-    </div>
-
-    <!-- VEHICLES — card grid layout (NEW) -->
-    <div class="page" id="page-vehicles">
-      <div class="page-hd-row">
-        <div class="page-hd" style="margin-bottom:0">🚗 รถ / น้ำมัน</div>
-        <button class="btn btn-primary btn-sm" id="add-veh-btn" style="display:none" onclick="openAddVehicle()">+ เพิ่มรถ</button>
-      </div>
-      <div id="veh-alerts-wrap"></div>
-      <div id="veh-card-grid"></div>
     </div>
 
     <!-- INVENTORY — คลังวัสดุ -->
@@ -596,13 +583,6 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
   <div class="notif-panel-body" id="notif-panel-body"><p class="loading">กำลังโหลด...</p></div>
 </div>
 
-<!-- VEHICLE DETAIL OVERLAY (NEW) -->
-<div class="veh-detail-overlay" id="veh-detail-overlay">
-  <div class="veh-detail-modal" id="veh-detail-modal">
-    <!-- filled by openVehicleDetail() -->
-  </div>
-</div>
-
 <!-- MODAL: Create User -->
 <div class="overlay" id="ov-create-user">
   <div class="modal">
@@ -679,45 +659,13 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
   </div>
 </div>
 
-<!-- MODAL: Add Vehicle -->
-<div class="overlay" id="ov-add-vehicle">
-  <div class="modal">
-    <div class="modal-title">🚗 เพิ่มรถ</div>
-    <div class="grid2">
-      <div class="fg"><label>ทะเบียน</label><input id="veh-plate" placeholder="กข-1234"/></div>
-      <div class="fg"><label>ประเภท</label>
-        <select id="veh-type">
-          <option value="รถยนต์">รถยนต์</option>
-          <option value="รถกระบะ">รถกระบะ</option>
-          <option value="รถบรรทุก">รถบรรทุก</option>
-          <option value="รถมอเตอร์ไซค์">รถมอเตอร์ไซค์</option>
-        </select>
-      </div>
-    </div>
-    <div class="fg"><label>สาขา</label>
-      <select id="veh-branch">
-        <option value="สาขา 1">สาขา 1</option>
-        <option value="สาขา 2">สาขา 2</option>
-      </select>
-    </div>
-    <div class="grid2">
-      <div class="fg"><label>วันหมดอายุ พ.ร.บ.</label><input type="date" id="veh-prb"/></div>
-      <div class="fg"><label>วันหมดอายุประกัน</label><input type="date" id="veh-insur"/></div>
-    </div>
-    <div class="fg"><label>วันหมดอายุภาษี</label><input type="date" id="veh-tax"/></div>
-    <p id="veh-err" class="err"></p>
-    <div class="modal-actions">
-      <button class="btn btn-primary" id="veh-btn" onclick="doAddVehicle()">✅ บันทึก</button>
-      <button class="btn btn-ghost" onclick="closeModal('ov-add-vehicle')">ยกเลิก</button>
-    </div>
-  </div>
-</div>
-
 <script>
-// api.js — SST v5 (Batch + Cache-first + Queue + Warmup + POST-retry)
+// api.js — SST v6 (Batch + Cache-first + Queue + Warmup + POST-retry + Perf)
 const API_URL = 'https://script.google.com/macros/s/AKfycbxAEgdLBW7uqlmr5mdle9y6_NBrqMEqiMgqunOztvMO53yl-YMFOPGp8OqlDaEYYybm9g/exec';
-const RETRY = 3, TIMEOUT_MS = 28000;
+const RETRY = 2, TIMEOUT_MS = 25000;        // ลด retry (เร็วขึ้นเมื่อ GAS ตื่น)
 const POST_RETRY = 2, POST_TIMEOUT_MS = 30000;
+// TTL presets (seconds) — ปรับตาม freshness ที่ต้องการ
+const TTL = { requests:90, inventory:120, supply_log:180, alerts:60, users:300, ledger:120, report:120 };
 
 /* ── Memory + localStorage cache ── */
 const _mem = {};
@@ -795,7 +743,7 @@ function _bgRefresh(action, params, key, ttl, token) {
 }
 
 /* ── BATCH GET ── */
-async function apiBatch(items = 'requests,vehicles,alerts', params = {}, { bust = false } = {}) {
+async function apiBatch(items = 'requests,alerts', params = {}, { bust = false } = {}) {
   const token = localStorage.getItem('sst_token') || '';
   const key = 'batch_' + items + JSON.stringify(params);
   if (!bust) {
@@ -923,7 +871,6 @@ let CU = null;
 let _pendingId = null;
 let _resetUserId = null;
 let _resetIsOwnPw = false;
-let _vehiclesCache = null;
 let _inventoryCache = [];
 
 // ════ NAV ════
@@ -934,7 +881,6 @@ const NAV = [
   { id:'approve',   label:'อนุมัติ',            ic:'✅', adminOnly:true },
   { id:'expense',   label:'บันทึกค่าใช้จ่าย',   ic:'🧾' },
   { id:'report',    label:'รายงานค่าใช้จ่าย',   ic:'📊', adminOnly:true },
-  { id:'vehicles',  label:'รถ / น้ำมัน',        ic:'🚗' },
   { id:'inventory', label:'คลังวัสดุ',          ic:'📦', adminOnly:true },
   { id:'supply',    label:'เบิกของจากคลัง',     ic:'🏪' },
   { id:'users',     label:'จัดการผู้ใช้',       ic:'👤', adminOnly:true },
@@ -1001,6 +947,8 @@ function startApp() {
   document.getElementById('app').style.display = 'flex';
   document.getElementById('sb-name').textContent = CU.name;
   document.getElementById('sb-info').textContent = `${CU.branch} · ${CU.role === 'admin' ? 'Admin' : 'พนักงาน'}`;
+  const av = document.getElementById('sb-avatar');
+  if(av) av.textContent = (CU.name||'U').charAt(0).toUpperCase();
   buildNav();
   loadNotifications();
   gotoPage('dashboard');
@@ -1039,7 +987,6 @@ function gotoPage(id, forceRefresh) {
     case 'approve':   loadApprove(); break;
     case 'expense':   loadExpensePage(); break;
     case 'report':    loadReport(); break;
-    case 'vehicles':  loadVehicles(); break;
     case 'inventory': loadInventory(); break;
     case 'supply':    loadSupplyPage(); break;
     case 'users':     loadUsers(); break;
@@ -1099,11 +1046,10 @@ async function loadDashboard() {
   const expSumEl = document.getElementById('dash-expense-summary');
   if (expSumEl) expSumEl.innerHTML = '';
   pbShow();
-  const [res, alertsRes] = await Promise.all([
-    apiGet('getRequests', {}, {bust:true, ttl:90}),
-    apiGet('getAlerts',   {}, {bust:true, ttl:120}),
-  ]);
+  const batchRes = await apiBatch('requests,alerts');
   pbDone();
+  const res = batchRes.data?.requests || { ok: false, error: 'โหลดไม่สำเร็จ' };
+  const alertsRes = batchRes.data?.alerts || { ok: false, data: [] };
   if (!res.ok) { document.getElementById('dash-stats').innerHTML = `<p style="color:var(--red)">${res.error}</p>`; return; }
   const all = res.data || [];
   const myItems = CU.role === 'admin' ? all : all.filter(r => r.branch === CU.branch);
@@ -1118,7 +1064,7 @@ async function loadDashboard() {
     <div class="stat-tile"><div class="stat-num" style="color:var(--warn)">${pending.length}</div><div class="stat-label">รออนุมัติ</div></div>
     <div class="stat-tile"><div class="stat-num">฿${totalAmt.toLocaleString('th-TH',{minimumFractionDigits:0})}</div><div class="stat-label">อนุมัติแล้ว (รวม)</div></div>`;
 
-  // Admin: vehicle alerts on dashboard
+
   const alerts = alertsRes.ok ? (alertsRes.data || []) : [];
   if (alerts.length) {
     document.getElementById('dash-alerts').innerHTML = `
@@ -1248,7 +1194,7 @@ function reqCardHtml(r, showActions, showPrint=false) {
       const its = JSON.parse(r.items||'[]');
       if (its.length) {
         receiptInfo = `<div style="font-size:12px;margin-bottom:6px;padding:6px 8px;background:var(--g3);border-radius:6px">
-          ${its.map(i=>`<div>🛒 <b>${esc(i.name||'')}</b> × ${i.qty||1} ${esc(i.unit||'')}${i.price?' — ฿'+(+i.price).toLocaleString('th-TH'):''}</div>`).join('')}
+          ${its.map(i=>{const q=parseFloat(i.qty||i.quantity||1)||1;const u=i.unit||i.inventoryUnit||'';const p=parseFloat(i.price||i.pricePerUnit||0)||0;return`<div>🛒 <b>${esc(i.name||i.inventoryItemName||'')}</b> × ${q.toLocaleString('th-TH')} ${esc(u)}${p?' — ฿'+p.toLocaleString('th-TH'):''}</div>`;}).join('')}
         </div>`;
       }
     } catch(_) {}
@@ -1335,13 +1281,18 @@ function buildRequestDocHtml(r) {
           <th style="border:1px solid #ccc;padding:6px 10px;text-align:right;width:90px">ราคา/ชิ้น</th>
           <th style="border:1px solid #ccc;padding:6px 10px;text-align:right;width:90px">รวม</th>
         </tr></thead>
-        <tbody>${items.map(i=>`<tr>
-          <td style="border:1px solid #ccc;padding:6px 10px">${esc(i.name||'')}</td>
-          <td style="border:1px solid #ccc;padding:6px 10px;text-align:center">${i.qty||''}</td>
-          <td style="border:1px solid #ccc;padding:6px 10px;text-align:center">${esc(i.unit||'')}</td>
-          <td style="border:1px solid #ccc;padding:6px 10px;text-align:right">${i.price?'฿'+(+i.price).toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
-          <td style="border:1px solid #ccc;padding:6px 10px;text-align:right">${i.total?'฿'+(+i.total).toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
-        </tr>`).join('')}</tbody>
+        <tbody>${items.map(i=>{
+          const iQty   = parseFloat(i.qty||i.quantity||1)||1;
+          const iUnit  = i.unit||i.inventoryUnit||'';
+          const iPrice = parseFloat(i.price||i.pricePerUnit||0)||0;
+          const iTotal = parseFloat(i.total||(iQty*iPrice))||0;
+          return `<tr>
+          <td style="border:1px solid #ccc;padding:6px 10px">${esc(i.name||i.inventoryItemName||'')}</td>
+          <td style="border:1px solid #ccc;padding:6px 10px;text-align:center">${iQty.toLocaleString('th-TH')}</td>
+          <td style="border:1px solid #ccc;padding:6px 10px;text-align:center">${esc(iUnit)}</td>
+          <td style="border:1px solid #ccc;padding:6px 10px;text-align:right">${iPrice?'฿'+iPrice.toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
+          <td style="border:1px solid #ccc;padding:6px 10px;text-align:right">${iTotal?'฿'+iTotal.toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
+        </tr>`;}).join('')}</tbody>
       </table>`;
     }
   }
@@ -2011,311 +1962,8 @@ async function doReject() {
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-// ════ VEHICLES — CARD GRID ════
-async function loadVehicles() {
-  const addBtn = document.getElementById('add-veh-btn');
-  if (addBtn) addBtn.style.display = CU.role === 'admin' ? '' : 'none';
 
-  const alertsEl  = document.getElementById('veh-alerts-wrap');
-  const gridEl    = document.getElementById('veh-card-grid');
-  if (gridEl) gridEl.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
-  if (alertsEl) alertsEl.innerHTML = '';
 
-  pbShow();
-  const [vRes, aRes] = await Promise.all([
-    apiGet('getVehicles', {}, {bust:true}),
-    apiGet('getAlerts',   {}, {bust:true}),
-  ]);
-  pbDone();
-
-  _vehiclesCache = vRes.ok ? (vRes.data || []) : [];
-
-  // ── ALERTS ──
-  const alerts = aRes.ok ? (aRes.data || []) : [];
-  if (alerts.length && alertsEl) {
-    alertsEl.innerHTML = `
-      <div class="alert-card" style="margin-bottom:16px">
-        <div class="alert-card-head" style="border-left:4px solid var(--red)">
-          <span style="font-size:16px">⚠️</span>
-          <span class="alert-card-head-title">แจ้งเตือนวันหมดอายุ (${alerts.length} รายการ)</span>
-        </div>
-        ${alerts.map(a => `
-          <div class="alert-row">
-            <div>
-              <div style="font-weight:800;font-size:13px">${esc(a.plate)} <span style="font-weight:500;color:var(--text2)">· ${esc(a.label)}</span></div>
-              <div style="font-size:12px;color:var(--text3);margin-top:2px">หมดอายุ: ${esc(a.expDate)} · ${esc(a.branch)}</div>
-            </div>
-            <span class="date-chip ${a.level==='urgent'?'date-urgent':'date-warn'}" style="flex-shrink:0">${a.daysLeft<=0?'หมดแล้ว':a.daysLeft+' วัน'}</span>
-          </div>`).join('')}
-      </div>`;
-  }
-
-  // ── CARD GRID ──
-  if (!gridEl) return;
-  if (!_vehiclesCache.length) {
-    gridEl.innerHTML = '<div class="empty">ยังไม่มีรถในระบบ</div>';
-    return;
-  }
-
-  const today = new Date();
-  function dateBadgeVeh(d) {
-    if (!d) return `<span class="date-chip date-none">-</span>`;
-    const exp = new Date(d);
-    if (isNaN(exp.getTime())) return `<span class="date-chip date-none">-</span>`;
-    const diff = Math.ceil((exp - today) / 86400000);
-    const cls = diff <= 0 ? 'date-urgent' : diff <= 15 ? 'date-urgent' : diff <= 30 ? 'date-warn' : 'date-ok';
-    const display = exp.toLocaleDateString('th-TH', { day:'2-digit', month:'2-digit', year:'numeric' });
-    return `<span class="date-chip ${cls}">${display}</span>`;
-  }
-
-  gridEl.innerHTML = `<div class="veh-card-grid">
-    ${_vehiclesCache.map((v,i) => {
-      const expDates = [v.prbDate, v.insurDate, v.taxDate].filter(Boolean).map(d => new Date(d)).filter(d=>!isNaN(d.getTime()));
-      const soonest = expDates.length ? Math.min(...expDates.map(d=>Math.ceil((d-today)/86400000))) : 999;
-      const cardBorder = soonest <= 0 ? 'var(--red)' : soonest <= 15 ? 'var(--red)' : soonest <= 30 ? 'var(--warn)' : 'var(--g)';
-      return `<div class="veh-card" onclick="openVehicleDetail(${i})" style="position:relative;overflow:hidden;padding:16px 16px 14px;border:1.5px solid var(--border)">
-        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:${cardBorder}"></div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-          <span style="font-size:22px">🚗</span>
-          <div>
-            <div class="veh-plate" style="font-size:15px">${esc(v.plate||'-')}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(v.type||'-')} · ${esc(v.branch||'-')}</div>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:11px;color:var(--text3);font-weight:600">พ.ร.บ.</span>
-            ${dateBadgeVeh(v.prbDate)}
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:11px;color:var(--text3);font-weight:600">ประกัน</span>
-            ${dateBadgeVeh(v.insurDate)}
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:11px;color:var(--text3);font-weight:600">ภาษีรถ</span>
-            ${dateBadgeVeh(v.taxDate)}
-          </div>
-        </div>
-        <div style="margin-top:10px;font-size:11px;color:var(--g);font-weight:600;text-align:right">ดูรายละเอียด →</div>
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
-async function openVehicleDetail(idx) {
-  const v = _vehiclesCache[idx];
-  if (!v) return;
-  const overlay = document.getElementById('veh-detail-overlay');
-  const modal   = document.getElementById('veh-detail-modal');
-  if (!overlay || !modal) return;
-
-  modal.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px 12px;border-bottom:1px solid var(--border)">
-      <div>
-        <div class="veh-plate" style="font-size:18px">${esc(v.plate||'-')}</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:4px">${esc(v.type||'-')} · ${esc(v.branch||'-')}</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        ${CU.role === 'admin' ? `
-          <button onclick="openEditVehicle(${idx})" style="background:#f0f7ff;border:1px solid var(--blue,#3b82f6);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--blue,#3b82f6);font-weight:700">✏️ แก้ไข</button>
-          <button onclick="deleteVehicle('${esc(v.id||'')}','${esc(v.plate||'')}')" style="background:#fff0f0;border:1px solid var(--red);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--red);font-weight:700">🗑️ ลบรถ</button>` : ''}
-        <button onclick="closeVehicleDetail()" style="background:var(--g3);border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2)">✕</button>
-      </div>
-    </div>
-    <div style="padding:16px 20px;overflow-y:auto;flex:1">
-      <div style="margin-bottom:18px">
-        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">วันหมดอายุ</div>
-        ${[['พ.ร.บ.',v.prbDate],['ประกันภัย',v.insurDate],['ภาษีรถยนต์',v.taxDate]].map(([lbl,d])=>{
-          if (!d) return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;color:var(--text)">${lbl}</span><span class="date-chip date-none">-</span></div>`;
-          const exp = new Date(d); const diff = Math.ceil((exp-new Date())/86400000);
-          const cls = diff<=0?'date-urgent':diff<=15?'date-urgent':diff<=30?'date-warn':'date-ok';
-          const display = exp.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric'});
-          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-            <span style="font-size:13px;color:var(--text)">${lbl}</span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="date-chip ${cls}">${display}</span>
-              ${diff<=30&&diff>0?`<span style="font-size:11px;color:${diff<=15?'var(--red)':'var(--warn)'};font-weight:700">อีก ${diff} วัน</span>`:''}
-              ${diff<=0?`<span style="font-size:11px;color:var(--red);font-weight:700">หมดแล้ว</span>`:''}
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-      <div id="veh-fuel-history">
-        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">ประวัติน้ำมัน</div>
-        <div style="text-align:center;padding:20px;color:var(--text3)">⏳ กำลังโหลด...</div>
-      </div>
-    </div>`;
-
-  overlay.classList.add('open');
-
-  // Load fuel history for this plate
-  try {
-    const r = await apiPost('getExpenses', { category: 'ค่าน้ำมัน', vehiclePlate: v.plate, limit: 20 });
-    const fuelEl = document.getElementById('veh-fuel-history');
-    if (!fuelEl) return;
-    const fuel = r.ok ? (r.data||[]).filter(e => !v.plate || (e.vehiclePlate||e.description||'').includes(v.plate)) : [];
-    if (!fuel.length) {
-      fuelEl.innerHTML = `
-        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">ประวัติน้ำมัน</div>
-        <div style="text-align:center;padding:16px;color:var(--text3);font-size:12px">ยังไม่มีบันทึกค่าน้ำมัน</div>`;
-    } else {
-      const total = fuel.reduce((s,e)=>s+(Number(e.amount)||0),0);
-      fuelEl.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">ประวัติน้ำมัน</span>
-          <span style="font-size:13px;font-weight:800;color:var(--g)">รวม ฿${total.toLocaleString('th-TH',{minimumFractionDigits:2})}</span>
-        </div>
-        ${fuel.slice(0,10).map(e=>`
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
-            <div>
-              <div style="font-size:12px;font-weight:600;color:var(--text)">${fmtReqDate(e.date)}</div>
-              <div style="font-size:11px;color:var(--text3)">${esc(e.description||e.note||'')} · ${esc(e.payer||e.recordedBy||'')}</div>
-            </div>
-            <span style="font-size:13px;font-weight:800;color:var(--red)">฿${Number(e.amount||0).toLocaleString('th-TH',{minimumFractionDigits:2})}</span>
-          </div>`).join('')}`;
-    }
-  } catch(e) { console.warn('fuel history error', e); }
-}
-
-function closeVehicleDetail() {
-  document.getElementById('veh-detail-overlay')?.classList.remove('open');
-}
-
-function openEditVehicle(idx) {
-  const v = _vehiclesCache[idx];
-  if (!v) return;
-  // Build edit modal inside veh-detail-modal
-  const modal = document.getElementById('veh-detail-modal');
-  if (!modal) return;
-
-  // Format date for input[type=date] (YYYY-MM-DD)
-  function toInputDate(d) {
-    if (!d) return '';
-    try {
-      const dt = new Date(d);
-      if (isNaN(dt)) return '';
-      return dt.toISOString().split('T')[0];
-    } catch(e) { return ''; }
-  }
-
-  modal.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px 12px;border-bottom:1px solid var(--border)">
-      <div style="font-size:16px;font-weight:800;color:var(--text)">✏️ แก้ไขข้อมูลรถ</div>
-      <button onclick="openVehicleDetail(${idx})" style="background:var(--g3);border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2)">✕</button>
-    </div>
-    <div style="padding:16px 20px;overflow-y:auto;flex:1">
-      <div style="display:grid;gap:14px">
-        <div>
-          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px">ทะเบียน</label>
-          <input id="ev-plate" value="${esc(v.plate||'')}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
-        </div>
-        <div>
-          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px">ประเภทรถ</label>
-          <select id="ev-type" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
-            ${['รถยนต์','รถกระบะ','รถบรรทุก','รถตู้','รถจักรยานยนต์','อื่นๆ'].map(t=>`<option value="${t}" ${v.type===t?'selected':''}>${t}</option>`).join('')}
-          </select>
-        </div>
-        <div>
-          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px">สาขา</label>
-          <select id="ev-branch" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
-            ${(BRANCHES||['กรุงเทพ','เชียงใหม่','ขอนแก่น','สงขลา']).map(b=>`<option value="${b}" ${v.branch===b?'selected':''}>${b}</option>`).join('')}
-          </select>
-        </div>
-        <div style="border-top:1px solid var(--border);padding-top:14px">
-          <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">วันหมดอายุ</div>
-          <div style="display:grid;gap:10px">
-            <div>
-              <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">พ.ร.บ.</label>
-              <input id="ev-prbDate" type="date" value="${toInputDate(v.prbDate)}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
-            </div>
-            <div>
-              <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">ประกันภัย</label>
-              <input id="ev-insurDate" type="date" value="${toInputDate(v.insurDate)}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
-            </div>
-            <div>
-              <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">ภาษีรถยนต์</label>
-              <input id="ev-taxDate" type="date" value="${toInputDate(v.taxDate)}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--g4);color:var(--text);box-sizing:border-box">
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="ev-msg" style="margin-top:12px;font-size:13px;text-align:center"></div>
-    </div>
-    <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px">
-      <button onclick="openVehicleDetail(${idx})" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:var(--g4);color:var(--text2);font-size:14px;cursor:pointer;font-weight:600">ยกเลิก</button>
-      <button onclick="doUpdateVehicle('${esc(v.id||'')}',${idx})" style="flex:2;padding:12px;border:none;border-radius:10px;background:var(--blue,#3b82f6);color:#fff;font-size:14px;cursor:pointer;font-weight:700">💾 บันทึก</button>
-    </div>`;
-}
-
-async function doUpdateVehicle(vehicleId, idx) {
-  const plate    = document.getElementById('ev-plate')?.value.trim();
-  const type     = document.getElementById('ev-type')?.value;
-  const branch   = document.getElementById('ev-branch')?.value;
-  const prbDate  = document.getElementById('ev-prbDate')?.value;
-  const insurDate= document.getElementById('ev-insurDate')?.value;
-  const taxDate  = document.getElementById('ev-taxDate')?.value;
-  const msg      = document.getElementById('ev-msg');
-
-  if (!plate) { if(msg) msg.innerHTML='<span style="color:var(--red)">กรุณากรอกทะเบียนรถ</span>'; return; }
-  if(msg) msg.innerHTML = '<span style="color:var(--text2)">⏳ กำลังบันทึก...</span>';
-
-  try {
-    const r = await apiPost('updateVehicle', { id: vehicleId, plate, type, branch, prbDate, insurDate, taxDate });
-    if (r.ok) {
-      // Update local cache
-      if (_vehiclesCache[idx]) {
-        _vehiclesCache[idx] = { ..._vehiclesCache[idx], plate, type, branch, prbDate, insurDate, taxDate };
-      }
-      // Reload vehicles list
-      await loadVehicles();
-      // Re-open detail with updated data
-      openVehicleDetail(idx);
-    } else {
-      if(msg) msg.innerHTML = `<span style="color:var(--red)">เกิดข้อผิดพลาด: ${esc(r.error||'ไม่ทราบสาเหตุ')}</span>`;
-    }
-  } catch(e) {
-    if(msg) msg.innerHTML = `<span style="color:var(--red)">เกิดข้อผิดพลาด: ${esc(String(e.message||e))}</span>`;
-  }
-}
-
-async function deleteVehicle(vehicleId, plate) {
-  if (!confirm(`ยืนยันลบรถทะเบียน ${plate}?\nข้อมูลจะถูกลบถาวร`)) return;
-  pbShow();
-  const res = await apiPost('deleteVehicle', { id: vehicleId });
-  pbDone();
-  if (res.ok) {
-    closeVehicleDetail();
-    _vehiclesCache = [];
-    loadVehicles();
-  } else {
-    alert('ลบไม่สำเร็จ: ' + (res.error || 'เกิดข้อผิดพลาด'));
-  }
-}
-
-function openAddVehicle() {
-  ['veh-plate','veh-prb','veh-insur','veh-tax'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('veh-err').textContent = '';
-  document.getElementById('ov-add-vehicle').classList.add('open');
-}
-
-async function doAddVehicle() {
-  const plate     = document.getElementById('veh-plate').value.trim();
-  const type      = document.getElementById('veh-type').value;
-  const branch    = document.getElementById('veh-branch').value;
-  const prbDate   = document.getElementById('veh-prb').value;
-  const insurDate = document.getElementById('veh-insur').value;
-  const taxDate   = document.getElementById('veh-tax').value;
-  const errEl = document.getElementById('veh-err');
-  errEl.textContent = '';
-  if (!plate) { errEl.textContent = 'กรุณากรอกทะเบียน'; return; }
-  btnLoading('veh-btn', '⏳ กำลังบันทึก...');
-  pbShow();
-  const res = await apiPost('addVehicle', { plate, type, branch, prbDate, insurDate, taxDate });
-  pbDone();
-  btnRestore('veh-btn');
-  if (res.ok) { closeModal('ov-add-vehicle'); loadVehicles(); }
-  else { errEl.textContent = res.error || 'เกิดข้อผิดพลาด'; }
-}
 
 // ════ USERS ════
 const TAB_OPTIONS = [
@@ -2325,7 +1973,6 @@ const TAB_OPTIONS = [
   { id:'approve',   label:'✅ อนุมัติ' },
   { id:'expense',   label:'🧾 บันทึกค่าใช้จ่าย' },
   { id:'report',    label:'📊 รายงานค่าใช้จ่าย' },
-  { id:'vehicles',  label:'🚗 รถ/น้ำมัน' },
   { id:'inventory', label:'📦 คลังวัสดุ' },
   { id:'supply',    label:'🏪 เบิกของจากคลัง' },
   { id:'users',     label:'👤 จัดการผู้ใช้' },
@@ -2373,7 +2020,7 @@ async function loadUsers() {
 function formatTabs(tabs) {
   if (!tabs) return '-';
   const t = typeof tabs === 'string' ? tabs.split(',') : tabs;
-  const map = { dashboard:'ภาพรวม', request:'ยื่นขอเบิก', mylist:'รายการ', approve:'อนุมัติ', expense:'ค่าใช้จ่าย', report:'รายงาน', vehicles:'รถ', inventory:'คลัง', supply:'เบิกของ', users:'ผู้ใช้' };
+  const map = { dashboard:'ภาพรวม', request:'ยื่นขอเบิก', mylist:'รายการ', approve:'อนุมัติ', expense:'ค่าใช้จ่าย', report:'รายงาน', inventory:'คลัง', supply:'เบิกของ', users:'ผู้ใช้' };
   return t.filter(x=>x).map(x=>map[x]||x).join(', ') || '-';
 }
 
@@ -2416,7 +2063,7 @@ async function doCreateUser() {
   btnLoading('cu-btn', '⏳ กำลังบันทึก...');
   pbShow();
   const tabs = role === 'admin'
-    ? 'dashboard,request,mylist,approve,expense,report,vehicles,inventory,supply,users'
+    ? 'dashboard,request,mylist,approve,expense,report,inventory,supply,users'
     : (_cuTabs.length ? _cuTabs.join(',') : 'dashboard,request,mylist');
   const res = await apiPost('createUser', { name, username, password, branch, role, tabs });
   pbDone();
@@ -2751,8 +2398,8 @@ async function loadInventory() {
         ${rows.map((it,i) => `<tr style="${i%2===0?'':'background:var(--g3)'}">
           <td style="font-weight:600;color:var(--text)">${esc(it.name||'')}</td>
           <td style="color:var(--text2)">${esc(it.unit||'')}</td>
-          <td style="text-align:right;font-weight:700;color:${Number(it.qty||0)<5?'var(--red)':'var(--text)'}">${Number(it.qty||0).toLocaleString('th-TH')}</td>
-          <td style="text-align:right;color:var(--text2)">${it.pricePerUnit?'฿'+Number(it.pricePerUnit).toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
+          <td style="text-align:right;font-weight:700;color:${(+it.qty||+it.quantity||0)<5?'var(--red)':'var(--text)'}">${(+it.qty||+it.quantity||0).toLocaleString('th-TH')}</td>
+          <td style="text-align:right;color:var(--text2)">${(+it.pricePerUnit||+it.price||0)?'฿'+(+it.pricePerUnit||+it.price||0).toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
           <td style="color:var(--text2)">${esc(it.branch||'')}</td>
           <td style="color:var(--text3);font-size:12px">${esc(it.vendor||'')}</td>
           <td style="color:var(--text3);font-size:11px">${esc(it.lastPurchaseDate||'')}</td>
@@ -2929,7 +2576,7 @@ async function loadSupplyPage() {
   el.innerHTML = '<p style="color:var(--text2);text-align:center;padding:20px">⏳ กำลังโหลด...</p>';
   pbShow();
   try {
-    const r = await apiGet('getSupplyLog', {}, { bust:true });
+    const r = await apiGet('getSupplyLog', {}, { ttl: TTL.supply_log });
     pbDone();
     if (!r.ok) { el.innerHTML = `<p style="color:var(--red)">${r.error||'โหลดไม่สำเร็จ'}</p>`; return; }
     const logs = r.data || [];
@@ -2951,13 +2598,13 @@ async function loadSupplyPage() {
         </tr></thead>
         <tbody>
           ${logs.map((lg,i)=>`<tr style="${i%2?'background:var(--g3)':''}">
-            <td style="white-space:nowrap">${esc(lg.date||lg.timestamp||'')}</td>
-            <td style="font-weight:600">${esc(lg.requester||lg.requestedBy||lg.approvedBy||'-')}</td>
+            <td style="white-space:nowrap">${fmtReqDate(lg.date||lg.timestamp||lg.createdAt||'')}</td>
+            <td style="font-weight:600">${esc(lg.requester||lg.requestedBy||lg.user||'-')}</td>
             <td style="color:var(--text2)">${esc(lg.branch||'-')}</td>
-            <td style="font-weight:600;color:var(--text)">${esc(lg.itemName||lg.inventoryItemName||'-')}</td>
-            <td style="text-align:right;font-weight:700;color:var(--g)">${Number(lg.qty||lg.quantity||0).toLocaleString('th-TH')}</td>
-            <td style="color:var(--text3)">${esc(lg.unit||lg.inventoryUnit||'')}</td>
-            <td style="font-size:11px;color:var(--text3);max-width:160px">${esc(lg.note||lg.purpose||'')}</td>
+            <td style="font-weight:600;color:var(--text)">${esc(lg.itemName||lg.inventoryItemName||lg.name||'-')}</td>
+            <td style="text-align:right;font-weight:700;color:var(--g)">${(parseFloat(lg.qty)||parseFloat(lg.quantity)||0).toLocaleString('th-TH')}</td>
+            <td style="color:var(--text3)">${esc(lg.unit||lg.inventoryUnit||lg.หน่วย||'')}</td>
+            <td style="font-size:11px;color:var(--text3);max-width:160px">${esc(lg.note||lg.purpose||lg.approvedBy||'')}</td>
           </tr>`).join('')}
         </tbody>
       </table>
