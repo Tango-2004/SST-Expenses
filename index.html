@@ -2397,9 +2397,9 @@ async function loadInventory() {
       <tbody>
         ${rows.map((it,i) => `<tr style="${i%2===0?'':'background:var(--g3)'}">
           <td style="font-weight:600;color:var(--text)">${esc(it.name||'')}</td>
-          <td style="color:var(--text2)">${esc(it.unit||'')}</td>
+          <td style="color:var(--text2)">${esc(it.unit||it.หน่วย||it.inventoryUnit||'')}</td>
           <td style="text-align:right;font-weight:700;color:${(+it.qty||+it.quantity||0)<5?'var(--red)':'var(--text)'}">${(+it.qty||+it.quantity||0).toLocaleString('th-TH')}</td>
-          <td style="text-align:right;color:var(--text2)">${(+it.pricePerUnit||+it.price||0)?'฿'+(+it.pricePerUnit||+it.price||0).toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
+          <td style="text-align:right;color:var(--text2)">${(+it.pricePerUnit||+it.price||it.ราคา||0)?'฿'+(+it.pricePerUnit||+it.price||it.ราคา||0).toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
           <td style="color:var(--text2)">${esc(it.branch||'')}</td>
           <td style="color:var(--text3);font-size:12px">${esc(it.vendor||'')}</td>
           <td style="color:var(--text3);font-size:11px">${esc(it.lastPurchaseDate||'')}</td>
