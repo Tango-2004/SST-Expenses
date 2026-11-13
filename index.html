@@ -351,18 +351,13 @@ hr.div{border:none;border-top:1px solid var(--border);margin:16px 0}
         </div>
       </div>
       <div id="inv-low-stock-banner"></div>
-      <div id="inv-alerts-wrap"></div>
-      <div class="card" style="padding:14px 20px;margin-bottom:16px">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-          <div class="fg" style="margin:0;min-width:140px"><label>สาขา</label>
-            <select id="inv-branch-filter" style="padding:7px 10px">
-              <option value="">ทุกสาขา</option>
-              <option value="สาขา 1">สาขา 1</option>
-              <option value="สาขา 2">สาขา 2</option>
-            </select>
-          </div>
-          <button class="btn btn-primary" onclick="loadInventory()" style="height:36px;align-self:flex-end">🔍 ค้นหา</button>
-        </div>
+      <!-- Branch stat tiles -->
+      <div id="inv-branch-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px"></div>
+      <!-- Branch tabs -->
+      <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:16px">
+        <button id="inv-tab-all"  onclick="invSetTab('all')"  style="padding:9px 20px;background:none;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .14s">ทั้งหมด</button>
+        <button id="inv-tab-b1"   onclick="invSetTab('b1')"   style="padding:9px 20px;background:none;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .14s">🏪 สาขา 1</button>
+        <button id="inv-tab-b2"   onclick="invSetTab('b2')"   style="padding:9px 20px;background:none;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .14s">🏪 สาขา 2</button>
       </div>
       <div id="inv-table"><p style="color:var(--text3);text-align:center;padding:30px">กำลังโหลด...</p></div>
       <!-- Modal เพิ่มรายการ -->
@@ -1502,8 +1497,12 @@ async function buildReqForm() {
     } catch(e) { console.warn('inv load err', e); }
 
     function _wdBuildInvOpts(selectedId) {
+      // filter by branch: admin เห็นทั้งหมด, user เห็นแค่สาขาตัวเอง
+      const branchFiltered = (CU.role === 'admin')
+        ? invItems
+        : invItems.filter(it => !it.branch || it.branch === CU.branch);
       // FIFO: เรียงตาม lastPurchaseDate จากเก่าสุด (เอาออกก่อน)
-      const sorted = [...invItems].sort((a,b) => {
+      const sorted = [...branchFiltered].sort((a,b) => {
         const da = a.lastPurchaseDate ? new Date(a.lastPurchaseDate).getTime() : 0;
         const db = b.lastPurchaseDate ? new Date(b.lastPurchaseDate).getTime() : 0;
         return da - db;
@@ -2367,17 +2366,81 @@ async function loadReport() {
 }
 
 // ════ INVENTORY ════
+let _invTab = 'all';
+function invSetTab(t) {
+  _invTab = t;
+  ['all','b1','b2'].forEach(id => {
+    const btn = document.getElementById('inv-tab-' + id);
+    if (!btn) return;
+    const active = id === t;
+    btn.style.color = active ? 'var(--g)' : 'var(--text3)';
+    btn.style.borderBottomColor = active ? 'var(--g)' : 'transparent';
+  });
+  _renderInventoryTable(_inventoryCache);
+}
+
+function _renderInventoryTable(allRows) {
+  const el = document.getElementById('inv-table');
+  if (!el) return;
+
+  // filter by tab
+  let rows = allRows;
+  if (_invTab === 'b1') rows = allRows.filter(it => (it.branch||'').includes('1'));
+  else if (_invTab === 'b2') rows = allRows.filter(it => (it.branch||'').includes('2'));
+
+  if (!rows.length) { el.innerHTML = '<div class="empty">ยังไม่มีวัสดุในส่วนนี้</div>'; return; }
+
+  // search
+  const q = (document.getElementById('inv-search')?.value||'').trim().toLowerCase();
+  const filtered = q ? rows.filter(it => (it.name||'').toLowerCase().includes(q)) : rows;
+
+  el.innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <input id="inv-search" placeholder="🔍 ค้นหาชื่อวัสดุ..." oninput="_renderInventoryTable(_inventoryCache)"
+        style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;max-width:260px"/>
+    </div>
+    <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr>
+        <th>ชื่อวัสดุ</th><th>หน่วย</th>
+        <th style="text-align:right">คงเหลือ</th>
+        <th style="text-align:right">ราคา/หน่วย</th>
+        ${_invTab==='all'?'<th>สาขา</th>':''}
+        <th>ร้านค้า</th><th>ซื้อล่าสุด</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map((it,i) => {
+          const qty = +it.qty||+it.quantity||0;
+          const price = +it.pricePerUnit||+it.price||0;
+          const low = qty < 5;
+          return `<tr style="${i%2===0?'':'background:var(--g3)'}">
+            <td style="font-weight:600;color:var(--text)">${esc(it.name||'')}${low?` <span style="font-size:10px;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px">ใกล้หมด</span>`:''}
+            </td>
+            <td style="color:var(--text2)">${esc(it.unit||it.หน่วย||it.inventoryUnit||'')}</td>
+            <td style="text-align:right;font-weight:700;color:${low?'var(--red)':'var(--text)'};font-size:15px">${qty.toLocaleString('th-TH')}</td>
+            <td style="text-align:right;color:var(--text2)">${price?'฿'+price.toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
+            ${_invTab==='all'?`<td><span style="font-size:11px;background:var(--g3);color:var(--g);padding:2px 8px;border-radius:10px;font-weight:700">${esc(it.branch||'—')}</span></td>`:''}
+            <td style="color:var(--text3);font-size:12px">${esc(it.vendor||'')}</td>
+            <td style="color:var(--text3);font-size:11px">${esc(it.lastPurchaseDate||'')}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>`;
+}
+
 async function loadInventory() {
   const el = document.getElementById('inv-table');
   if (!el) return;
   el.innerHTML = '<div class="loading">⏳ กำลังโหลด...</div>';
 
   const bannerEl   = document.getElementById('inv-low-stock-banner');
+  const statsEl    = document.getElementById('inv-branch-stats');
   const fromReqBtn = document.getElementById('inv-from-req-btn');
   if (fromReqBtn) fromReqBtn.style.display = CU.role === 'admin' ? '' : 'none';
 
   pbShow();
-  const res = await apiGet('getInventory', {}, {bust:true});
+  const res = await apiGet('getInventory', {branch:'all'}, {ttl: TTL.inventory});
   pbDone();
   _inventoryCache = [];
 
@@ -2385,45 +2448,37 @@ async function loadInventory() {
   const rows = res.data || [];
   _inventoryCache = rows;
 
-  // Low-stock banner
-  const lowStock = rows.filter(it => Number(it.qty||0) < 5);
-  if (bannerEl) {
-    if (lowStock.length) {
-      bannerEl.innerHTML = `
-        <div class="low-stock-banner" style="padding:10px 14px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px">
-          <span style="font-size:18px;flex-shrink:0">⚠️</span>
-          <div>
-            <div style="font-weight:700;font-size:13px;color:#b45309">วัสดุใกล้หมด (${lowStock.length} รายการ)</div>
-            <div style="font-size:12px;color:#92400e;margin-top:3px">${lowStock.map(it=>`${esc(it.name||'')} (เหลือ ${Number(it.qty||0).toLocaleString('th-TH')} ${esc(it.unit||'')})`).join(' · ')}</div>
-          </div>
-        </div>`;
-    } else {
-      bannerEl.innerHTML = '';
-    }
+  // Branch stats tiles
+  const branches = ['สาขา 1','สาขา 2'];
+  if (statsEl) {
+    statsEl.innerHTML = branches.map(br => {
+      const brRows = rows.filter(it => (it.branch||'').trim() === br);
+      const lowCnt = brRows.filter(it => (+it.qty||0) < 5).length;
+      const totalItems = brRows.length;
+      const totalVal = brRows.reduce((s,it) => s + ((+it.qty||0)*(+it.pricePerUnit||0)), 0);
+      return `<div class="stat-tile" style="border-left:4px solid var(--g)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-weight:800;font-size:14px;color:var(--g)">🏪 ${br}</div>
+          ${lowCnt?`<span style="font-size:11px;background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:10px;font-weight:700">⚠️ ใกล้หมด ${lowCnt} รายการ</span>`:'<span style="font-size:11px;background:#e3f5e9;color:#1a6e36;padding:2px 8px;border-radius:10px;font-weight:700">✅ ปกติ</span>'}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><div style="font-size:24px;font-weight:900;color:var(--text)">${totalItems}</div><div style="font-size:11px;color:var(--text2)">รายการวัสดุ</div></div>
+          <div><div style="font-size:18px;font-weight:900;color:var(--g2)">฿${totalVal.toLocaleString('th-TH',{minimumFractionDigits:0})}</div><div style="font-size:11px;color:var(--text2)">มูลค่าคลัง</div></div>
+        </div>
+        ${lowCnt?`<div style="margin-top:8px;font-size:11px;color:#b45309">${brRows.filter(it=>(+it.qty||0)<5).map(it=>esc(it.name||'')).join(', ')}</div>`:''}
+      </div>`;
+    }).join('');
   }
 
-  if (!rows.length) { el.innerHTML = '<div class="empty">ยังไม่มีวัสดุในคลัง</div>'; return; }
+  // Low-stock banner (overall)
+  const lowStock = rows.filter(it => (+it.qty||0) < 5);
+  if (bannerEl) bannerEl.innerHTML = '';  // handled in tiles now
 
-  el.innerHTML = `
-    <div class="table-wrap">
-    <table class="data-table">
-      <thead><tr>
-        <th>ชื่อวัสดุ</th><th>หน่วย</th><th style="text-align:right">คงเหลือ</th>
-        <th style="text-align:right">ราคา/หน่วย</th><th>สาขา</th><th>ร้านค้า</th><th>ซื้อล่าสุด</th>
-      </tr></thead>
-      <tbody>
-        ${rows.map((it,i) => `<tr style="${i%2===0?'':'background:var(--g3)'}">
-          <td style="font-weight:600;color:var(--text)">${esc(it.name||'')}</td>
-          <td style="color:var(--text2)">${esc(it.unit||it.หน่วย||it.inventoryUnit||'')}</td>
-          <td style="text-align:right;font-weight:700;color:${(+it.qty||+it.quantity||0)<5?'var(--red)':'var(--text)'}">${(+it.qty||+it.quantity||0).toLocaleString('th-TH')}</td>
-          <td style="text-align:right;color:var(--text2)">${(+it.pricePerUnit||+it.price||it.ราคา||0)?'฿'+(+it.pricePerUnit||+it.price||it.ราคา||0).toLocaleString('th-TH',{minimumFractionDigits:2}):'-'}</td>
-          <td style="color:var(--text2)">${esc(it.branch||'')}</td>
-          <td style="color:var(--text3);font-size:12px">${esc(it.vendor||'')}</td>
-          <td style="color:var(--text3);font-size:11px">${esc(it.lastPurchaseDate||'')}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
-    </div>`;
+  // set tab (default: สาขาของ user สำหรับ non-admin, all สำหรับ admin)
+  if (!_loaded['inventory']) {
+    _invTab = CU.role === 'admin' ? 'all' : (CU.branch?.includes('2') ? 'b2' : 'b1');
+  }
+  invSetTab(_invTab);
 }
 
 function _invRowHtml(i) {
